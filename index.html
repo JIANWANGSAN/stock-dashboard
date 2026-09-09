@@ -231,10 +231,12 @@
     }
     .menu-item{
       flex: 1; flex-direction: column; gap: 1px;
-      padding: 5px 4px 4px; font-size: 10.5px; line-height: 1;
+      padding: 4px 2px 4px; font-size: 10.5px; line-height: 1;
       border-left: none; border-bottom: none; border-top: 3px solid transparent;
       display: flex; align-items: center; justify-content: center;
+      white-space: nowrap; overflow: hidden; min-width: 0;
     }
+    .mlabel{ font-size: 10.5px; letter-spacing: 0; }
     .menu-item:hover{ background: transparent; }
     .menu-item.active{
       background: #111827;
@@ -372,6 +374,17 @@
     table{ display: block; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
     thead, tbody, tr{ display: table; width: 100%; table-layout: auto; }
     th, td{ font-size: 11px; padding: 5px 6px; }
+    /* 模块4表格：手机端隐藏次要列 */
+    #m4-box table .c-rank, #m4-box table .c-code,
+    #m4-box table .c-div, #m4-box table .c-vol,
+    #m4-box table .c-5d, #m4-box table .c-status{ display: none; }
+    #m4-box table{ min-width: 320px; }
+    #m4-box table .c-name{ min-width: 64px; }
+    #m4-box table .c-board{ min-width: 60px; font-size: 11px; }
+    #m4-box table .c-ma{ min-width: 48px; text-align: center; }
+    #m4-box table .c-price{ min-width: 78px; font-size: 10.5px; }
+    #m4-box table .c-dev{ min-width: 42px; }
+    #m4-box table .c-score{ min-width: 36px; text-align: center; }
     .reco{ padding: 11px 12px; }
     .reco h3{ font-size: 13.5px; }
     .reco .pv{ gap: 8px 11px; }
@@ -396,10 +409,10 @@
   <div class="sidebar" data-page-node-id="G8KpyFVkb6w2xW1RfvN9DK">
     <div class="logo" data-page-node-id="W7PZ8AtuB0QuYcHBvIIk8H">A股短线仪表盘</div>
     <div class="menu" data-page-node-id="E68KllNyvGrNKyZDb01fN9">
-      <div class="menu-item active" data-panel="daily" data-page-node-id="YEoxEWAQcpoE65plZKdmBx"><span class="menu-icon" data-page-node-id="aH2varaaUpKKvdF4d1AqTD">📰</span>模块1 · 每日必看</div>
-      <div class="menu-item" data-panel="ladder" data-page-node-id="ZYUsw61nyal9b06cJckVTq"><span class="menu-icon" data-page-node-id="fh1am61yfl5kkhUa0ig7Ft">📊</span>模块2 · 梯队复盘</div>
-      <div class="menu-item" data-panel="boards" data-page-node-id="u1MbAlVQKUx4CAQWlHRgHT"><span class="menu-icon" data-page-node-id="ZBH4yNipiaXDhrnWoHGPWn">🎯</span>模块3 · 重点板块</div>
-      <div class="menu-item" data-panel="m4" data-page-node-id="pNBB9CUeF6jOsi6a6TvkVC"><span class="menu-icon" data-page-node-id="Mvek8qQiG2LWVugJTrLPMF">📈</span>模块4 · 均线共振池</div>
+      <div class="menu-item active" data-panel="daily" data-page-node-id="YEoxEWAQcpoE65plZKdmBx"><span class="menu-icon" data-page-node-id="aH2varaaUpKKvdF4d1AqTD">📰</span><span class="mlabel" data-page-node-id="mlabel1">必看</span></div>
+      <div class="menu-item" data-panel="ladder" data-page-node-id="ZYUsw61nyal9b06cJckVTq"><span class="menu-icon" data-page-node-id="fh1am61yfl5kkhUa0ig7Ft">📊</span><span class="mlabel" data-page-node-id="mlabel2">梯队</span></div>
+      <div class="menu-item" data-panel="boards" data-page-node-id="u1MbAlVQKUx4CAQWlHRgHT"><span class="menu-icon" data-page-node-id="ZBH4yNipiaXDhrnWoHGPWn">🎯</span><span class="mlabel" data-page-node-id="mlabel3">板块</span></div>
+      <div class="menu-item" data-panel="m4" data-page-node-id="pNBB9CUeF6jOsi6a6TvkVC"><span class="menu-icon" data-page-node-id="Mvek8qQiG2LWVugJTrLPMF">📈</span><span class="mlabel" data-page-node-id="mlabel4">均线</span></div>
     </div>
     <div class="footer-tag" id="foot-updated" data-page-node-id="Z9DF1sLEVvbKF9YwdoJYwU">数据更新：—</div>
   </div>
@@ -950,24 +963,29 @@ function renderModule4(){
   // 表格
   const arr = M.stocks;
   box.innerHTML = `<table>
-    <thead><tr><th>#</th><th>名称</th><th>代码</th><th>所属重合板块</th><th>MA状态</th>
-      <th>收盘/MA20</th><th>乖离率</th><th>发散强度</th><th>量能比</th><th>5日收益</th><th>评分</th><th>状态</th></tr></thead>
+    <thead><tr>
+      <th class="c-rank">#</th><th class="c-name">名称</th><th class="c-code">代码</th>
+      <th class="c-board">所属重合板块</th><th class="c-ma">MA状态</th>
+      <th class="c-price">收盘/MA20</th><th class="c-dev">乖离率</th>
+      <th class="c-div">发散强度</th><th class="c-vol">量能比</th><th class="c-5d">5日收益</th>
+      <th class="c-score">评分</th><th class="c-status">状态</th>
+    </tr></thead>
     <tbody>${arr.map((s,i)=>{
       const ob = s.overbought ? '<span class="down" style="padding:1px 5px;border-radius:4px;background:#fef2f2;">超买</span>' : '';
       const status = (M.added_today||[]).includes(s.name) ? '<span style="color:#16a34a;">新进</span>' : '持有';
       const boards = (s.boards||[]).map(b=>esc(b)).join('、');
       return `<tr>
-        <td class="rank-no">${i+1}</td>
-        <td><b>${esc(s.name)}</b></td><td>${esc(s.code)}</td>
-        <td style="font-size:12px;">${boards}</td>
-        <td><span style="color:#16a34a;">多头✓</span></td>
-        <td>${s.close!=null?s.close.toFixed(2):'-'} / ${s.ma20!=null?s.ma20.toFixed(2):'-'}</td>
-        <td class="${s.bias20>20?'down':'up'}">${s.bias20!=null?(s.bias20>0?'+':'')+s.bias20.toFixed(1)+'%':'-'}</td>
-        <td>${s.div_strength!=null?'+'+s.div_strength.toFixed(1)+'%':'-'}</td>
-        <td>${s.vol_ratio!=null?s.vol_ratio.toFixed(2):'-'}</td>
-        <td class="${s.recent5_ret>=0?'up':'down'}">${s.recent5_ret!=null?(s.recent5_ret>0?'+':'')+s.recent5_ret.toFixed(1)+'%':'-'}</td>
-        <td><b>${s.score!=null?s.score.toFixed(1):'-'}</b></td>
-        <td>${status} ${ob}</td></tr>`;
+        <td class="c-rank">${i+1}</td>
+        <td class="c-name"><b>${esc(s.name)}</b></td><td class="c-code">${esc(s.code)}</td>
+        <td class="c-board" style="font-size:12px;">${boards}</td>
+        <td class="c-ma"><span style="color:#16a34a;">多头✓</span></td>
+        <td class="c-price">${s.close!=null?s.close.toFixed(2):'-'} / ${s.ma20!=null?s.ma20.toFixed(2):'-'}</td>
+        <td class="c-dev ${s.bias20>20?'down':'up'}">${s.bias20!=null?(s.bias20>0?'+':'')+s.bias20.toFixed(1)+'%':'-'}</td>
+        <td class="c-div">${s.div_strength!=null?'+'+s.div_strength.toFixed(1)+'%':'-'}</td>
+        <td class="c-vol">${s.vol_ratio!=null?s.vol_ratio.toFixed(2):'-'}</td>
+        <td class="c-5d ${s.recent5_ret>=0?'up':'down'}">${s.recent5_ret!=null?(s.recent5_ret>0?'+':'')+s.recent5_ret.toFixed(1)+'%':'-'}</td>
+        <td class="c-score"><b>${s.score!=null?s.score.toFixed(1):'-'}</b></td>
+        <td class="c-status">${status} ${ob}</td></tr>`;
     }).join('')}</tbody></table>`;
   // 策略
   const st = M.strategy || {};
