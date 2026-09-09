@@ -2,7 +2,8 @@
 
 单页 HTML 仪表盘 + Python 数据管线。四个模块：每日必看 / 梯队复盘 / 重点板块 / 均线共振池。
 
-- **看板入口**：双击 `index.html`（或访问已发布的在线链接）
+- **看板入口（永久链接·推荐）**：https://JIANWANGSAN.github.io/stock-dashboard/ （GitHub Pages 托管，无沙盒休眠，每天 15:35 自动更新）
+- **看板入口（备用）**：双击 `index.html`，或 WorkBuddy 沙盒链接（由 15:05 任务发布）
 - **数据刷新**：双击 `refresh.bat`
 
 ---
@@ -117,9 +118,9 @@ CONCEPT_FIX = {
 
 项目已推送到 GitHub 私有仓库：**https://github.com/JIANWANGSAN/stock-dashboard**（私有，仅自己可见）。
 
-- **每日自动同步**：自动化「A股仪表盘 · GitHub 每日备份同步」（交易日 15:35）在盘后主任务完成后执行 `git add -A && git commit && git push`，GitHub 始终保留最新全量项目。
+- **每日自动同步**：自动化「A股仪表盘 · GitHub 每日备份同步」（交易日 15:35）在盘后主任务完成后执行 `git add -A && git commit && git push`，GitHub 始终保留最新全量项目。**因已启用 GitHub Pages，每次 push 会自动重建站点，故永久链接 https://JIANWANGSAN.github.io/stock-dashboard/ 也每天同步更新。**
 - **换电脑恢复（推荐 clone，比拷文件夹更稳）**：
   1. 新电脑装 **WorkBuddy**（它自带 Python 与 Git，你不用单独装这两个——和你现在一样）
-  2. 把「七」的话术丢给新 AI，并附上 GitHub 私有仓库地址与该 token：让 AI 执行 `git clone` + 双击 `setup.bat`/`refresh.bat` + 按「六」重建 3 个自动任务 + 重新发布链接
+  2. 把「七」的话术丢给新 AI，并附上 GitHub 公开仓库地址（https://github.com/JIANWANGSAN/stock-dashboard）与该 token：让 AI 执行 `git clone` + 双击 `setup.bat`/`refresh.bat` + 按「六」重建 3 个自动任务 + 重新发布链接
   - 全程由 AI 在 WorkBuddy 内完成，**你无需敲任何命令、无需懂 Git/Python**
 - **注意**：GitHub 只存代码与数据快照，不含自动化任务（在 WorkBuddy 自动化系统里，需新 AI 按「六」重建）；运行缓存在 `.gitignore` 已排除。本地 remote 的访问令牌写在 `.git/config`（不进库），换电脑后由新 AI 重新配置 remote（需你再给一次 token）才能继续自动 push。
