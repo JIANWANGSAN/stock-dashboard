@@ -110,3 +110,16 @@ CONCEPT_FIX = {
 > 这是我做的 **A股短线复盘仪表盘** 项目，全部代码在 `stock_dashboard` 文件夹。
 > 请先读 `README.md`：按「一、换电脑三步」初始化环境，按「六」用 `automation_update` 重建 3 个自动任务，并用 `workbuddy_sites_deploy` 重新发布线上链接。
 > **核心业务口径（第四节）不要改动**，除非我明确要求：剔除北交/科创/ST、节点票 ≤200 亿且只留近 10 个交易日、节点内无连板即删、断板反包判定、概念按当下热点+事件驱动抓取、一字板取集合竞价首分钟额。
+
+---
+
+## 八、GitHub 备份（跨电脑灾备，已自动同步）
+
+项目已推送到 GitHub 私有仓库：**https://github.com/JIANWANGSAN/stock-dashboard**（私有，仅自己可见）。
+
+- **每日自动同步**：自动化「A股仪表盘 · GitHub 每日备份同步」（交易日 15:35）在盘后主任务完成后执行 `git add -A && git commit && git push`，GitHub 始终保留最新全量项目。
+- **换电脑恢复（推荐 clone，比拷文件夹更稳）**：
+  1. 新电脑装 **WorkBuddy**（它自带 Python 与 Git，你不用单独装这两个——和你现在一样）
+  2. 把「七」的话术丢给新 AI，并附上 GitHub 私有仓库地址与该 token：让 AI 执行 `git clone` + 双击 `setup.bat`/`refresh.bat` + 按「六」重建 3 个自动任务 + 重新发布链接
+  - 全程由 AI 在 WorkBuddy 内完成，**你无需敲任何命令、无需懂 Git/Python**
+- **注意**：GitHub 只存代码与数据快照，不含自动化任务（在 WorkBuddy 自动化系统里，需新 AI 按「六」重建）；运行缓存在 `.gitignore` 已排除。本地 remote 的访问令牌写在 `.git/config`（不进库），换电脑后由新 AI 重新配置 remote（需你再给一次 token）才能继续自动 push。
