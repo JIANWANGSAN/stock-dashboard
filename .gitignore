@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# 本地工具目录
+.workbuddy/
+
+# 运行期缓存（可自动重建，不必入库）
+.seal_cache.json
+.stock_cache.json
+.module4_kline_cache.json
+.mx_members_cache.json
+.elnino_stage_cache.json
+
+# 体积大且可重建的中间产物
+review_dump.json
+
+# 系统
+.DS_Store
+Thumbs.db

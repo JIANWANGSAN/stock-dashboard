@@ -1,0 +1,862 @@
+{
+  "date": "2026-09-09",
+  "overlap_boards": [
+    "白糖",
+    "覆铜板",
+    "棉花",
+    "代糖(甜味剂)"
+  ],
+  "stocks": [
+    {
+      "code": "301282",
+      "name": "金禄电子",
+      "market": "0",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 40.886,
+      "ma10": 38.241,
+      "ma20": 36.26,
+      "close": 42.88,
+      "bias20": 18.26,
+      "div_strength": 12.76,
+      "vol_ratio": 0.96,
+      "recent5_ret": 18.62,
+      "overbought": false,
+      "score": 46.0,
+      "rank": 1
+    },
+    {
+      "code": "300400",
+      "name": "劲拓股份",
+      "market": "0",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 34.44,
+      "ma10": 32.53,
+      "ma20": 30.813,
+      "close": 35.66,
+      "bias20": 15.73,
+      "div_strength": 11.77,
+      "vol_ratio": 0.81,
+      "recent5_ret": 20.23,
+      "overbought": false,
+      "score": 45.1,
+      "rank": 2
+    },
+    {
+      "code": "300852",
+      "name": "四会富仕",
+      "market": "0",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 52.844,
+      "ma10": 49.326,
+      "ma20": 47.61,
+      "close": 58.0,
+      "bias20": 21.82,
+      "div_strength": 10.99,
+      "vol_ratio": 1.01,
+      "recent5_ret": 30.66,
+      "overbought": true,
+      "score": 42.9,
+      "rank": 3
+    },
+    {
+      "code": "301628",
+      "name": "强达电路",
+      "market": "0",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 115.026,
+      "ma10": 106.91,
+      "ma20": 98.184,
+      "close": 128.32,
+      "bias20": 30.69,
+      "div_strength": 17.15,
+      "vol_ratio": 1.37,
+      "recent5_ret": 23.11,
+      "overbought": true,
+      "score": 42.3,
+      "rank": 4
+    },
+    {
+      "code": "301132",
+      "name": "满坤科技",
+      "market": "0",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 41.762,
+      "ma10": 40.08,
+      "ma20": 38.181,
+      "close": 46.85,
+      "bias20": 22.7,
+      "div_strength": 9.38,
+      "vol_ratio": 1.63,
+      "recent5_ret": 21.47,
+      "overbought": true,
+      "score": 41.6,
+      "rank": 5
+    },
+    {
+      "code": "002913",
+      "name": "奥士康",
+      "market": "0",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 65.102,
+      "ma10": 63.117,
+      "ma20": 60.588,
+      "close": 71.2,
+      "bias20": 17.51,
+      "div_strength": 7.45,
+      "vol_ratio": 2.2,
+      "recent5_ret": 15.66,
+      "overbought": false,
+      "score": 41.3,
+      "rank": 6
+    },
+    {
+      "code": "605077",
+      "name": "华康股份",
+      "market": "1",
+      "boards": [
+        "代糖(甜味剂)"
+      ],
+      "best_rank": 13,
+      "multi_board": 1,
+      "ma5": 12.014,
+      "ma10": 11.57,
+      "ma20": 11.267,
+      "close": 13.78,
+      "bias20": 22.3,
+      "div_strength": 6.63,
+      "vol_ratio": 2.64,
+      "recent5_ret": 23.92,
+      "overbought": true,
+      "score": 41.3,
+      "rank": 7
+    },
+    {
+      "code": "002815",
+      "name": "崇达技术",
+      "market": "0",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 16.078,
+      "ma10": 15.315,
+      "ma20": 14.363,
+      "close": 18.06,
+      "bias20": 25.74,
+      "div_strength": 11.94,
+      "vol_ratio": 1.41,
+      "recent5_ret": 24.72,
+      "overbought": true,
+      "score": 41.1,
+      "rank": 8
+    },
+    {
+      "code": "600601",
+      "name": "方正科技",
+      "market": "1",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 13.756,
+      "ma10": 13.066,
+      "ma20": 12.69,
+      "close": 14.62,
+      "bias20": 15.21,
+      "div_strength": 8.4,
+      "vol_ratio": 0.76,
+      "recent5_ret": 21.23,
+      "overbought": false,
+      "score": 41.0,
+      "rank": 9
+    },
+    {
+      "code": "002286",
+      "name": "保龄宝",
+      "market": "0",
+      "boards": [
+        "代糖(甜味剂)"
+      ],
+      "best_rank": 13,
+      "multi_board": 1,
+      "ma5": 8.73,
+      "ma10": 8.503,
+      "ma20": 8.261,
+      "close": 9.77,
+      "bias20": 18.27,
+      "div_strength": 5.68,
+      "vol_ratio": 2.29,
+      "recent5_ret": 18.14,
+      "overbought": false,
+      "score": 40.6,
+      "rank": 10
+    },
+    {
+      "code": "301206",
+      "name": "三元生物",
+      "market": "0",
+      "boards": [
+        "代糖(甜味剂)"
+      ],
+      "best_rank": 13,
+      "multi_board": 1,
+      "ma5": 25.27,
+      "ma10": 24.552,
+      "ma20": 24.31,
+      "close": 29.0,
+      "bias20": 19.29,
+      "div_strength": 3.95,
+      "vol_ratio": 2.68,
+      "recent5_ret": 23.35,
+      "overbought": false,
+      "score": 40.4,
+      "rank": 11
+    },
+    {
+      "code": "688655",
+      "name": "迅捷兴",
+      "market": "1",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 49.956,
+      "ma10": 46.657,
+      "ma20": 44.316,
+      "close": 56.52,
+      "bias20": 27.54,
+      "div_strength": 12.73,
+      "vol_ratio": 1.09,
+      "recent5_ret": 35.09,
+      "overbought": true,
+      "score": 39.5,
+      "rank": 12
+    },
+    {
+      "code": "603228",
+      "name": "景旺电子",
+      "market": "1",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 101.458,
+      "ma10": 97.253,
+      "ma20": 95.378,
+      "close": 109.59,
+      "bias20": 14.9,
+      "div_strength": 6.37,
+      "vol_ratio": 0.79,
+      "recent5_ret": 23.4,
+      "overbought": false,
+      "score": 38.5,
+      "rank": 13
+    },
+    {
+      "code": "300179",
+      "name": "四方达",
+      "market": "0",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 38.968,
+      "ma10": 37.669,
+      "ma20": 36.995,
+      "close": 42.3,
+      "bias20": 14.34,
+      "div_strength": 5.33,
+      "vol_ratio": 1.08,
+      "recent5_ret": 19.9,
+      "overbought": false,
+      "score": 37.4,
+      "rank": 14
+    },
+    {
+      "code": "600108",
+      "name": "亚盛集团",
+      "market": "1",
+      "boards": [
+        "代糖(甜味剂)"
+      ],
+      "best_rank": 13,
+      "multi_board": 1,
+      "ma5": 4.822,
+      "ma10": 4.292,
+      "ma20": 3.815,
+      "close": 5.71,
+      "bias20": 49.67,
+      "div_strength": 26.4,
+      "vol_ratio": 3.17,
+      "recent5_ret": 58.61,
+      "overbought": true,
+      "score": 37.3,
+      "rank": 15
+    },
+    {
+      "code": "603186",
+      "name": "华正新材",
+      "market": "1",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 188.092,
+      "ma10": 184.233,
+      "ma20": 177.868,
+      "close": 212.06,
+      "bias20": 19.22,
+      "div_strength": 5.75,
+      "vol_ratio": 1.1,
+      "recent5_ret": 16.96,
+      "overbought": false,
+      "score": 37.1,
+      "rank": 16
+    },
+    {
+      "code": "301511",
+      "name": "德福科技",
+      "market": "0",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 96.564,
+      "ma10": 94.069,
+      "ma20": 91.667,
+      "close": 105.7,
+      "bias20": 15.31,
+      "div_strength": 5.34,
+      "vol_ratio": 0.88,
+      "recent5_ret": 16.6,
+      "overbought": false,
+      "score": 35.9,
+      "rank": 17
+    },
+    {
+      "code": "000523",
+      "name": "红棉股份",
+      "market": "0",
+      "boards": [
+        "代糖(甜味剂)"
+      ],
+      "best_rank": 13,
+      "multi_board": 1,
+      "ma5": 3.724,
+      "ma10": 3.577,
+      "ma20": 3.358,
+      "close": 4.36,
+      "bias20": 29.86,
+      "div_strength": 10.92,
+      "vol_ratio": 0.3,
+      "recent5_ret": 29.76,
+      "overbought": true,
+      "score": 33.0,
+      "rank": 18
+    },
+    {
+      "code": "300964",
+      "name": "本川智能",
+      "market": "0",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 60.812,
+      "ma10": 59.713,
+      "ma20": 58.652,
+      "close": 65.2,
+      "bias20": 11.16,
+      "div_strength": 3.68,
+      "vol_ratio": 2.04,
+      "recent5_ret": 14.35,
+      "overbought": false,
+      "score": 31.9,
+      "rank": 19
+    },
+    {
+      "code": "300747",
+      "name": "锐科激光",
+      "market": "0",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 39.536,
+      "ma10": 38.743,
+      "ma20": 37.41,
+      "close": 41.59,
+      "bias20": 11.17,
+      "div_strength": 5.68,
+      "vol_ratio": 0.98,
+      "recent5_ret": 11.26,
+      "overbought": false,
+      "score": 30.1,
+      "rank": 20
+    },
+    {
+      "code": "002171",
+      "name": "楚江新材",
+      "market": "0",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 10.472,
+      "ma10": 10.289,
+      "ma20": 10.028,
+      "close": 11.06,
+      "bias20": 10.29,
+      "div_strength": 4.43,
+      "vol_ratio": 1.61,
+      "recent5_ret": 10.93,
+      "overbought": false,
+      "score": 29.1,
+      "rank": 21
+    },
+    {
+      "code": "000823",
+      "name": "超声电子",
+      "market": "0",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 15.788,
+      "ma10": 15.633,
+      "ma20": 15.309,
+      "close": 17.0,
+      "bias20": 11.05,
+      "div_strength": 3.13,
+      "vol_ratio": 1.56,
+      "recent5_ret": 12.66,
+      "overbought": false,
+      "score": 29.0,
+      "rank": 22
+    },
+    {
+      "code": "002597",
+      "name": "金禾实业",
+      "market": "0",
+      "boards": [
+        "代糖(甜味剂)"
+      ],
+      "best_rank": 13,
+      "multi_board": 1,
+      "ma5": 21.462,
+      "ma10": 21.119,
+      "ma20": 20.486,
+      "close": 22.48,
+      "bias20": 9.73,
+      "div_strength": 4.76,
+      "vol_ratio": 1.67,
+      "recent5_ret": 9.98,
+      "overbought": false,
+      "score": 28.6,
+      "rank": 23
+    },
+    {
+      "code": "605016",
+      "name": "百龙创园",
+      "market": "1",
+      "boards": [
+        "代糖(甜味剂)"
+      ],
+      "best_rank": 13,
+      "multi_board": 1,
+      "ma5": 22.26,
+      "ma10": 21.608,
+      "ma20": 20.806,
+      "close": 22.49,
+      "bias20": 8.1,
+      "div_strength": 6.99,
+      "vol_ratio": 0.83,
+      "recent5_ret": 5.89,
+      "overbought": false,
+      "score": 25.5,
+      "rank": 24
+    },
+    {
+      "code": "603328",
+      "name": "依顿电子",
+      "market": "1",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 11.07,
+      "ma10": 11.024,
+      "ma20": 11.014,
+      "close": 12.1,
+      "bias20": 9.86,
+      "div_strength": 0.5,
+      "vol_ratio": 1.95,
+      "recent5_ret": 11.83,
+      "overbought": false,
+      "score": 25.2,
+      "rank": 25
+    },
+    {
+      "code": "001389",
+      "name": "广合科技",
+      "market": "0",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 164.352,
+      "ma10": 161.017,
+      "ma20": 159.826,
+      "close": 173.92,
+      "bias20": 8.82,
+      "div_strength": 2.83,
+      "vol_ratio": 0.91,
+      "recent5_ret": 11.98,
+      "overbought": false,
+      "score": 24.5,
+      "rank": 26
+    },
+    {
+      "code": "605058",
+      "name": "澳弘电子",
+      "market": "1",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 28.462,
+      "ma10": 28.094,
+      "ma20": 27.542,
+      "close": 29.64,
+      "bias20": 7.62,
+      "div_strength": 3.34,
+      "vol_ratio": 1.54,
+      "recent5_ret": 7.35,
+      "overbought": false,
+      "score": 23.2,
+      "rank": 27
+    },
+    {
+      "code": "300739",
+      "name": "明阳电路",
+      "market": "0",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 23.768,
+      "ma10": 23.374,
+      "ma20": 23.119,
+      "close": 24.78,
+      "bias20": 7.19,
+      "div_strength": 2.81,
+      "vol_ratio": 1.27,
+      "recent5_ret": 9.74,
+      "overbought": false,
+      "score": 22.6,
+      "rank": 28
+    },
+    {
+      "code": "301366",
+      "name": "一博科技",
+      "market": "0",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 57.12,
+      "ma10": 56.572,
+      "ma20": 56.204,
+      "close": 58.98,
+      "bias20": 4.94,
+      "div_strength": 1.63,
+      "vol_ratio": 1.47,
+      "recent5_ret": 9.06,
+      "overbought": false,
+      "score": 19.1,
+      "rank": 29
+    },
+    {
+      "code": "603386",
+      "name": "骏亚科技",
+      "market": "1",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 14.356,
+      "ma10": 14.288,
+      "ma20": 14.01,
+      "close": 14.81,
+      "bias20": 5.71,
+      "div_strength": 2.47,
+      "vol_ratio": 1.2,
+      "recent5_ret": 5.41,
+      "overbought": false,
+      "score": 18.4,
+      "rank": 30
+    },
+    {
+      "code": "601600",
+      "name": "中国铝业",
+      "market": "1",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 7,
+      "multi_board": 1,
+      "ma5": 9.758,
+      "ma10": 9.742,
+      "ma20": 9.565,
+      "close": 10.03,
+      "bias20": 4.86,
+      "div_strength": 2.02,
+      "vol_ratio": 1.43,
+      "recent5_ret": 4.48,
+      "overbought": false,
+      "score": 17.1,
+      "rank": 31
+    },
+    {
+      "code": "002166",
+      "name": "莱茵生物",
+      "market": "0",
+      "boards": [
+        "代糖(甜味剂)"
+      ],
+      "best_rank": 13,
+      "multi_board": 1,
+      "ma5": 6.96,
+      "ma10": 6.92,
+      "ma20": 6.859,
+      "close": 7.15,
+      "bias20": 4.24,
+      "div_strength": 1.47,
+      "vol_ratio": 1.5,
+      "recent5_ret": 4.53,
+      "overbought": false,
+      "score": 16.0,
+      "rank": 32
+    },
+    {
+      "code": "603739",
+      "name": "蔚蓝生物",
+      "market": "1",
+      "boards": [
+        "代糖(甜味剂)"
+      ],
+      "best_rank": 13,
+      "multi_board": 1,
+      "ma5": 13.064,
+      "ma10": 12.971,
+      "ma20": 12.78,
+      "close": 13.37,
+      "bias20": 4.61,
+      "div_strength": 2.22,
+      "vol_ratio": 0.99,
+      "recent5_ret": 3.8,
+      "overbought": false,
+      "score": 15.6,
+      "rank": 33
+    }
+  ],
+  "added_today": [
+    "金禄电子",
+    "劲拓股份",
+    "四会富仕",
+    "强达电路",
+    "满坤科技",
+    "奥士康",
+    "华康股份",
+    "崇达技术",
+    "方正科技",
+    "保龄宝",
+    "三元生物",
+    "迅捷兴",
+    "景旺电子",
+    "四方达",
+    "华正新材",
+    "德福科技",
+    "红棉股份",
+    "本川智能",
+    "锐科激光",
+    "楚江新材",
+    "超声电子",
+    "金禾实业",
+    "百龙创园",
+    "依顿电子",
+    "广合科技",
+    "澳弘电子",
+    "明阳电路",
+    "一博科技",
+    "骏亚科技",
+    "中国铝业",
+    "莱茵生物",
+    "蔚蓝生物"
+  ],
+  "removed_today": [
+    "天禾股份",
+    "新安股份",
+    "天虹股份",
+    "天佑德酒",
+    "中华企业"
+  ],
+  "history": [
+    {
+      "date": "2026-09-07",
+      "added": [
+        "亚盛集团",
+        "百大集团",
+        "播恩集团",
+        "爱仕达",
+        "中水渔业",
+        "新五丰",
+        "邦基科技",
+        "正虹科技",
+        "罗 牛 山",
+        "海欣食品",
+        "新 希 望",
+        "天邦食品",
+        "古越龙山"
+      ],
+      "removed": []
+    },
+    {
+      "date": "2026-09-07",
+      "added": [],
+      "removed": []
+    },
+    {
+      "date": "2026-09-07",
+      "added": [],
+      "removed": [
+        "播恩集团",
+        "新五丰",
+        "邦基科技",
+        "中水渔业",
+        "正虹科技",
+        "罗 牛 山",
+        "爱仕达",
+        "海欣食品",
+        "亚盛集团",
+        "百大集团",
+        "新 希 望",
+        "天邦食品",
+        "古越龙山"
+      ]
+    },
+    {
+      "date": "2026-09-07",
+      "added": [],
+      "removed": []
+    },
+    {
+      "date": "2026-09-07",
+      "added": [
+        "德科立",
+        "剑桥科技"
+      ],
+      "removed": []
+    },
+    {
+      "date": "2026-09-08",
+      "added": [
+        "天禾股份",
+        "亚盛集团",
+        "新安股份",
+        "天虹股份",
+        "天佑德酒",
+        "中华企业"
+      ],
+      "removed": [
+        "德科立",
+        "剑桥科技"
+      ]
+    },
+    {
+      "date": "2026-09-09",
+      "added": [
+        "金禄电子",
+        "劲拓股份",
+        "四会富仕",
+        "强达电路",
+        "满坤科技",
+        "奥士康",
+        "华康股份",
+        "崇达技术",
+        "方正科技",
+        "保龄宝",
+        "三元生物",
+        "迅捷兴",
+        "景旺电子",
+        "四方达",
+        "华正新材",
+        "德福科技",
+        "红棉股份",
+        "本川智能",
+        "锐科激光",
+        "楚江新材",
+        "超声电子",
+        "金禾实业",
+        "百龙创园",
+        "依顿电子",
+        "广合科技",
+        "澳弘电子",
+        "明阳电路",
+        "一博科技",
+        "骏亚科技",
+        "中国铝业",
+        "莱茵生物",
+        "蔚蓝生物"
+      ],
+      "removed": [
+        "天禾股份",
+        "新安股份",
+        "天虹股份",
+        "天佑德酒",
+        "中华企业"
+      ]
+    }
+  ]
+}
