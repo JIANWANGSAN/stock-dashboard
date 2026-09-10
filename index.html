@@ -173,13 +173,18 @@
   th, td { padding: 9px 10px; text-align: left; border-bottom: 1px solid #f1f5f9; }
   th { color: #6b7280; font-weight: 600; background: #f8fafc; font-size: 12px; }
   tr:hover td { background: #f8fafc; }
-  /* 模块3 顶部"板块单日榜"列对齐（窄屏横滚+列宽保证内容完整） */
-  #board-daily-box table .bp-rank{ width: 30px; text-align: center; color:#9ca3af; }
-  #board-daily-box table .bp-name{ min-width: 84px; text-align: left; }
-  #board-daily-box table .bp-pct{ min-width: 64px; text-align: right; font-weight: 600; }
-  #board-daily-box table .bp-up{ min-width: 60px; text-align: center; }
-  #board-daily-box table .bp-leader{ min-width: 132px; text-align: left; }
-  #board-daily-box table .bp-cap{ min-width: 72px; text-align: right; }
+  /* 模块3 板块表：固定布局，列宽按比例分配，始终对齐 */
+  #board-daily-box table, #board-3d-box table{ table-layout: fixed; }
+  #board-daily-box table .bp-rank{ width: 7%; text-align: center; color:#9ca3af; }
+  #board-daily-box table .bp-name{ width: 21%; text-align: left; }
+  #board-daily-box table .bp-pct{ width: 13%; text-align: right; font-weight: 600; }
+  #board-daily-box table .bp-up{ width: 12%; text-align: center; }
+  #board-daily-box table .bp-leader{ width: 27%; text-align: left; }
+  #board-daily-box table .bp-cap{ width: 20%; text-align: right; }
+  #board-3d-box table th:nth-child(1), #board-3d-box table td:nth-child(1){ width: 9%; text-align:center; color:#9ca3af; }
+  #board-3d-box table th:nth-child(2), #board-3d-box table td:nth-child(2){ width: 50%; text-align: left; }
+  #board-3d-box table th:nth-child(3), #board-3d-box table td:nth-child(3){ width: 26%; text-align: right; font-weight:600; }
+  #board-3d-box table th:nth-child(4), #board-3d-box table td:nth-child(4){ width: 15%; text-align: center; }
   .rank-no { font-weight: 700; color: #9ca3af; }
   .star { color: #f59e0b; font-weight: 700; }
   /* 小结 */
@@ -412,6 +417,10 @@
     .idx .v{ font-size: 13px; }
     .tab{ padding: 5px 9px; font-size: 11.5px; }
     .news-item{ padding: 8px 10px; font-size: 12px; }
+    /* 模块3板块表：手机端自适应铺满，不横滑，文字换行，列严格对齐 */
+    #board-daily-box table, #board-3d-box table{ display: table; width: 100%; table-layout: fixed; overflow: visible; white-space: normal; }
+    #board-daily-box table th, #board-daily-box table td,
+    #board-3d-box table th, #board-3d-box table td{ white-space: normal; word-break: break-word; padding: 5px 3px; font-size: 10.5px; }
   }
 </style>
 </head>
