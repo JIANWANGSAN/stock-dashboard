@@ -374,17 +374,20 @@
     table{ display: block; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
     thead, tbody, tr{ display: table; width: 100%; table-layout: auto; }
     th, td{ font-size: 11px; padding: 5px 6px; }
-    /* 模块4表格：手机端隐藏次要列 */
-    #m4-box table .c-rank, #m4-box table .c-code,
-    #m4-box table .c-div, #m4-box table .c-vol,
-    #m4-box table .c-5d, #m4-box table .c-status{ display: none; }
-    #m4-box table{ min-width: 320px; }
-    #m4-box table .c-name{ min-width: 64px; }
-    #m4-box table .c-board{ min-width: 60px; font-size: 11px; }
-    #m4-box table .c-ma{ min-width: 48px; text-align: center; }
-    #m4-box table .c-price{ min-width: 78px; font-size: 10.5px; }
-    #m4-box table .c-dev{ min-width: 42px; }
-    #m4-box table .c-score{ min-width: 36px; text-align: center; }
+    /* 模块4表格：手机端不隐藏列，横向滚动 + 列对齐自适应 */
+    #m4-box table{ min-width: 600px; }
+    #m4-box table .c-rank{ width: 30px; text-align: center; color:#9ca3af; }
+    #m4-box table .c-name{ min-width: 64px; text-align: left; }
+    #m4-box table .c-code{ min-width: 56px; color:#6b7280; text-align: left; }
+    #m4-box table .c-board{ min-width: 84px; font-size: 11px; }
+    #m4-box table .c-ma{ min-width: 44px; text-align: center; }
+    #m4-box table .c-price{ min-width: 92px; font-size: 10.5px; text-align: right; }
+    #m4-box table .c-score{ min-width: 44px; text-align: right; font-weight: 700; }
+    #m4-box table .c-dev{ min-width: 50px; text-align: right; }
+    #m4-box table .c-div{ min-width: 58px; text-align: right; }
+    #m4-box table .c-vol{ min-width: 48px; text-align: right; }
+    #m4-box table .c-5d{ min-width: 58px; text-align: right; }
+    #m4-box table .c-status{ min-width: 52px; text-align: center; }
     .reco{ padding: 11px 12px; }
     .reco h3{ font-size: 13.5px; }
     .reco .pv{ gap: 8px 11px; }
@@ -961,14 +964,14 @@ function renderModule4(){
   // 重合板块 chips
   ov.innerHTML = '两榜重合（持续性主线）：' + (M.overlap_boards||[]).map(b=>'<span class="star">★</span> '+esc(b)).join('、');
   // 表格
-  const arr = M.stocks;
+  const arr = [...(M.stocks||[])].sort((a,b)=> (b.score??-Infinity) - (a.score??-Infinity));
   box.innerHTML = `<table>
     <thead><tr>
       <th class="c-rank">#</th><th class="c-name">名称</th><th class="c-code">代码</th>
       <th class="c-board">所属重合板块</th><th class="c-ma">MA状态</th>
-      <th class="c-price">收盘/MA20</th><th class="c-dev">乖离率</th>
+      <th class="c-price">收盘/MA20</th><th class="c-score">评分</th><th class="c-dev">乖离率</th>
       <th class="c-div">发散强度</th><th class="c-vol">量能比</th><th class="c-5d">5日收益</th>
-      <th class="c-score">评分</th><th class="c-status">状态</th>
+      <th class="c-status">状态</th>
     </tr></thead>
     <tbody>${arr.map((s,i)=>{
       const ob = s.overbought ? '<span class="down" style="padding:1px 5px;border-radius:4px;background:#fef2f2;">超买</span>' : '';
@@ -980,11 +983,11 @@ function renderModule4(){
         <td class="c-board" style="font-size:12px;">${boards}</td>
         <td class="c-ma"><span style="color:#16a34a;">多头✓</span></td>
         <td class="c-price">${s.close!=null?s.close.toFixed(2):'-'} / ${s.ma20!=null?s.ma20.toFixed(2):'-'}</td>
+        <td class="c-score"><b>${s.score!=null?s.score.toFixed(1):'-'}</b></td>
         <td class="c-dev ${s.bias20>20?'down':'up'}">${s.bias20!=null?(s.bias20>0?'+':'')+s.bias20.toFixed(1)+'%':'-'}</td>
         <td class="c-div">${s.div_strength!=null?'+'+s.div_strength.toFixed(1)+'%':'-'}</td>
         <td class="c-vol">${s.vol_ratio!=null?s.vol_ratio.toFixed(2):'-'}</td>
         <td class="c-5d ${s.recent5_ret>=0?'up':'down'}">${s.recent5_ret!=null?(s.recent5_ret>0?'+':'')+s.recent5_ret.toFixed(1)+'%':'-'}</td>
-        <td class="c-score"><b>${s.score!=null?s.score.toFixed(1):'-'}</b></td>
         <td class="c-status">${status} ${ob}</td></tr>`;
     }).join('')}</tbody></table>`;
   // 策略

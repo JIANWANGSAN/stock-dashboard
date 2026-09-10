@@ -80,7 +80,7 @@ CONCEPT_FIX = {
 
 ## 六、换电脑后让 AI 自动跑起来（必做，否则只能手动看）
 
-光有代码 + `refresh.bat` 只能**手动**刷新。要做到「每天盘前盘后自动更新 + 手机链接自动保活」，需让接手 AI 在新电脑用 `automation_update` **重建 3 个自动化任务**（这些任务存在 WorkBuddy 自动化系统里，不随文件夹走，换电脑会丢）。把下面三块直接交给新 AI 即可。
+光有代码 + `refresh.bat` 只能**手动**刷新。要做到「每天盘前盘后自动更新 + 手机链接永久在线」，需让接手 AI 在新电脑用 `automation_update` **重建 2 个自动化任务**（这些任务存在 WorkBuddy 自动化系统里，不随文件夹走，换电脑会丢；手机链接的永久在线由 GitHub Pages 承担，无休眠、无需保活任务）。把下面两块直接交给新 AI 即可。
 
 ### 自动化 1 · 盘后复盘 + 仪表盘刷新
 - **名称**：`A股盘后复盘 + 仪表盘刷新`
@@ -97,11 +97,6 @@ CONCEPT_FIX = {
 - **频率**：每周一至周五 `09:10`
 - **执行内容**：运行新闻/事件缓存刷新（如 `refresh_news.py` 或 `fetch_data.py` 的新闻模块），让开盘前看板已有最新资讯与涨停原因。
 
-### 自动化 3 · 盘前预热保活
-- **名称**：`A股仪表盘 · 盘前预热保活`
-- **频率**：每周一至周五 `09:13`（比盘前新闻刷新晚 3 分钟，确保部署版含最新资讯）
-- **执行内容**：重新部署线上链接并校验页面非空（空则重试最多 2 次），**不抓数据**，只为唤醒沙箱、保证开盘前链接打得开。
-
 > 部署说明：重复发布同一目录会**复用同一 sandbox**，链接不变。手机端用 Chrome「添加到主屏幕」即 PWA 类原生 App，断网也能看缓存。
 
 ---
@@ -109,18 +104,18 @@ CONCEPT_FIX = {
 ## 七、给接手 AI 的交接话术（直接复制给新 AI）
 
 > 这是我做的 **A股短线复盘仪表盘** 项目，全部代码在 `stock_dashboard` 文件夹。
-> 请先读 `README.md`：按「一、换电脑三步」初始化环境，按「六」用 `automation_update` 重建 3 个自动任务，并用 `workbuddy_sites_deploy` 重新发布线上链接。
+> 请先读 `README.md`：按「一、换电脑三步」初始化环境，按「六」用 `automation_update` 重建 2 个自动任务（盘后刷新 + 盘前新闻）。手机链接用 GitHub Pages 永久在线，无需保活任务。
 > **核心业务口径（第四节）不要改动**，除非我明确要求：剔除北交/科创/ST、节点票 ≤200 亿且只留近 10 个交易日、节点内无连板即删、断板反包判定、概念按当下热点+事件驱动抓取、一字板取集合竞价首分钟额。
 
 ---
 
 ## 八、GitHub 备份（跨电脑灾备，已自动同步）
 
-项目已推送到 GitHub 私有仓库：**https://github.com/JIANWANGSAN/stock-dashboard**（私有，仅自己可见）。
+项目已推送到 GitHub 公开仓库：**https://github.com/JIANWANGSAN/stock-dashboard**（为启用 GitHub Pages 已转公开，仅含公开 A股数据、无隐私信息）。
 
 - **每日自动同步**：自动化「A股仪表盘 · GitHub 每日备份同步」（交易日 15:35）在盘后主任务完成后执行 `git add -A && git commit && git push`，GitHub 始终保留最新全量项目。**因已启用 GitHub Pages，每次 push 会自动重建站点，故永久链接 https://JIANWANGSAN.github.io/stock-dashboard/ 也每天同步更新。**
 - **换电脑恢复（推荐 clone，比拷文件夹更稳）**：
   1. 新电脑装 **WorkBuddy**（它自带 Python 与 Git，你不用单独装这两个——和你现在一样）
-  2. 把「七」的话术丢给新 AI，并附上 GitHub 公开仓库地址（https://github.com/JIANWANGSAN/stock-dashboard）与该 token：让 AI 执行 `git clone` + 双击 `setup.bat`/`refresh.bat` + 按「六」重建 3 个自动任务 + 重新发布链接
+  2. 把「七」的话术丢给新 AI，并附上 GitHub 公开仓库地址（https://github.com/JIANWANGSAN/stock-dashboard）与该 token：让 AI 执行 `git clone` + 双击 `setup.bat`/`refresh.bat` + 按「六」重建 2 个自动任务（GitHub Pages 已永久在线，无需重新发布链接）
   - 全程由 AI 在 WorkBuddy 内完成，**你无需敲任何命令、无需懂 Git/Python**
 - **注意**：GitHub 只存代码与数据快照，不含自动化任务（在 WorkBuddy 自动化系统里，需新 AI 按「六」重建）；运行缓存在 `.gitignore` 已排除。本地 remote 的访问令牌写在 `.git/config`（不进库），换电脑后由新 AI 重新配置 remote（需你再给一次 token）才能继续自动 push。
