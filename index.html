@@ -173,6 +173,13 @@
   th, td { padding: 9px 10px; text-align: left; border-bottom: 1px solid #f1f5f9; }
   th { color: #6b7280; font-weight: 600; background: #f8fafc; font-size: 12px; }
   tr:hover td { background: #f8fafc; }
+  /* 模块3 顶部"板块单日榜"列对齐（窄屏横滚+列宽保证内容完整） */
+  #board-daily-box table .bp-rank{ width: 30px; text-align: center; color:#9ca3af; }
+  #board-daily-box table .bp-name{ min-width: 84px; text-align: left; }
+  #board-daily-box table .bp-pct{ min-width: 64px; text-align: right; font-weight: 600; }
+  #board-daily-box table .bp-up{ min-width: 60px; text-align: center; }
+  #board-daily-box table .bp-leader{ min-width: 132px; text-align: left; }
+  #board-daily-box table .bp-cap{ min-width: 72px; text-align: right; }
   .rank-no { font-weight: 700; color: #9ca3af; }
   .star { color: #f59e0b; font-weight: 700; }
   /* 小结 */
@@ -905,14 +912,14 @@ function renderBoards(){
   const overlap=[...new Set(daily.filter(b=>d3names.has(b.name)).map(b=>b.name))];
   // 单日榜
   document.getElementById('board-daily-box').innerHTML = daily.length?`<table>
-    <thead><tr><th>#</th><th>板块</th><th>涨幅</th><th>涨停/总数</th><th>领涨股</th><th>主力净流入</th></tr></thead>
+    <thead><tr><th class="bp-rank">#</th><th class="bp-name">板块</th><th class="bp-pct">涨幅</th><th class="bp-up">涨停/总数</th><th class="bp-leader">领涨股</th><th class="bp-cap">主力净流入</th></tr></thead>
     <tbody>${daily.map((b,i)=>`<tr>
-      <td class="rank-no">${i+1}</td>
-      <td>${d3names.has(b.name)?'<span class="star">★</span> ':''}${esc(b.name)}</td>
-      <td class="up">+${b.pct.toFixed(2)}%</td>
-      <td>${b.up||0}/${b.total||0}</td>
-      <td>${esc(b.leader||'-')}${b.leader_pct?` +${b.leader_pct.toFixed(2)}%`:''}</td>
-      <td>${(b.zljlr_wan/1e4).toFixed(2)}亿</td></tr>`).join('')}</tbody></table>`
+      <td class="rank-no bp-rank">${i+1}</td>
+      <td class="bp-name">${d3names.has(b.name)?'<span class="star">★</span> ':''}${esc(b.name)}</td>
+      <td class="up bp-pct">+${b.pct.toFixed(2)}%</td>
+      <td class="bp-up">${b.up||0}/${b.total||0}</td>
+      <td class="bp-leader">${esc(b.leader||'-')}${b.leader_pct?` +${b.leader_pct.toFixed(2)}%`:''}</td>
+      <td class="bp-cap">${(b.zljlr_wan/1e4).toFixed(2)}亿</td></tr>`).join('')}</tbody></table>`
     :'<div class="empty">无板块数据</div>';
   // 累计榜
   document.getElementById('board-3d-box').innerHTML = d3.length?`<table>
