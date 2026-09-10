@@ -152,6 +152,27 @@
       "rank": 7
     },
     {
+      "code": "002579",
+      "name": "中京电子",
+      "market": "0",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 1,
+      "multi_board": 1,
+      "ma5": 16.042,
+      "ma10": 15.092,
+      "ma20": 14.818,
+      "close": 16.73,
+      "bias20": 12.91,
+      "div_strength": 8.26,
+      "vol_ratio": 1.27,
+      "recent5_ret": 21.76,
+      "overbought": false,
+      "score": 56.0,
+      "rank": 8
+    },
+    {
       "code": "000823",
       "name": "超声电子",
       "market": "0",
@@ -170,7 +191,7 @@
       "recent5_ret": 24.83,
       "overbought": true,
       "score": 55.1,
-      "rank": 8
+      "rank": 9
     },
     {
       "code": "300739",
@@ -191,7 +212,7 @@
       "recent5_ret": 18.19,
       "overbought": false,
       "score": 54.1,
-      "rank": 9
+      "rank": 10
     },
     {
       "code": "300964",
@@ -212,7 +233,7 @@
       "recent5_ret": 16.93,
       "overbought": false,
       "score": 53.8,
-      "rank": 10
+      "rank": 11
     },
     {
       "code": "002913",
@@ -233,7 +254,7 @@
       "recent5_ret": 10.41,
       "overbought": false,
       "score": 52.0,
-      "rank": 11
+      "rank": 12
     },
     {
       "code": "300852",
@@ -254,7 +275,7 @@
       "recent5_ret": 32.89,
       "overbought": true,
       "score": 51.3,
-      "rank": 12
+      "rank": 13
     },
     {
       "code": "301041",
@@ -275,7 +296,7 @@
       "recent5_ret": 6.9,
       "overbought": false,
       "score": 49.0,
-      "rank": 13
+      "rank": 14
     },
     {
       "code": "301176",
@@ -296,28 +317,49 @@
       "recent5_ret": 32.49,
       "overbought": true,
       "score": 48.4,
-      "rank": 14
+      "rank": 15
     },
     {
-      "code": "300179",
-      "name": "四方达",
+      "code": "002436",
+      "name": "兴森科技",
       "market": "0",
       "boards": [
         "覆铜板"
       ],
       "best_rank": 1,
       "multi_board": 1,
-      "ma5": 39.626,
-      "ma10": 38.036,
-      "ma20": 37.254,
-      "close": 41.14,
-      "bias20": 10.43,
-      "div_strength": 6.37,
-      "vol_ratio": 0.7,
-      "recent5_ret": 8.69,
+      "ma5": 37.888,
+      "ma10": 36.494,
+      "ma20": 35.706,
+      "close": 39.71,
+      "bias20": 11.21,
+      "div_strength": 6.11,
+      "vol_ratio": 0.87,
+      "recent5_ret": 12.84,
       "overbought": false,
-      "score": 44.2,
-      "rank": 15
+      "score": 47.1,
+      "rank": 16
+    },
+    {
+      "code": "688020",
+      "name": "方邦股份",
+      "market": "1",
+      "boards": [
+        "覆铜板"
+      ],
+      "best_rank": 1,
+      "multi_board": 1,
+      "ma5": 140.722,
+      "ma10": 133.162,
+      "ma20": 132.854,
+      "close": 145.01,
+      "bias20": 9.15,
+      "div_strength": 5.92,
+      "vol_ratio": 0.94,
+      "recent5_ret": 14.14,
+      "overbought": false,
+      "score": 45.7,
+      "rank": 17
     },
     {
       "code": "002171",
@@ -338,28 +380,7 @@
       "recent5_ret": 6.38,
       "overbought": false,
       "score": 42.9,
-      "rank": 16
-    },
-    {
-      "code": "300747",
-      "name": "锐科激光",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 40.198,
-      "ma10": 39.121,
-      "ma20": 37.674,
-      "close": 40.95,
-      "bias20": 8.7,
-      "div_strength": 6.7,
-      "vol_ratio": 0.54,
-      "recent5_ret": 8.79,
-      "overbought": false,
-      "score": 42.5,
-      "rank": 17
+      "rank": 18
     },
     {
       "code": "001389",
@@ -380,28 +401,28 @@
       "recent5_ret": 10.98,
       "overbought": false,
       "score": 42.0,
-      "rank": 18
+      "rank": 19
     },
     {
-      "code": "603328",
-      "name": "依顿电子",
-      "market": "1",
+      "code": "002916",
+      "name": "深南电路",
+      "market": "0",
       "boards": [
         "覆铜板"
       ],
       "best_rank": 1,
       "multi_board": 1,
-      "ma5": 11.328,
-      "ma10": 11.126,
-      "ma20": 11.076,
-      "close": 12.0,
-      "bias20": 8.34,
-      "div_strength": 2.27,
-      "vol_ratio": 1.69,
-      "recent5_ret": 12.04,
+      "ma5": 370.978,
+      "ma10": 363.064,
+      "ma20": 361.416,
+      "close": 392.31,
+      "bias20": 8.55,
+      "div_strength": 2.65,
+      "vol_ratio": 0.93,
+      "recent5_ret": 14.87,
       "overbought": false,
-      "score": 41.3,
-      "rank": 19
+      "score": 41.5,
+      "rank": 20
     },
     {
       "code": "300395",
@@ -422,7 +443,7 @@
       "recent5_ret": 8.21,
       "overbought": false,
       "score": 40.6,
-      "rank": 20
+      "rank": 21
     },
     {
       "code": "605058",
@@ -443,7 +464,7 @@
       "recent5_ret": 7.63,
       "overbought": false,
       "score": 40.2,
-      "rank": 21
+      "rank": 22
     },
     {
       "code": "002463",
@@ -464,7 +485,7 @@
       "recent5_ret": 10.62,
       "overbought": false,
       "score": 36.2,
-      "rank": 22
+      "rank": 23
     },
     {
       "code": "301366",
@@ -485,7 +506,7 @@
       "recent5_ret": 5.69,
       "overbought": false,
       "score": 32.8,
-      "rank": 23
+      "rank": 24
     },
     {
       "code": "603175",
@@ -506,53 +527,20 @@
       "recent5_ret": 7.77,
       "overbought": false,
       "score": 31.6,
-      "rank": 24
-    },
-    {
-      "code": "002669",
-      "name": "康达新材",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 12.236,
-      "ma10": 12.145,
-      "ma20": 12.13,
-      "close": 12.38,
-      "bias20": 2.06,
-      "div_strength": 0.87,
-      "vol_ratio": 0.46,
-      "recent5_ret": 3.17,
-      "overbought": false,
-      "score": 25.8,
       "rank": 25
     }
   ],
   "added_today": [
-    "金百泽",
-    "逸豪新材",
-    "菲利华",
-    "沪电股份",
-    "超颖电子",
-    "康达新材"
+    "中京电子",
+    "兴森科技",
+    "方邦股份",
+    "深南电路"
   ],
   "removed_today": [
-    "金禄电子",
-    "劲拓股份",
-    "强达电路",
-    "华康股份",
-    "保龄宝",
-    "三元生物",
-    "亚盛集团",
-    "红棉股份",
-    "金禾实业",
-    "百龙创园",
-    "骏亚科技",
-    "中国铝业",
-    "莱茵生物",
-    "蔚蓝生物"
+    "四方达",
+    "锐科激光",
+    "依顿电子",
+    "康达新材"
   ],
   "history": [
     {
@@ -695,6 +683,21 @@
         "中国铝业",
         "莱茵生物",
         "蔚蓝生物"
+      ]
+    },
+    {
+      "date": "2026-09-10",
+      "added": [
+        "中京电子",
+        "兴森科技",
+        "方邦股份",
+        "深南电路"
+      ],
+      "removed": [
+        "四方达",
+        "锐科激光",
+        "依顿电子",
+        "康达新材"
       ]
     }
   ]

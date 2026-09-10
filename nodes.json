@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-10 11:27:38",
+  "updated": "2026-09-10 15:08:02",
   "nodes": [
     {
       "id": "BREAK_20260910_600865",
@@ -30,15 +30,16 @@
           "region": "安徽",
           "pinyin": "XLJR",
           "concepts": [
+            "金融",
             "化债(AMC)概念",
-            "供销社概念",
             "互联网金融",
+            "供销社概念",
             "移动支付"
           ],
           "industry": "金融控股",
           "status": "首板",
           "boards": 1,
-          "amount": 759620736,
+          "amount": 920574928,
           "total_cap": 4147966542.88,
           "total_cap_yi": 41.48,
           "is_yizi": true,
@@ -63,7 +64,7 @@
           "industry": "原料药",
           "status": "首板",
           "boards": 1,
-          "amount": 1090385568,
+          "amount": 1110881584,
           "total_cap": 6442131459.200001,
           "total_cap_yi": 64.42,
           "is_yizi": true,
@@ -86,7 +87,7 @@
           "industry": "其他计算机设备",
           "status": "首板",
           "boards": 1,
-          "amount": 152858926,
+          "amount": 243382977,
           "total_cap": 3648970240.0,
           "total_cap_yi": 36.49,
           "is_yizi": false,
@@ -100,8 +101,8 @@
           "pinyin": "JDXC",
           "concepts": [
             "业绩预增",
-            "商业航天",
             "风电",
+            "商业航天",
             "创投",
             "新材料",
             "新能源"
@@ -109,7 +110,7 @@
           "industry": "玻纤制造",
           "status": "首板",
           "boards": 1,
-          "amount": 477704224,
+          "amount": 589175792,
           "total_cap": 6568493299.2,
           "total_cap_yi": 65.68,
           "is_yizi": false,
@@ -128,15 +129,15 @@
           "pinyin": "SFRQ",
           "concepts": [
             "氦气概念",
-            "天然气",
             "国企改革",
+            "天然气",
             "一带一路",
             "油气资源"
           ],
           "industry": "燃气",
           "status": "首板",
           "boards": 1,
-          "amount": 1039773584,
+          "amount": 1116347664,
           "total_cap": 5740867785.599999,
           "total_cap_yi": 57.41,
           "is_yizi": false,
@@ -159,7 +160,7 @@
           "industry": "预加工食品",
           "status": "首板",
           "boards": 1,
-          "amount": 371261712,
+          "amount": 388581056,
           "total_cap": 3108924825.6,
           "total_cap_yi": 31.09,
           "is_yizi": false,
@@ -172,17 +173,17 @@
           "region": "浙江",
           "pinyin": "CBGF",
           "concepts": [
+            "业绩预增",
             "碳交易",
             "地下管网",
             "PPP模式",
             "半导体",
-            "水利建设",
             "建筑节能"
           ],
           "industry": "数字芯片设计",
           "status": "首板",
           "boards": 1,
-          "amount": 272806848,
+          "amount": 287249280,
           "total_cap": 4244384405.76,
           "total_cap_yi": 42.44,
           "is_yizi": false,
@@ -207,7 +208,7 @@
           "industry": "建筑材料",
           "status": "首板",
           "boards": 1,
-          "amount": 61441237,
+          "amount": 65438160,
           "total_cap": 5107288933.6,
           "total_cap_yi": 51.07,
           "is_yizi": false,
@@ -223,15 +224,36 @@
             "光伏",
             "绿色电力",
             "虚拟电厂",
-            "充电桩",
-            "电网概念"
+            "电网概念",
+            "充电桩"
           ],
           "industry": "光伏发电",
           "status": "首板",
           "boards": 1,
-          "amount": 233335753,
+          "amount": 256112593,
           "total_cap": 4190095330.8800006,
           "total_cap_yi": 41.9,
+          "is_yizi": false,
+          "folded": false
+        },
+        {
+          "code": "001299",
+          "market": 0,
+          "name": "美能能源",
+          "region": "陕西",
+          "pinyin": "MNNY",
+          "concepts": [
+            "天然气",
+            "储能",
+            "西部大开发",
+            "油气资源"
+          ],
+          "industry": "燃气",
+          "status": "首板",
+          "boards": 1,
+          "amount": 455520992,
+          "total_cap": 3717165626.72,
+          "total_cap_yi": 37.17,
           "is_yizi": false,
           "folded": false
         },
@@ -244,39 +266,16 @@
           "concepts": [
             "光伏",
             "绿色电力",
-            "供销社概念",
+            "国企改革",
             "水利建设",
-            "国企改革"
+            "供销社概念"
           ],
           "industry": "水力发电",
           "status": "首板",
           "boards": 1,
-          "amount": 432967744,
+          "amount": 455220144,
           "total_cap": 9430494930.56,
           "total_cap_yi": 94.3,
-          "is_yizi": false,
-          "folded": false
-        },
-        {
-          "code": "603366",
-          "market": 1,
-          "name": "日出东方",
-          "region": "江苏",
-          "pinyin": "RCDF",
-          "concepts": [
-            "光伏",
-            "PPP模式",
-            "建筑节能",
-            "节能环保",
-            "快手概念",
-            "创投"
-          ],
-          "industry": "家用电器",
-          "status": "首板",
-          "boards": 1,
-          "amount": 620892624,
-          "total_cap": 7008474587.5199995,
-          "total_cap_yi": 70.08,
           "is_yizi": false,
           "folded": false
         },
@@ -287,17 +286,17 @@
           "region": "广东",
           "pinyin": "WHDQ",
           "concepts": [
-            "节能环保",
             "智慧城市",
-            "净水概念",
             "创投",
+            "节能环保",
+            "净水概念",
             "空气能热泵",
             "智能家居"
           ],
           "industry": "卫浴电器",
           "status": "首板",
           "boards": 1,
-          "amount": 173379643,
+          "amount": 264650634,
           "total_cap": 5874440000.0,
           "total_cap_yi": 58.74,
           "is_yizi": false,
@@ -320,7 +319,7 @@
           "industry": "公用事业",
           "status": "首板",
           "boards": 1,
-          "amount": 1280190784,
+          "amount": 1336745376,
           "total_cap": 14217869904.0,
           "total_cap_yi": 142.18,
           "is_yizi": false,
@@ -333,17 +332,17 @@
           "region": "辽宁",
           "pinyin": "DLZG",
           "concepts": [
+            "产能扩张",
             "风电",
-            "海工装备",
             "国企改革",
+            "海工装备",
             "核能核电",
-            "军工",
-            "一带一路"
+            "军工"
           ],
           "industry": "能源及重型设备",
           "status": "首板",
           "boards": 1,
-          "amount": 455631824,
+          "amount": 497354240,
           "total_cap": 11375769488.48,
           "total_cap_yi": 113.76,
           "is_yizi": false,
@@ -363,35 +362,17 @@
           "concepts": [
             "纳米银",
             "PCB",
-            "国企改革",
             "5G",
+            "国企改革",
             "无人机",
             "苹果概念"
           ],
           "industry": "元件",
           "status": "首板",
           "boards": 1,
-          "amount": 1797454160,
+          "amount": 2769778928,
           "total_cap": 11125656854.4,
           "total_cap_yi": 111.26,
-          "is_yizi": false,
-          "folded": false
-        },
-        {
-          "code": "301176",
-          "market": 0,
-          "name": "逸豪新材",
-          "region": "江西",
-          "pinyin": "YHXC",
-          "concepts": [
-            "PCB"
-          ],
-          "industry": "印制电路板",
-          "status": "首板",
-          "boards": 1,
-          "amount": 715545440,
-          "total_cap": 9941120019.6,
-          "total_cap_yi": 99.41,
           "is_yizi": false,
           "folded": false
         },
@@ -402,17 +383,17 @@
           "region": "重庆",
           "pinyin": "ZSKJ",
           "concepts": [
+            "玻纤",
             "建筑节能",
             "节能环保",
             "军工",
-            "核污染防治",
             "新材料",
             "西部大开发"
           ],
           "industry": "其他专业工程",
           "status": "首板",
           "boards": 1,
-          "amount": 1398997520,
+          "amount": 1965507856,
           "total_cap": 11377716120.960001,
           "total_cap_yi": 113.78,
           "is_yizi": false,
@@ -422,6 +403,168 @@
           ],
           "hot_boards": [
             "玻纤"
+          ]
+        },
+        {
+          "code": "002174",
+          "market": 0,
+          "name": "游族网络",
+          "region": "福建",
+          "pinyin": "YZWL",
+          "concepts": [
+            "游戏",
+            "大数据",
+            "增强现实",
+            "华为概念",
+            "电子竞技",
+            "抖音概念(字节概念)"
+          ],
+          "industry": "传媒",
+          "status": "首板",
+          "boards": 1,
+          "amount": 1298613680,
+          "total_cap": 13364621494.4,
+          "total_cap_yi": 133.65,
+          "is_yizi": false,
+          "folded": false,
+          "events": [
+            "业绩预增"
+          ],
+          "hot_boards": []
+        },
+        {
+          "code": "002531",
+          "market": 0,
+          "name": "天顺风能",
+          "region": "江苏",
+          "pinyin": "TSFN",
+          "concepts": [
+            "风电零部件",
+            "风电",
+            "储能",
+            "新能源",
+            "小盘价值"
+          ],
+          "industry": "电力设备",
+          "status": "首板",
+          "boards": 1,
+          "amount": 486529232,
+          "total_cap": 12416431512.960001,
+          "total_cap_yi": 124.16,
+          "is_yizi": false,
+          "folded": false,
+          "events": [
+            "异动"
+          ],
+          "hot_boards": [
+            "风电",
+            "风电设备"
+          ]
+        },
+        {
+          "code": "600712",
+          "market": 1,
+          "name": "南宁百货",
+          "region": "广西",
+          "pinyin": "NNBH",
+          "concepts": [
+            "零售概念",
+            "国企改革",
+            "微利股",
+            "跨境电商",
+            "乡村振兴",
+            "新零售"
+          ],
+          "industry": "百货",
+          "status": "首板",
+          "boards": 1,
+          "amount": 464736352,
+          "total_cap": 3719996108.8,
+          "total_cap_yi": 37.2,
+          "is_yizi": false,
+          "folded": false,
+          "events": [
+            "异动"
+          ],
+          "hot_boards": []
+        },
+        {
+          "code": "600644",
+          "market": 1,
+          "name": "乐山电力",
+          "region": "四川",
+          "pinyin": "LSDL",
+          "concepts": [
+            "光伏",
+            "虚拟电厂",
+            "智能电网",
+            "天然气",
+            "充电桩",
+            "西部大开发"
+          ],
+          "industry": "公用事业",
+          "status": "首板",
+          "boards": 1,
+          "amount": 763723520,
+          "total_cap": 5852606657.919999,
+          "total_cap_yi": 58.53,
+          "is_yizi": false,
+          "folded": false,
+          "events": [
+            "异动"
+          ],
+          "hot_boards": [
+            "电力"
+          ]
+        },
+        {
+          "code": "000048",
+          "market": 0,
+          "name": "京基智农",
+          "region": "广东",
+          "pinyin": "JJZN",
+          "concepts": [
+            "机器人",
+            "深圳特区",
+            "谷子经济",
+            "乡村振兴",
+            "猪肉",
+            "养殖业"
+          ],
+          "industry": "生猪养殖",
+          "status": "首板",
+          "boards": 1,
+          "amount": 624024576,
+          "total_cap": 12300703846.4,
+          "total_cap_yi": 123.01,
+          "is_yizi": false,
+          "folded": false
+        },
+        {
+          "code": "000532",
+          "market": 0,
+          "name": "华金资本",
+          "region": "广东",
+          "pinyin": "HJZB",
+          "concepts": [
+            "被动元件概念",
+            "国企改革",
+            "创投",
+            "锂电池"
+          ],
+          "industry": "资产管理",
+          "status": "首板",
+          "boards": 1,
+          "amount": 148934013,
+          "total_cap": 4284724616.48,
+          "total_cap_yi": 42.85,
+          "is_yizi": false,
+          "folded": false,
+          "events": [
+            "异动"
+          ],
+          "hot_boards": [
+            "多元金融"
           ]
         }
       ],
@@ -459,11 +602,11 @@
           "region": "上海",
           "pinyin": "YXJK",
           "concepts": [
-            "AI",
             "租售同权",
             "教育",
-            "养老概念",
+            "AI",
             "机器人",
+            "养老概念",
             "辅助生殖"
           ],
           "industry": "瓷砖地板",
@@ -482,17 +625,17 @@
           "region": "山东",
           "pinyin": "DXTX",
           "concepts": [
-            "充电桩",
             "电网概念",
             "智能电网",
-            "国产芯片",
+            "充电桩",
             "鸿蒙",
+            "国产芯片",
             "物联网"
           ],
           "industry": "通信",
           "status": "连板中",
           "boards": 2,
-          "amount": 318749968,
+          "amount": 326814896,
           "total_cap": 4754468832.4800005,
           "total_cap_yi": 47.54,
           "is_yizi": false,
@@ -542,7 +685,7 @@
           "industry": "农林牧渔",
           "status": "连板中",
           "boards": 2,
-          "amount": 96454562,
+          "amount": 385379648,
           "total_cap": 3677783546.2400002,
           "total_cap_yi": 36.78,
           "is_yizi": false,
@@ -583,9 +726,9 @@
           "pinyin": "XKCL",
           "concepts": [
             "国企改革",
-            "铜缆高速连接",
             "其他金属新材料",
-            "新材料"
+            "新材料",
+            "铜缆高速连接"
           ],
           "industry": "金属新材料",
           "status": "已断板",
@@ -717,13 +860,13 @@
             "长江三角"
           ],
           "industry": "港口",
-          "status": "连板中",
+          "status": "已断板",
           "boards": 2,
-          "amount": 574725840,
-          "total_cap": 5337108331.2,
-          "total_cap_yi": 53.37,
+          "amount": 344393200,
+          "total_cap": 4851032891.2,
+          "total_cap_yi": 48.51,
           "is_yizi": false,
-          "folded": false
+          "folded": true
         },
         {
           "code": "601890",
@@ -778,15 +921,15 @@
           "concepts": [
             "光伏",
             "国企改革",
-            "充电桩",
             "智能电网",
+            "充电桩",
             "燃料电池概念",
             "新能源车"
           ],
           "industry": "电力设备",
           "status": "连板中",
           "boards": 2,
-          "amount": 323143120,
+          "amount": 420774928,
           "total_cap": 3834372640.0,
           "total_cap_yi": 38.34,
           "is_yizi": false,
@@ -802,7 +945,7 @@
           "industry": "其他石化",
           "status": "连板中",
           "boards": 2,
-          "amount": 198490419,
+          "amount": 212451270,
           "total_cap": 3179648444.0,
           "total_cap_yi": 31.8,
           "is_yizi": false,
@@ -816,16 +959,16 @@
           "pinyin": "YSXＡ",
           "concepts": [
             "国企改革",
+            "石墨烯",
             "军工",
             "氢能",
-            "石墨烯",
             "一带一路",
             "西部大开发"
           ],
           "industry": "涂料油墨",
           "status": "连板中",
           "boards": 2,
-          "amount": 220685170,
+          "amount": 238039702,
           "total_cap": 3429714491.84,
           "total_cap_yi": 34.3,
           "is_yizi": false,
@@ -870,7 +1013,7 @@
           "industry": "水力发电",
           "status": "连板中",
           "boards": 2,
-          "amount": 663898496,
+          "amount": 678574304,
           "total_cap": 5779347374.719999,
           "total_cap_yi": 57.79,
           "is_yizi": false,
@@ -929,8 +1072,8 @@
           "pinyin": "YDDZ",
           "concepts": [
             "PCB",
-            "国企改革",
             "5G",
+            "国企改革",
             "华为概念",
             "苹果概念",
             "通信技术"
@@ -1000,24 +1143,19 @@
           "pinyin": "HMGF",
           "concepts": [
             "国企改革",
+            "新零售",
             "啤酒概念",
             "代糖概念",
-            "新零售",
             "粤港自贸"
           ],
           "industry": "综合",
-          "status": "连板中",
+          "status": "已断板",
           "boards": 3,
-          "amount": 197667638,
-          "total_cap": 8810248627.199999,
-          "total_cap_yi": 88.1,
+          "amount": 496869952,
+          "total_cap": 7268455117.44,
+          "total_cap_yi": 72.68,
           "is_yizi": true,
-          "folded": false,
-          "events": [
-            "历史新高",
-            "异动"
-          ],
-          "hot_boards": []
+          "folded": true
         },
         {
           "code": "603938",
@@ -1096,8 +1234,8 @@
             "中字头",
             "国企改革",
             "节能环保",
-            "降解塑料",
             "新能源",
+            "降解塑料",
             "生态农业"
           ],
           "industry": "农林牧渔",
@@ -1116,10 +1254,10 @@
           "region": "云南",
           "pinyin": "WAWJ",
           "concepts": [
-            "AI",
             "租售同权",
-            "华为概念",
+            "AI",
             "数字经济",
+            "华为概念",
             "鸿蒙",
             "西部大开发"
           ],
@@ -1140,9 +1278,9 @@
           "pinyin": "ZTQC",
           "concepts": [
             "氢能",
-            "中俄贸易概念",
             "一带一路",
             "百度概念",
+            "中俄贸易概念",
             "新能源车",
             "汽车整车"
           ],
@@ -1162,11 +1300,11 @@
           "region": "四川",
           "pinyin": "LTH",
           "concepts": [
-            "天然气",
             "国企改革",
-            "煤化工概念",
-            "西部大开发",
+            "天然气",
             "微利股",
+            "西部大开发",
+            "煤化工概念",
             "农化制品"
           ],
           "industry": "氮肥",
@@ -1209,9 +1347,9 @@
           "pinyin": "RWGF",
           "concepts": [
             "半导体",
+            "机器人",
             "一带一路",
             "智能家居",
-            "机器人",
             "新能源车",
             "贬值受益"
           ],
@@ -1232,9 +1370,9 @@
           "pinyin": "WHFG",
           "concepts": [
             "毫米波概念",
-            "卫星互联网",
-            "6G",
             "5G",
+            "6G",
+            "卫星互联网",
             "华为概念",
             "物联网"
           ],
@@ -1255,11 +1393,11 @@
           "pinyin": "XHD",
           "concepts": [
             "AI",
-            "抖音概念(字节概念)",
             "阿里概念",
+            "抖音概念(字节概念)",
             "电商概念",
-            "拼多多概念",
-            "新零售"
+            "新零售",
+            "拼多多概念"
           ],
           "industry": "传媒",
           "status": "已断板",
@@ -1279,8 +1417,8 @@
           "concepts": [
             "AI",
             "5G",
-            "华为概念",
             "数字经济",
+            "华为概念",
             "物联网",
             "养老概念"
           ],
@@ -1321,8 +1459,8 @@
           "region": "贵州",
           "pinyin": "GZRQ",
           "concepts": [
-            "天然气",
             "国企改革",
+            "天然气",
             "西部大开发",
             "油气资源"
           ],
@@ -1389,9 +1527,9 @@
           "pinyin": "CFLM",
           "concepts": [
             "国企改革",
+            "锂矿概念",
             "西部大开发",
             "锂电池",
-            "锂矿概念",
             "磷化工",
             "农化制品"
           ],
@@ -1435,8 +1573,8 @@
           "pinyin": "CWCM",
           "concepts": [
             "国企改革",
-            "AI语料",
             "影视概念",
+            "AI语料",
             "文娱消费",
             "长江三角"
           ],
@@ -1456,8 +1594,8 @@
           "region": "贵州",
           "pinyin": "CTH",
           "concepts": [
-            "煤化工概念",
             "西部大开发",
+            "煤化工概念",
             "乡村振兴",
             "农化制品",
             "化工原料",
@@ -1482,8 +1620,8 @@
             "国企改革",
             "节能环保",
             "超级电容",
-            "煤化工概念",
             "新材料",
+            "煤化工概念",
             "锂电池"
           ],
           "industry": "炭黑",
@@ -1521,16 +1659,16 @@
           "pinyin": "YMNY",
           "concepts": [
             "国企改革",
-            "煤化工概念",
             "反内卷概念",
             "稀缺资源",
             "西部大开发",
+            "煤化工概念",
             "化工原料"
           ],
           "industry": "煤炭",
           "status": "连板中",
           "boards": 3,
-          "amount": 786732144,
+          "amount": 833949008,
           "total_cap": 6004686676.0,
           "total_cap_yi": 60.05,
           "is_yizi": false,
@@ -1569,12 +1707,12 @@
           "region": "湖南",
           "pinyin": "HSSY",
           "concepts": [
-            "先进封装",
             "半导体",
-            "国产芯片",
-            "存储芯片",
+            "先进封装",
+            "高压快充",
             "华为概念",
-            "高压快充"
+            "国产芯片",
+            "存储芯片"
           ],
           "industry": "石油石化",
           "status": "已断板",
@@ -1595,8 +1733,8 @@
             "海南自贸",
             "旅游概念",
             "数据中心",
-            "存储芯片",
             "京津冀",
+            "存储芯片",
             "土地流转"
           ],
           "industry": "房地产开发",
@@ -1677,8 +1815,8 @@
           "region": "湖北",
           "pinyin": "YAYY",
           "concepts": [
-            "氢能",
             "石墨烯",
+            "氢能",
             "一带一路",
             "宠物经济",
             "新消费"
@@ -1701,8 +1839,8 @@
           "concepts": [
             "氢能",
             "煤化工概念",
-            "锂电池",
             "燃料电池概念",
+            "锂电池",
             "化工原料",
             "长江三角"
           ],
@@ -1727,7 +1865,7 @@
           "industry": "卫浴制品",
           "status": "连板中",
           "boards": 3,
-          "amount": 60030028,
+          "amount": 65718092,
           "total_cap": 3535199691.84,
           "total_cap_yi": 35.35,
           "is_yizi": false,
@@ -1744,11 +1882,11 @@
           "region": "山西",
           "pinyin": "LHKJ",
           "concepts": [
-            "天然气",
             "国企改革",
+            "天然气",
             "氢能",
-            "煤化工概念",
             "一带一路",
+            "煤化工概念",
             "燃料电池概念"
           ],
           "industry": "氮肥",
@@ -1790,8 +1928,8 @@
           "region": "浙江",
           "pinyin": "HKGF",
           "concepts": [
-            "代糖概念",
             "合成生物",
+            "代糖概念",
             "味蕾经济"
           ],
           "industry": "化学制品",
@@ -1833,8 +1971,8 @@
           "region": "山东",
           "pinyin": "BLB",
           "concepts": [
-            "代糖概念",
             "合成生物",
+            "代糖概念",
             "农产品加工",
             "股权分散",
             "味蕾经济",
@@ -1944,8 +2082,8 @@
           "region": "四川",
           "pinyin": "FLYY",
           "concepts": [
-            "EDR概念",
             "卫星互联网",
+            "EDR概念",
             "西部大开发",
             "车联网(车路云)"
           ],
@@ -1984,9 +2122,9 @@
           "region": "辽宁",
           "pinyin": "CBCM",
           "concepts": [
+            "教育",
             "AI",
             "国企改革",
-            "教育",
             "知识产权",
             "AI应用",
             "东北振兴"
@@ -2025,12 +2163,12 @@
           "region": "北京",
           "pinyin": "HZSZ",
           "concepts": [
+            "国企改革",
             "卫星互联网",
             "水利建设",
-            "国企改革",
             "安防概念",
-            "无人机",
-            "物联网"
+            "物联网",
+            "无人机"
           ],
           "industry": "军工电子",
           "status": "已断板",
@@ -2049,8 +2187,8 @@
           "pinyin": "ZMSY",
           "concepts": [
             "天然气",
-            "一带一路",
             "机器人",
+            "一带一路",
             "油气设服",
             "上证380",
             "资源开采概念"
@@ -2164,8 +2302,8 @@
             "AI",
             "5G",
             "移动支付",
-            "物联网",
             "深圳特区",
+            "物联网",
             "通信终端及配件"
           ],
           "industry": "通信",
@@ -2184,9 +2322,9 @@
           "region": "重庆",
           "pinyin": "CJCL",
           "concepts": [
-            "页岩气",
             "新材料",
             "西部大开发",
+            "页岩气",
             "3D打印",
             "油气资源"
           ],
@@ -2227,12 +2365,12 @@
           "region": "广东",
           "pinyin": "GJGF",
           "concepts": [
-            "国企改革",
             "5G",
+            "国企改革",
             "充电桩",
             "华为概念",
-            "智能家居",
-            "深圳特区"
+            "深圳特区",
+            "智能家居"
           ],
           "industry": "通信设备",
           "status": "已断板",
@@ -2253,9 +2391,9 @@
             "华为概念",
             "电子烟",
             "无线耳机",
+            "医疗器械概念",
             "苹果概念",
-            "特斯拉概念",
-            "医疗器械概念"
+            "特斯拉概念"
           ],
           "industry": "电子",
           "status": "已断板",
@@ -2297,8 +2435,8 @@
           "pinyin": "JJMY",
           "concepts": [
             "国企改革",
-            "乡村振兴",
             "电商概念",
+            "乡村振兴",
             "新零售",
             "预制菜概念",
             "粮食"
@@ -2321,15 +2459,15 @@
           "concepts": [
             "纳米银",
             "PCB",
-            "国企改革",
             "5G",
+            "国企改革",
             "无人机",
             "苹果概念"
           ],
           "industry": "元件",
           "status": "断板反包",
           "boards": 1,
-          "amount": 1797454160,
+          "amount": 2769778928,
           "total_cap": 11125656854.4,
           "total_cap_yi": 111.26,
           "is_yizi": false,
@@ -2342,8 +2480,8 @@
           "region": "福建",
           "pinyin": "KCKJ",
           "concepts": [
-            "新材料",
             "钛白粉概念",
+            "新材料",
             "锂电池"
           ],
           "industry": "非金属材料",
@@ -2537,8 +2675,8 @@
           "pinyin": "SHDY",
           "concepts": [
             "国企改革",
-            "AI语料",
             "影视概念",
+            "AI语料",
             "谷子经济",
             "上证380",
             "文娱消费"
@@ -2560,16 +2698,16 @@
           "pinyin": "GLLY",
           "concepts": [
             "业绩预增",
-            "国企改革",
             "旅游酒店",
             "旅游概念",
+            "国企改革",
             "西部大开发",
             "文娱消费"
           ],
           "industry": "自然景区",
           "status": "连板中",
           "boards": 4,
-          "amount": 727652848,
+          "amount": 771858384,
           "total_cap": 4536179700.0,
           "total_cap_yi": 45.36,
           "is_yizi": false,
@@ -2591,8 +2729,8 @@
             "PCB",
             "国企改革",
             "创投",
-            "飞行汽车(eVTOL)",
             "机器人",
+            "飞行汽车(eVTOL)",
             "新能源车"
           ],
           "industry": "汽车零部件",
@@ -2613,8 +2751,8 @@
           "concepts": [
             "医废处理",
             "风电",
-            "海工装备",
             "国企改革",
+            "海工装备",
             "节能环保",
             "养老金"
           ],
@@ -2758,8 +2896,8 @@
           "pinyin": "QSZY",
           "concepts": [
             "CPO",
-            "国企改革",
             "5G",
+            "国企改革",
             "节能环保",
             "造纸印刷",
             "中药概念"
@@ -2780,11 +2918,11 @@
           "region": "浙江",
           "pinyin": "DAHJ",
           "concepts": [
-            "核能核电",
-            "节能环保",
             "创投",
+            "节能环保",
             "华为概念",
             "铁路基建",
+            "核能核电",
             "冷链物流"
           ],
           "industry": "家用电器",
@@ -2805,8 +2943,8 @@
           "concepts": [
             "电商概念",
             "新零售",
-            "人造肉",
             "预制菜概念",
+            "人造肉",
             "猪肉",
             "网红经济"
           ],
@@ -2826,8 +2964,8 @@
           "region": "江苏",
           "pinyin": "RYDZ",
           "concepts": [
-            "传感器",
             "机器人",
+            "传感器",
             "智能驾驶"
           ],
           "industry": "底盘与发动机系统",
@@ -2868,11 +3006,11 @@
           "pinyin": "HMKJ",
           "concepts": [
             "AI",
-            "6G",
             "5G",
+            "6G",
             "数据中心",
-            "铜缆高速连接",
-            "物联网"
+            "物联网",
+            "铜缆高速连接"
           ],
           "industry": "通信设备",
           "status": "已断板",
@@ -2892,9 +3030,9 @@
           "concepts": [
             "AI",
             "军工",
+            "机器人",
             "深圳特区",
             "传感器",
-            "机器人",
             "工业母机"
           ],
           "industry": "仪器仪表",
@@ -2914,8 +3052,8 @@
           "pinyin": "HTKJ",
           "concepts": [
             "AI",
-            "卫星互联网",
             "5G",
+            "卫星互联网",
             "充电桩",
             "华为概念",
             "新能源车"
@@ -2937,9 +3075,9 @@
           "pinyin": "MSKJ",
           "concepts": [
             "AI",
-            "商业航天",
-            "信创",
             "智慧城市",
+            "信创",
+            "商业航天",
             "AI应用",
             "多模态AI"
           ],
@@ -3073,8 +3211,8 @@
             "光伏",
             "5G",
             "充电桩",
-            "国产芯片",
             "华为概念",
+            "国产芯片",
             "智能穿戴"
           ],
           "industry": "通信设备",
@@ -3095,8 +3233,8 @@
           "concepts": [
             "AI",
             "网络安全",
-            "储能",
             "铁路基建",
+            "储能",
             "一带一路",
             "深圳特区"
           ],
@@ -3119,9 +3257,9 @@
             "节能环保",
             "一带一路",
             "新材料",
-            "传感器",
             "苹果概念",
-            "智能穿戴"
+            "智能穿戴",
+            "传感器"
           ],
           "industry": "塑料",
           "status": "已断板",
@@ -3139,12 +3277,12 @@
           "region": "广东",
           "pinyin": "TCSS",
           "concepts": [
-            "C2M概念",
-            "抖音概念(字节概念)",
             "机器人",
+            "抖音概念(字节概念)",
             "电商概念",
-            "小红书概念",
-            "新零售"
+            "C2M概念",
+            "新零售",
+            "小红书概念"
           ],
           "industry": "鞋帽及其他",
           "status": "已断板",
@@ -3185,8 +3323,8 @@
           "region": "广东",
           "pinyin": "KRJS",
           "concepts": [
-            "国产芯片",
             "华为概念",
+            "国产芯片",
             "电子烟",
             "工业互联网",
             "无线耳机",
@@ -3212,8 +3350,8 @@
             "5G",
             "数据中心",
             "机器人",
-            "特斯拉概念",
-            "贬值受益"
+            "贬值受益",
+            "特斯拉概念"
           ],
           "industry": "元件",
           "status": "已断板",
@@ -3231,9 +3369,9 @@
           "region": "上海",
           "pinyin": "HDKJ",
           "concepts": [
+            "机器人",
             "固态电池",
             "锂电池",
-            "机器人",
             "新能源车",
             "汽车热管理",
             "化工原料"
@@ -3302,8 +3440,8 @@
           "concepts": [
             "CPO",
             "AI",
-            "商业航天",
             "国企改革",
+            "商业航天",
             "小盘成长"
           ],
           "industry": "其他通信设备",
@@ -3323,8 +3461,8 @@
           "pinyin": "HMXC",
           "concepts": [
             "建筑节能",
-            "新材料",
             "机器人",
+            "新材料",
             "新能源车",
             "华为汽车"
           ],
@@ -3347,8 +3485,8 @@
             "光伏",
             "中字头",
             "5G",
-            "核能核电",
             "充电桩",
+            "核能核电",
             "储能"
           ],
           "industry": "其他电源设备",
@@ -3410,8 +3548,8 @@
           "pinyin": "DZCM",
           "concepts": [
             "国企改革",
-            "快手概念",
             "知识产权",
+            "快手概念",
             "西部大开发",
             "参股新三板"
           ],
@@ -3433,8 +3571,8 @@
           "concepts": [
             "AI",
             "西部大开发",
-            "AI应用",
             "影视概念",
+            "AI应用",
             "谷子经济",
             "文娱消费"
           ],
@@ -3472,29 +3610,738 @@
       "top_related": false
     },
     {
-      "id": "BREAK_20260902_600371",
+      "id": "CROSS_20260903",
+      "type": "穿越节点",
+      "date": "2026-09-03",
+      "desc": "国芳集团由4板晋级5板，跨过前期4板天花板 → 取当日首板",
+      "pool_type": "首板",
+      "volume_ratio": null,
+      "replaced": [
+        "003005"
+      ],
+      "trigger": {
+        "code": "601086",
+        "name": "国芳集团",
+        "boards": 5,
+        "region": "甘肃",
+        "pinyin": "GFJT",
+        "concepts": [
+          "红利股",
+          "西部大开发",
+          "新零售",
+          "谷子经济"
+        ],
+        "industry": "一般零售"
+      },
+      "stocks": [
+        {
+          "code": "605398",
+          "market": 1,
+          "name": "新炬网络",
+          "region": "上海",
+          "pinyin": "XJWL",
+          "concepts": [
+            "AI",
+            "国产软件",
+            "大数据",
+            "数据中心",
+            "华为概念",
+            "百度概念"
+          ],
+          "industry": "IT服务",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 44250629,
+          "total_cap": 3944245026.9599996,
+          "total_cap_yi": 39.44,
+          "is_yizi": true,
+          "folded": true
+        },
+        {
+          "code": "300830",
+          "market": 0,
+          "name": "金现代",
+          "region": "山东",
+          "pinyin": "JXD",
+          "concepts": [
+            "国产软件",
+            "智能电网",
+            "智慧城市",
+            "大数据",
+            "军工",
+            "智能穿戴"
+          ],
+          "industry": "垂直应用软件",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 339677200,
+          "total_cap": 4557055187.68,
+          "total_cap_yi": 45.57,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "603138",
+          "market": 1,
+          "name": "海量数据",
+          "region": "北京",
+          "pinyin": "HLSJ",
+          "concepts": [
+            "算力",
+            "雄安新区",
+            "大数据",
+            "信创",
+            "数据中心",
+            "华为概念"
+          ],
+          "industry": "IT服务",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 137890507,
+          "total_cap": 4257355208.0,
+          "total_cap_yi": 42.57,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "603162",
+          "market": 1,
+          "name": "海通发展",
+          "region": "福建",
+          "pinyin": "HTFZ",
+          "concepts": [
+            "统一大市场",
+            "一带一路",
+            "贬值受益",
+            "海洋经济",
+            "小盘成长"
+          ],
+          "industry": "航运港口",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 1022411152,
+          "total_cap": 18301005521.920002,
+          "total_cap_yi": 183.01,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "605088",
+          "market": 1,
+          "name": "冠盛股份",
+          "region": "浙江",
+          "pinyin": "GSGF",
+          "concepts": [
+            "储能",
+            "机器人",
+            "固态电池",
+            "锂电池",
+            "新能源车",
+            "华为汽车"
+          ],
+          "industry": "底盘与发动机系统",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 189428800,
+          "total_cap": 4427536997.5199995,
+          "total_cap_yi": 44.28,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "600108",
+          "market": 1,
+          "name": "亚盛集团",
+          "region": "甘肃",
+          "pinyin": "YSJT",
+          "concepts": [
+            "国企改革",
+            "西部大开发",
+            "乡村振兴",
+            "生态农业",
+            "代糖概念",
+            "农业种植"
+          ],
+          "industry": "农林牧渔",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 731129552,
+          "total_cap": 7709783875.2,
+          "total_cap_yi": 77.1,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "600611",
+          "market": 1,
+          "name": "大众交通",
+          "region": "上海",
+          "pinyin": "DZJT",
+          "concepts": [
+            "算力概念",
+            "云计算",
+            "数据中心",
+            "百度概念",
+            "电商概念",
+            "长江三角"
+          ],
+          "industry": "铁路公路",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 960893904,
+          "total_cap": 12175232749.6,
+          "total_cap_yi": 121.75,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "605068",
+          "market": 1,
+          "name": "明新旭腾",
+          "region": "浙江",
+          "pinyin": "MXXT",
+          "concepts": [
+            "机器人",
+            "华为汽车"
+          ],
+          "industry": "车身附件及饰件",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 286402240,
+          "total_cap": 3811664632.5,
+          "total_cap_yi": 38.12,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "605580",
+          "market": 1,
+          "name": "恒盛能源",
+          "region": "浙江",
+          "pinyin": "HSNY",
+          "concepts": [
+            "绿色电力",
+            "氢能",
+            "培育钻石",
+            "反转股"
+          ],
+          "industry": "热力服务",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 159683685,
+          "total_cap": 5720400000.0,
+          "total_cap_yi": 57.2,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "600185",
+          "market": 1,
+          "name": "珠免集团",
+          "region": "广东",
+          "pinyin": "ZMJT",
+          "concepts": [
+            "零售概念",
+            "国企改革",
+            "免税概念",
+            "跨境电商",
+            "新零售",
+            "海洋经济"
+          ],
+          "industry": "旅游零售",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 289260752,
+          "total_cap": 9952830581.76,
+          "total_cap_yi": 99.53,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "600969",
+          "market": 1,
+          "name": "郴电国际",
+          "region": "湖南",
+          "pinyin": "CDGJ",
+          "concepts": [
+            "光伏",
+            "绿色电力",
+            "国企改革",
+            "充电桩",
+            "节能环保",
+            "一带一路"
+          ],
+          "industry": "公用事业",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 201792173,
+          "total_cap": 3959540135.9999995,
+          "total_cap_yi": 39.6,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "600610",
+          "market": 1,
+          "name": "中毅达",
+          "region": "贵州",
+          "pinyin": "ZYD",
+          "concepts": [
+            "西部大开发",
+            "长江三角"
+          ],
+          "industry": "其他化学原料",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 689142080,
+          "total_cap": 10166396029.92,
+          "total_cap_yi": 101.66,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "001299",
+          "market": 0,
+          "name": "美能能源",
+          "region": "陕西",
+          "pinyin": "MNNY",
+          "concepts": [
+            "天然气",
+            "储能",
+            "西部大开发",
+            "油气资源"
+          ],
+          "industry": "燃气",
+          "status": "断板反包",
+          "boards": 1,
+          "amount": 455520992,
+          "total_cap": 3717165626.72,
+          "total_cap_yi": 37.17,
+          "is_yizi": false,
+          "folded": false
+        },
+        {
+          "code": "600865",
+          "market": 1,
+          "name": "百大集团",
+          "region": "浙江",
+          "pinyin": "BDJT",
+          "concepts": [
+            "零售概念",
+            "退税商店",
+            "长江三角"
+          ],
+          "industry": "一般零售",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 246986051,
+          "total_cap": 3882800102.4,
+          "total_cap_yi": 38.83,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "003018",
+          "market": 0,
+          "name": "金富科技",
+          "region": "广东",
+          "pinyin": "JFKJ",
+          "concepts": [
+            "液冷服务器",
+            "消费风格"
+          ],
+          "industry": "塑料包装",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 1101025792,
+          "total_cap": 17716197597.12,
+          "total_cap_yi": 177.16,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "002403",
+          "market": 0,
+          "name": "爱仕达",
+          "region": "浙江",
+          "pinyin": "ASD",
+          "concepts": [
+            "换电概念",
+            "机器人",
+            "跨境电商",
+            "土地流转",
+            "减速器",
+            "厨房小家电"
+          ],
+          "industry": "家用电器",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 78841669,
+          "total_cap": 3491545404.0,
+          "total_cap_yi": 34.92,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "002969",
+          "market": 0,
+          "name": "嘉美包装",
+          "region": "安徽",
+          "pinyin": "JMBZ",
+          "concepts": [
+            "电商概念",
+            "啤酒概念",
+            "消费风格",
+            "小盘成长",
+            "包装材料"
+          ],
+          "industry": "金属包装",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 519239536,
+          "total_cap": 14730827497.92,
+          "total_cap_yi": 147.31,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "603538",
+          "market": 1,
+          "name": "美诺华",
+          "region": "浙江",
+          "pinyin": "MNH",
+          "concepts": [
+            "贬值受益",
+            "宠物经济",
+            "参股新三板",
+            "肝炎概念",
+            "合成生物",
+            "减肥药"
+          ],
+          "industry": "原料药",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 1798824928,
+          "total_cap": 9684554190.08,
+          "total_cap_yi": 96.85,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "002787",
+          "market": 0,
+          "name": "华源控股",
+          "region": "江苏",
+          "pinyin": "HYKG",
+          "concepts": [
+            "CPO",
+            "半导体",
+            "液冷服务器",
+            "锂电池",
+            "高成长股",
+            "包装材料"
+          ],
+          "industry": "金属包装",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 570590016,
+          "total_cap": 8110528768.0,
+          "total_cap_yi": 81.11,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "002631",
+          "market": 0,
+          "name": "德尔未来",
+          "region": "江苏",
+          "pinyin": "DEWL",
+          "concepts": [
+            "节能环保",
+            "石墨烯",
+            "智能家居",
+            "柔性屏(折叠屏)",
+            "C2M概念",
+            "碳基材料"
+          ],
+          "industry": "定制家居",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 441785520,
+          "total_cap": 8881731283.2,
+          "total_cap_yi": 88.82,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "301489",
+          "market": 0,
+          "name": "思泉新材",
+          "region": "广东",
+          "pinyin": "SQXC",
+          "concepts": [
+            "5G",
+            "液冷服务器",
+            "石墨烯",
+            "小米概念",
+            "无线充电",
+            "智能穿戴"
+          ],
+          "industry": "电子化学品",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 2094119072,
+          "total_cap": 16327624809.6,
+          "total_cap_yi": 163.28,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "002328",
+          "market": 0,
+          "name": "新朋股份",
+          "region": "上海",
+          "pinyin": "XPGF",
+          "concepts": [
+            "液冷服务器",
+            "储能",
+            "国产芯片",
+            "一带一路",
+            "新能源车",
+            "特斯拉概念"
+          ],
+          "industry": "汽车零部件",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 1451661776,
+          "total_cap": 7794877000.0,
+          "total_cap_yi": 77.95,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "600693",
+          "market": 1,
+          "name": "东百集团",
+          "region": "福建",
+          "pinyin": "DBJT",
+          "concepts": [
+            "旅游概念",
+            "统一大市场",
+            "一带一路",
+            "跨境电商",
+            "冷链物流"
+          ],
+          "industry": "百货",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 1563928144,
+          "total_cap": 9603102489.599998,
+          "total_cap_yi": 96.03,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "605288",
+          "market": 1,
+          "name": "凯迪股份",
+          "region": "江苏",
+          "pinyin": "KDGF",
+          "concepts": [
+            "智能家居",
+            "物联网",
+            "养老概念",
+            "新能源车",
+            "自动化设备"
+          ],
+          "industry": "工控设备",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 256122575,
+          "total_cap": 7137970169.14,
+          "total_cap_yi": 71.38,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "600234",
+          "market": 1,
+          "name": "科新发展",
+          "region": "山西",
+          "pinyin": "KXFZ",
+          "concepts": [
+            "算力概念",
+            "游戏",
+            "微利股"
+          ],
+          "industry": "装修装饰",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 130341815,
+          "total_cap": 6001229442.78,
+          "total_cap_yi": 60.01,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "603090",
+          "market": 1,
+          "name": "宏盛股份",
+          "region": "江苏",
+          "pinyin": "HSGF",
+          "concepts": [
+            "液冷服务器",
+            "煤化工概念",
+            "新能源车",
+            "贬值受益",
+            "乡村振兴"
+          ],
+          "industry": "其他通用设备",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 634840704,
+          "total_cap": 4435000000.0,
+          "total_cap_yi": 44.35,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "603757",
+          "market": 1,
+          "name": "大元泵业",
+          "region": "浙江",
+          "pinyin": "DYBY",
+          "concepts": [
+            "水利建设",
+            "液冷服务器",
+            "空气能热泵",
+            "燃料电池概念",
+            "锂电池"
+          ],
+          "industry": "其他通用设备",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 1340144000,
+          "total_cap": 14819314254.96,
+          "total_cap_yi": 148.19,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "603150",
+          "market": 1,
+          "name": "万朗磁塑",
+          "region": "安徽",
+          "pinyin": "WLCS",
+          "concepts": [
+            "一带一路",
+            "反转股",
+            "智能驾驶"
+          ],
+          "industry": "其他塑料制品",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 281072528,
+          "total_cap": 5312768450.0,
+          "total_cap_yi": 53.13,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "603989",
+          "market": 1,
+          "name": "艾华集团",
+          "region": "湖南",
+          "pinyin": "AHJT",
+          "concepts": [
+            "被动元件概念",
+            "充电桩",
+            "节能环保",
+            "华为概念",
+            "反转股"
+          ],
+          "industry": "被动元件",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 1442052560,
+          "total_cap": 12772918787.68,
+          "total_cap_yi": 127.73,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "000813",
+          "market": 0,
+          "name": "德展健康",
+          "region": "新疆",
+          "pinyin": "DZJK",
+          "concepts": [
+            "国企改革",
+            "工业大麻",
+            "西部大开发",
+            "生物疫苗",
+            "合成生物",
+            "减肥药"
+          ],
+          "industry": "化学制药",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 403057216,
+          "total_cap": 7570550984.96,
+          "total_cap_yi": 75.71,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "600479",
+          "market": 1,
+          "name": "千金药业",
+          "region": "湖南",
+          "pinyin": "QJYY",
+          "concepts": [
+            "国企改革",
+            "养老金",
+            "电商概念",
+            "辅助生殖",
+            "流感",
+            "中药概念"
+          ],
+          "industry": "中药",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 1633855968,
+          "total_cap": 7018914828.16,
+          "total_cap_yi": 70.19,
+          "is_yizi": false,
+          "folded": true
+        }
+      ],
+      "top_related": false
+    },
+    {
+      "id": "BREAK_20260902_002084",
       "type": "最高标断板节点",
       "date": "2026-09-02",
-      "desc": "万向德农 6板断板（涨停日量/启动量=1.55）→ 取当日首板",
+      "desc": "海鸥住工 7板断板（涨停日量/启动量=32.38）→ 取当日首板",
       "pool_type": "首板",
-      "volume_ratio": 1.55,
+      "volume_ratio": 32.38,
       "replaced": [],
       "trigger": {
-        "code": "600371",
-        "name": "万向德农",
-        "boards": 6,
-        "region": "黑龙江",
-        "pinyin": "WXDN",
+        "code": "002084",
+        "name": "海鸥住工",
+        "boards": 7,
+        "region": "广东",
+        "pinyin": "HOZG",
         "concepts": [
-          "粮食",
-          "农业种植",
-          "乡村振兴",
-          "种业"
+          "重组",
+          "智能家居",
+          "空气能热泵",
+          "装配建筑",
+          "粤港自贸"
         ],
-        "industry": "农林牧渔",
+        "industry": "卫浴制品",
         "events": [
-          "异动",
-          "历史新高"
+          "重组"
         ],
         "hot_boards": []
       },
@@ -3508,8 +4355,8 @@
           "concepts": [
             "氢能",
             "煤化工概念",
-            "锂电池",
             "燃料电池概念",
+            "锂电池",
             "化工原料",
             "长江三角"
           ],
@@ -3552,9 +4399,9 @@
           "region": "湖北",
           "pinyin": "SHJX",
           "concepts": [
-            "天然气",
-            "海工装备",
             "国企改革",
+            "海工装备",
+            "天然气",
             "氢能",
             "一带一路",
             "页岩气"
@@ -3599,8 +4446,8 @@
           "pinyin": "SZXX",
           "concepts": [
             "工业气体",
-            "军民融合",
             "军工",
+            "军民融合",
             "其他金属新材料",
             "新材料",
             "锂电池"
@@ -3663,8 +4510,8 @@
           "region": "贵州",
           "pinyin": "GZRQ",
           "concepts": [
-            "天然气",
             "国企改革",
+            "天然气",
             "西部大开发",
             "油气资源"
           ],
@@ -3685,8 +4532,8 @@
           "pinyin": "JDXC",
           "concepts": [
             "业绩预增",
-            "商业航天",
             "风电",
+            "商业航天",
             "创投",
             "新材料",
             "新能源"
@@ -3694,7 +4541,7 @@
           "industry": "玻纤制造",
           "status": "断板反包",
           "boards": 1,
-          "amount": 477704224,
+          "amount": 589175792,
           "total_cap": 6568493299.2,
           "total_cap_yi": 65.68,
           "is_yizi": false,
@@ -3714,8 +4561,8 @@
           "concepts": [
             "CPO",
             "风电",
-            "军工",
-            "充电桩"
+            "充电桩",
+            "军工"
           ],
           "industry": "线缆部件及其他",
           "status": "已断板",
@@ -3734,10 +4581,10 @@
           "pinyin": "JNRL",
           "concepts": [
             "碳交易",
-            "水利建设",
             "国企改革",
-            "空气能热泵",
-            "储能"
+            "水利建设",
+            "储能",
+            "空气能热泵"
           ],
           "industry": "热力服务",
           "status": "已断板",
@@ -3755,12 +4602,12 @@
           "region": "云南",
           "pinyin": "YNLY",
           "concepts": [
-            "REITs概念",
-            "国企改革",
             "旅游概念",
             "旅游酒店",
-            "西部大开发",
-            "VR"
+            "REITs概念",
+            "国企改革",
+            "VR",
+            "西部大开发"
           ],
           "industry": "人工景区",
           "status": "已断板",
@@ -3779,8 +4626,8 @@
           "pinyin": "XRJT",
           "concepts": [
             "氦气概念",
-            "天然气",
             "水利建设",
+            "天然气",
             "一带一路",
             "物联网",
             "燃料电池概念"
@@ -3824,8 +4671,8 @@
           "region": "浙江",
           "pinyin": "MTJJ",
           "concepts": [
-            "工业互联网",
-            "养老金"
+            "养老金",
+            "工业互联网"
           ],
           "industry": "定制家居",
           "status": "已断板",
@@ -3891,8 +4738,8 @@
             "汽车芯片",
             "国产芯片",
             "民爆概念",
-            "传感器",
-            "新能源车"
+            "新能源车",
+            "传感器"
           ],
           "industry": "模拟芯片设计",
           "status": "已断板",
@@ -3913,8 +4760,8 @@
             "PCB",
             "国企改革",
             "创投",
-            "飞行汽车(eVTOL)",
             "机器人",
+            "飞行汽车(eVTOL)",
             "新能源车"
           ],
           "industry": "汽车零部件",
@@ -3936,9 +4783,9 @@
             "通用航空",
             "军工",
             "大飞机",
+            "小金属",
             "无人机",
-            "新材料",
-            "小金属"
+            "新材料"
           ],
           "industry": "航空装备",
           "status": "已断板",
@@ -3959,9 +4806,9 @@
             "风电",
             "液冷服务器",
             "国产芯片",
-            "碳纤维",
+            "机器人",
             "一带一路",
-            "机器人"
+            "碳纤维"
           ],
           "industry": "机械设备",
           "status": "已断板",
@@ -4001,8 +4848,8 @@
           "concepts": [
             "节能环保",
             "一带一路",
-            "物联网",
             "深圳特区",
+            "物联网",
             "LED概念",
             "贬值受益"
           ],
@@ -4067,8 +4914,8 @@
           "concepts": [
             "安防设备",
             "安防概念",
-            "无人机",
             "VR",
+            "无人机",
             "AI眼镜",
             "小盘成长"
           ],
@@ -4130,8 +4977,8 @@
           "concepts": [
             "算力概念",
             "云计算",
-            "数据中心",
             "大数据",
+            "数据中心",
             "边缘计算",
             "小米概念"
           ],
@@ -4161,6 +5008,852 @@
           "total_cap_yi": 52.32,
           "is_yizi": false,
           "folded": true
+        }
+      ],
+      "top_related": false
+    },
+    {
+      "id": "CROSS_20260901",
+      "type": "穿越节点",
+      "date": "2026-09-01",
+      "desc": "海鸥住工由6板晋级7板，跨过前期6板天花板 → 取当日首板",
+      "pool_type": "首板",
+      "volume_ratio": null,
+      "replaced": [],
+      "trigger": {
+        "code": "002084",
+        "name": "海鸥住工",
+        "boards": 7,
+        "region": "广东",
+        "pinyin": "HOZG",
+        "concepts": [
+          "重组",
+          "智能家居",
+          "空气能热泵",
+          "装配建筑",
+          "粤港自贸"
+        ],
+        "industry": "卫浴制品",
+        "events": [
+          "重组"
+        ],
+        "hot_boards": []
+      },
+      "stocks": [
+        {
+          "code": "000635",
+          "market": 0,
+          "name": "英 力 特",
+          "region": "宁夏",
+          "pinyin": "YLT",
+          "concepts": [
+            "国企改革",
+            "西部大开发"
+          ],
+          "industry": "氯碱",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 22285339,
+          "total_cap": 2845644707.52,
+          "total_cap_yi": 28.46,
+          "is_yizi": true,
+          "folded": true
+        },
+        {
+          "code": "002295",
+          "market": 0,
+          "name": "精艺股份",
+          "region": "广东",
+          "pinyin": "JYGF",
+          "concepts": [
+            "虚拟电厂",
+            "国企改革",
+            "电网概念",
+            "新材料"
+          ],
+          "industry": "铜",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 232531749,
+          "total_cap": 2661541920.0,
+          "total_cap_yi": 26.62,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "603980",
+          "market": 1,
+          "name": "吉华集团",
+          "region": "浙江",
+          "pinyin": "JHJT",
+          "concepts": [
+            "阿兹海默",
+            "化工原料"
+          ],
+          "industry": "纺织化学制品",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 464595904,
+          "total_cap": 5360520211.2,
+          "total_cap_yi": 53.61,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "603221",
+          "market": 1,
+          "name": "爱丽家居",
+          "region": "江苏",
+          "pinyin": "ALJJ",
+          "concepts": [
+            "养老概念",
+            "贬值受益",
+            "新型工业化",
+            "电商概念",
+            "拼多多概念",
+            "长江三角"
+          ],
+          "industry": "瓷砖地板",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 272920544,
+          "total_cap": 7401348500.0,
+          "total_cap_yi": 74.01,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "002425",
+          "market": 0,
+          "name": "凯撒文化",
+          "region": "广东",
+          "pinyin": "KSWH",
+          "concepts": [
+            "AI",
+            "创投",
+            "元宇宙",
+            "VR",
+            "抖音概念(字节概念)",
+            "谷子经济"
+          ],
+          "industry": "传媒",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 362100768,
+          "total_cap": 3443994259.2000003,
+          "total_cap_yi": 34.44,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "000505",
+          "market": 0,
+          "name": "京粮控股",
+          "region": "海南",
+          "pinyin": "JLKG",
+          "concepts": [
+            "海南自贸",
+            "国企改革",
+            "一带一路",
+            "新零售",
+            "生态农业",
+            "农产品加工"
+          ],
+          "industry": "粮油加工",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 328559552,
+          "total_cap": 5626594981.440001,
+          "total_cap_yi": 56.27,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "002696",
+          "market": 0,
+          "name": "百洋股份",
+          "region": "广西",
+          "pinyin": "BYGF",
+          "concepts": [
+            "国企改革",
+            "一带一路",
+            "西部大开发",
+            "地摊经济",
+            "乡村振兴",
+            "水产概念"
+          ],
+          "industry": "农林牧渔",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 129349637,
+          "total_cap": 2517090867.2000003,
+          "total_cap_yi": 25.17,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "002181",
+          "market": 0,
+          "name": "粤 传 媒",
+          "region": "广东",
+          "pinyin": "YCM",
+          "concepts": [
+            "AI",
+            "国企改革",
+            "创投",
+            "体育产业",
+            "电商概念",
+            "彩票概念"
+          ],
+          "industry": "传媒",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 387024752,
+          "total_cap": 11122937326.08,
+          "total_cap_yi": 111.23,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "000019",
+          "market": 0,
+          "name": "深粮控股",
+          "region": "广东",
+          "pinyin": "SLKG",
+          "concepts": [
+            "国企改革",
+            "深圳特区",
+            "预制菜概念",
+            "粮食",
+            "农产品加工",
+            "调味品概念"
+          ],
+          "industry": "粮油加工",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 193817809,
+          "total_cap": 9128079164.16,
+          "total_cap_yi": 91.28,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "002104",
+          "market": 0,
+          "name": "恒宝股份",
+          "region": "江苏",
+          "pinyin": "HBGF",
+          "concepts": [
+            "互联网金融",
+            "稳定币",
+            "移动支付",
+            "一带一路",
+            "物联网",
+            "通信终端及配件"
+          ],
+          "industry": "通信设备",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 485144592,
+          "total_cap": 8698539964.8,
+          "total_cap_yi": 86.99,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "600693",
+          "market": 1,
+          "name": "东百集团",
+          "region": "福建",
+          "pinyin": "DBJT",
+          "concepts": [
+            "旅游概念",
+            "统一大市场",
+            "一带一路",
+            "跨境电商",
+            "冷链物流"
+          ],
+          "industry": "百货",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 452469552,
+          "total_cap": 8907225497.6,
+          "total_cap_yi": 89.07,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "605365",
+          "market": 1,
+          "name": "立达信",
+          "region": "福建",
+          "pinyin": "LDX",
+          "concepts": [
+            "鸿蒙",
+            "国产芯片",
+            "智能家居",
+            "LED概念",
+            "贬值受益",
+            "传感器"
+          ],
+          "industry": "照明设备",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 125003856,
+          "total_cap": 7861521700.8,
+          "total_cap_yi": 78.62,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "600313",
+          "market": 1,
+          "name": "农发种业",
+          "region": "北京",
+          "pinyin": "NFZY",
+          "concepts": [
+            "国企改革",
+            "一带一路",
+            "乡村振兴",
+            "土地流转",
+            "农业种植",
+            "粮食"
+          ],
+          "industry": "农林牧渔",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 705583504,
+          "total_cap": 9174854347.2,
+          "total_cap_yi": 91.75,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "002172",
+          "market": 0,
+          "name": "澳洋健康",
+          "region": "江苏",
+          "pinyin": "AYJK",
+          "concepts": [
+            "AI",
+            "节能环保",
+            "养老概念",
+            "冷链物流",
+            "精准医疗",
+            "中药概念"
+          ],
+          "industry": "医疗服务",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 653856544,
+          "total_cap": 3629571424.32,
+          "total_cap_yi": 36.3,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "600828",
+          "market": 1,
+          "name": "茂业商业",
+          "region": "四川",
+          "pinyin": "MYSY",
+          "concepts": [
+            "零售概念",
+            "西部大开发",
+            "地摊经济",
+            "成渝特区",
+            "退税商店",
+            "股权集中"
+          ],
+          "industry": "一般零售",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 69808245,
+          "total_cap": 7568763717.28,
+          "total_cap_yi": 75.69,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "605188",
+          "market": 1,
+          "name": "国光连锁",
+          "region": "江西",
+          "pinyin": "GGLS",
+          "concepts": [
+            "电商概念",
+            "新零售"
+          ],
+          "industry": "超市",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 437708464,
+          "total_cap": 7606042510.08,
+          "total_cap_yi": 76.06,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "600127",
+          "market": 1,
+          "name": "金健米业",
+          "region": "湖南",
+          "pinyin": "JJMY",
+          "concepts": [
+            "国企改革",
+            "电商概念",
+            "乡村振兴",
+            "新零售",
+            "预制菜概念",
+            "粮食"
+          ],
+          "industry": "农林牧渔",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 1769709616,
+          "total_cap": 8497209779.84,
+          "total_cap_yi": 84.97,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "000711",
+          "market": 0,
+          "name": "京蓝科技",
+          "region": "黑龙江",
+          "pinyin": "JLKJ",
+          "concepts": [
+            "节能环保",
+            "小金属",
+            "稀缺资源",
+            "土壤修复",
+            "乡村振兴"
+          ],
+          "industry": "综合环境治理",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 748389632,
+          "total_cap": 19138661959.68,
+          "total_cap_yi": 191.39,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "600830",
+          "market": 1,
+          "name": "香溢融通",
+          "region": "浙江",
+          "pinyin": "XYRT",
+          "concepts": [
+            "化债(AMC)概念",
+            "国企改革",
+            "高成长股",
+            "长江三角"
+          ],
+          "industry": "金融控股",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 133899067,
+          "total_cap": 4193399000.96,
+          "total_cap_yi": 41.93,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "600785",
+          "market": 1,
+          "name": "新华百货",
+          "region": "宁夏",
+          "pinyin": "XHBH",
+          "concepts": [
+            "西部大开发",
+            "新零售"
+          ],
+          "industry": "多业态零售",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 716662896,
+          "total_cap": 3999088806.7200003,
+          "total_cap_yi": 39.99,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "002470",
+          "market": 0,
+          "name": "金正大",
+          "region": "山东",
+          "pinyin": "JZD",
+          "concepts": [
+            "国企改革",
+            "锂电池",
+            "乡村振兴",
+            "磷化工",
+            "生态农业",
+            "农业种植"
+          ],
+          "industry": "复合肥",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 392714912,
+          "total_cap": 7623584366.08,
+          "total_cap_yi": 76.24,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "002882",
+          "market": 0,
+          "name": "金龙羽",
+          "region": "广东",
+          "pinyin": "JLY",
+          "concepts": [
+            "电网概念",
+            "充电桩",
+            "低空经济",
+            "无人机",
+            "固态电池",
+            "锂电池"
+          ],
+          "industry": "线缆部件及其他",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 458236576,
+          "total_cap": 10290033000.0,
+          "total_cap_yi": 102.9,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "600354",
+          "market": 1,
+          "name": "敦煌种业",
+          "region": "甘肃",
+          "pinyin": "DHZY",
+          "concepts": [
+            "国企改革",
+            "一带一路",
+            "西部大开发",
+            "乡村振兴",
+            "农业种植",
+            "粮食"
+          ],
+          "industry": "农林牧渔",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 1120564320,
+          "total_cap": 4813554969.599999,
+          "total_cap_yi": 48.14,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "300189",
+          "market": 0,
+          "name": "神农种业",
+          "region": "海南",
+          "pinyin": "SNZY",
+          "concepts": [
+            "海南自贸",
+            "土地流转",
+            "农业种植",
+            "粮食",
+            "水产概念"
+          ],
+          "industry": "种子",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 2341424112,
+          "total_cap": 7731200000.0,
+          "total_cap_yi": 77.31,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "605300",
+          "market": 1,
+          "name": "佳禾食品",
+          "region": "江苏",
+          "pinyin": "JHSP",
+          "concepts": [
+            "代糖概念"
+          ],
+          "industry": "乳品",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 85592985,
+          "total_cap": 4875696892.16,
+          "total_cap_yi": 48.76,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "002041",
+          "market": 0,
+          "name": "登海种业",
+          "region": "山东",
+          "pinyin": "DHZY",
+          "concepts": [
+            "乡村振兴",
+            "生态农业",
+            "农业种植",
+            "粮食",
+            "种业"
+          ],
+          "industry": "种子",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 799120336,
+          "total_cap": 10454400000.0,
+          "total_cap_yi": 104.54,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "000721",
+          "market": 0,
+          "name": "西安饮食",
+          "region": "陕西",
+          "pinyin": "XAYS",
+          "concepts": [
+            "旅游酒店",
+            "国企改革",
+            "西部大开发",
+            "地摊经济",
+            "社区团购",
+            "预制菜概念"
+          ],
+          "industry": "餐饮",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 412805360,
+          "total_cap": 4356009567.36,
+          "total_cap_yi": 43.56,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "603123",
+          "market": 1,
+          "name": "翠微股份",
+          "region": "北京",
+          "pinyin": "CWGF",
+          "concepts": [
+            "旅游概念",
+            "AI",
+            "国企改革",
+            "移动支付",
+            "阿里概念",
+            "新零售"
+          ],
+          "industry": "金融信息服务",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 546734816,
+          "total_cap": 8338810855.679999,
+          "total_cap_yi": 83.39,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "002703",
+          "market": 0,
+          "name": "浙江世宝",
+          "region": "浙江",
+          "pinyin": "ZJSB",
+          "concepts": [
+            "新能源车",
+            "小米概念",
+            "小米汽车",
+            "高成长股",
+            "小盘成长",
+            "智能驾驶"
+          ],
+          "industry": "底盘与发动机系统",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 1352657712,
+          "total_cap": 15004814684.159998,
+          "total_cap_yi": 150.05,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "603376",
+          "market": 1,
+          "name": "大明电子",
+          "region": "浙江",
+          "pinyin": "DMDZ",
+          "concepts": [
+            "新能源车",
+            "小盘成长",
+            "智能驾驶"
+          ],
+          "industry": "汽车电子电气系统",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 139685538,
+          "total_cap": 11392028707.84,
+          "total_cap_yi": 113.92,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "002721",
+          "market": 0,
+          "name": "金一文化",
+          "region": "北京",
+          "pinyin": "JYWH",
+          "concepts": [
+            "AI",
+            "国产软件",
+            "国企改革",
+            "移动支付",
+            "阿里概念",
+            "黄金"
+          ],
+          "industry": "纺织服饰",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 695212080,
+          "total_cap": 8456823973.440001,
+          "total_cap_yi": 84.57,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "605068",
+          "market": 1,
+          "name": "明新旭腾",
+          "region": "浙江",
+          "pinyin": "MXXT",
+          "concepts": [
+            "机器人",
+            "华为汽车"
+          ],
+          "industry": "车身附件及饰件",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 183245747,
+          "total_cap": 3305605328.1,
+          "total_cap_yi": 33.06,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "003040",
+          "market": 0,
+          "name": "楚天龙",
+          "region": "广东",
+          "pinyin": "CTL",
+          "concepts": [
+            "智慧政务",
+            "ETC",
+            "华为概念",
+            "稳定币",
+            "电子身份证",
+            "AI应用"
+          ],
+          "industry": "通信设备",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 1751302544,
+          "total_cap": 9029042253.439999,
+          "total_cap_yi": 90.29,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "000998",
+          "market": 0,
+          "name": "隆平高科",
+          "region": "湖南",
+          "pinyin": "LPGK",
+          "concepts": [
+            "国企改革",
+            "创投",
+            "乡村振兴",
+            "农业种植",
+            "粮食",
+            "种业"
+          ],
+          "industry": "农林牧渔",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 877988064,
+          "total_cap": 14650397198.080002,
+          "total_cap_yi": 146.5,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "603293",
+          "market": 1,
+          "name": "埃泰克",
+          "region": "安徽",
+          "pinyin": "ATK",
+          "concepts": [
+            "毫米波概念",
+            "激光雷达",
+            "新能源车",
+            "汽车热管理",
+            "智能驾驶"
+          ],
+          "industry": "汽车电子电气系统",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 197721176,
+          "total_cap": 7065126458.1,
+          "total_cap_yi": 70.65,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "601566",
+          "market": 1,
+          "name": "九牧王",
+          "region": "福建",
+          "pinyin": "JMW",
+          "concepts": [
+            "电商概念",
+            "新零售",
+            "IPO受益"
+          ],
+          "industry": "非运动服装",
+          "status": "已断板",
+          "boards": 1,
+          "amount": 142921420,
+          "total_cap": 5413081971.84,
+          "total_cap_yi": 54.13,
+          "is_yizi": false,
+          "folded": true
+        },
+        {
+          "code": "600792",
+          "market": 1,
+          "name": "云煤能源",
+          "region": "云南",
+          "pinyin": "YMNY",
+          "concepts": [
+            "国企改革",
+            "反内卷概念",
+            "稀缺资源",
+            "西部大开发",
+            "煤化工概念",
+            "化工原料"
+          ],
+          "industry": "煤炭",
+          "status": "断板反包",
+          "boards": 3,
+          "amount": 833949008,
+          "total_cap": 6004686676.0,
+          "total_cap_yi": 60.05,
+          "is_yizi": false,
+          "folded": false,
+          "events": [
+            "异动"
+          ],
+          "hot_boards": []
         }
       ],
       "top_related": false
