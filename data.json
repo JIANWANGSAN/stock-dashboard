@@ -7098,8 +7098,8 @@
     "node_date": "2026-09-07",
     "concept_hit": 1,
     "ferment": {
-      "zt": 0,
-      "lb": 0
+      "zt": 2,
+      "lb": 1
     },
     "industry": "自然景区",
     "amount_yi": 7.72,
@@ -7133,8 +7133,8 @@
       "status": "连板中",
       "concept_hit": 1,
       "ferment": {
-        "zt": 0,
-        "lb": 0
+        "zt": 2,
+        "lb": 1
       },
       "amount_yi": 7.72,
       "total_cap_yi": 45.36,
@@ -7165,8 +7165,8 @@
       "status": "断板反包",
       "concept_hit": 0,
       "ferment": {
-        "zt": 0,
-        "lb": 0
+        "zt": 1,
+        "lb": 1
       },
       "amount_yi": 8.34,
       "total_cap_yi": 60.05,
@@ -7228,8 +7228,8 @@
       "status": "连板中",
       "concept_hit": 1,
       "ferment": {
-        "zt": 0,
-        "lb": 0
+        "zt": 1,
+        "lb": 1
       },
       "amount_yi": 4.21,
       "total_cap_yi": 38.34,
@@ -7260,8 +7260,8 @@
       "status": "连板中",
       "concept_hit": 1,
       "ferment": {
-        "zt": 0,
-        "lb": 0
+        "zt": 2,
+        "lb": 1
       },
       "amount_yi": 2.38,
       "total_cap_yi": 34.3,
@@ -7292,8 +7292,8 @@
       "status": "连板中",
       "concept_hit": 0,
       "ferment": {
-        "zt": 0,
-        "lb": 0
+        "zt": 1,
+        "lb": 1
       },
       "amount_yi": 3.85,
       "total_cap_yi": 36.78
@@ -7320,8 +7320,8 @@
       "status": "连板中",
       "concept_hit": 0,
       "ferment": {
-        "zt": 0,
-        "lb": 0
+        "zt": 2,
+        "lb": 2
       },
       "amount_yi": 3.27,
       "total_cap_yi": 47.54
@@ -7341,8 +7341,8 @@
       "status": "连板中",
       "concept_hit": 0,
       "ferment": {
-        "zt": 0,
-        "lb": 0
+        "zt": 1,
+        "lb": 1
       },
       "amount_yi": 2.12,
       "total_cap_yi": 31.8
@@ -7367,7 +7367,7 @@
       "status": "断板反包",
       "concept_hit": 1,
       "ferment": {
-        "zt": 0,
+        "zt": 2,
         "lb": 0
       },
       "amount_yi": 4.56,
@@ -7395,7 +7395,7 @@
       "status": "断板反包",
       "concept_hit": 0,
       "ferment": {
-        "zt": 0,
+        "zt": 2,
         "lb": 0
       },
       "amount_yi": 27.7,
@@ -7418,8 +7418,8 @@
       "status": "连板中",
       "concept_hit": 0,
       "ferment": {
-        "zt": 0,
-        "lb": 0
+        "zt": 1,
+        "lb": 1
       },
       "amount_yi": 0.66,
       "total_cap_yi": 35.35
@@ -7446,7 +7446,7 @@
       "status": "断板反包",
       "concept_hit": 1,
       "ferment": {
-        "zt": 1,
+        "zt": 3,
         "lb": 0
       },
       "amount_yi": 5.89,
@@ -8401,66 +8401,66 @@
     "list": [
       {
         "date": "2026-08-21",
-        "amount_yi": 18923.7
+        "amount_yi": 18792.6
       },
       {
         "date": "2026-08-24",
-        "amount_yi": 20214.4
+        "amount_yi": 20074.6
       },
       {
         "date": "2026-08-25",
-        "amount_yi": 18445.0
+        "amount_yi": 18318.4
       },
       {
         "date": "2026-08-26",
-        "amount_yi": 18221.6
+        "amount_yi": 18087.2
       },
       {
         "date": "2026-08-27",
-        "amount_yi": 21412.6
+        "amount_yi": 21259.3
       },
       {
         "date": "2026-08-28",
-        "amount_yi": 21179.8
+        "amount_yi": 21017.2
       },
       {
         "date": "2026-08-31",
-        "amount_yi": 21458.2
+        "amount_yi": 21310.3
       },
       {
         "date": "2026-09-01",
-        "amount_yi": 20524.5
+        "amount_yi": 20334.0
       },
       {
         "date": "2026-09-02",
-        "amount_yi": 18206.0
+        "amount_yi": 17911.8
       },
       {
         "date": "2026-09-03",
-        "amount_yi": 17804.6
+        "amount_yi": 17589.2
       },
       {
         "date": "2026-09-04",
-        "amount_yi": 20512.8
+        "amount_yi": 20306.7
       },
       {
         "date": "2026-09-07",
-        "amount_yi": 19644.4
+        "amount_yi": 19460.2
       },
       {
         "date": "2026-09-08",
-        "amount_yi": 19784.1
+        "amount_yi": 19603.3
       },
       {
         "date": "2026-09-09",
-        "amount_yi": 18732.5
+        "amount_yi": 18556.1
       },
       {
         "date": "2026-09-10",
-        "amount_yi": 16625.1
+        "amount_yi": 16471.5
       }
     ],
     "date": "2026-09-10",
-    "total_yi": 16625.1
+    "total_yi": 16471.5
   }
 }

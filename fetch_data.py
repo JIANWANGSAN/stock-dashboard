@@ -1043,14 +1043,14 @@ def fetch_index():
 
 # ============ 4b. 沪深京量能 ============
 def fetch_market_volume(days=15):
-    """沪深京两市量能（亿元）：上证综指 + 深证综指 + 北证50 的日成交额之和。
+    """沪深两市量能（亿元）：上证综指 + 深证综指 的日成交额之和（不含北交所）。
 
     数据源：东财 push2his 日K，fields2=f51(日期),f57(成交额,元)。
     push2his 连接不稳定（偶发 RemoteDisconnected），故单节点 + 慢节奏重试。
     返回升序列表 [{'date','amount_yi'}]，末尾为最新一个「已收盘」交易日。
     """
     host = 'push2his.eastmoney.com'
-    secids = ['1.000001', '0.399106', '0.899050']   # 沪 / 深 / 北证50
+    secids = ['1.000001', '0.399106']   # 沪 / 深
 
     def _amt(secid, lmt=25):
         for _ in range(8):
@@ -1597,21 +1597,31 @@ def concept_hit_count(concepts, hot_list):
     return len(s_themes & hot_themes)
 
 
-def ferment_count(concepts, zt_pool):
+def ferment_count(concepts, zt_pool, own_industry=''):
     """板块发酵度：候选股题材概念 与 当日涨停池细分行业 模糊匹配命中的涨停家数/连板数。
-    说明：nodes 里 industry 是一级行业(传媒)，zt_pool 里 industry 是细分行业(出版)，
-    粒度不一致，故用 concepts(含出版/传媒等多级) 去模糊匹配 zt_pool 的细分行业更稳。"""
+
+    注意：东财 zt_pool 的 hybk(细分行业) 被**截断为 ≤4 字**（如「旅游及景区」→「旅游及景」、
+    「炼化及贸易」→「炼化及贸」），若只做整串子串匹配会大量假 0（发酵列长期空白）。
+    故匹配放宽为：① 整串互相包含；② **前 2 字词干**互相包含。
+    另把候选自身的细分行业(own_industry)也纳入比对键，直接统计「同细分行业涨停家数」。
+    """
+    keys = [c for c in (concepts or []) if len(c) >= 2]
+    if own_industry and len(own_industry) >= 2:
+        keys.append(own_industry)
     zt, lb = 0, 0
     for s in zt_pool or []:
         ind = s.get('industry') or ''
-        if not ind:
+        if len(ind) < 2:
             continue
-        for c in concepts or []:
-            if len(c) >= 2 and (c in ind or ind in c):
-                zt += 1
-                if s.get('lbc', 0) >= 2:
-                    lb += 1
+        hit = False
+        for k in keys:
+            if k in ind or ind in k or k[:2] in ind or ind[:2] in k:
+                hit = True
                 break
+        if hit:
+            zt += 1
+            if s.get('lbc', 0) >= 2:
+                lb += 1
     return {'zt': zt, 'lb': lb}
 
 
@@ -1655,7 +1665,7 @@ def build_candidates(nodes_out, today_pool, hot_concepts, cache):
         ck = '%s.%s' % (trg.get('market', 1), trg['code'])
         _c = cache.get(ck) or {}
         hit = concept_hit_count(_c.get('concepts', []), hot_concepts)
-        ferm = ferment_count(_c.get('concepts', []), today_pool)
+        ferm = ferment_count(_c.get('concepts', []), today_pool, cur.get('industry') or '')
         cands.append({
             'node_type': n['type'], 'node_date': n['date'], 'node_id': n['id'],
             'code': trg['code'], 'market': trg.get('market', 1), 'name': trg['name'],
@@ -1672,7 +1682,8 @@ def build_candidates(nodes_out, today_pool, hot_concepts, cache):
             if s.get('status') not in ('连板中', '断板反包'):
                 continue
             hit = concept_hit_count(s.get('concepts', []), hot_concepts)
-            ferm = ferment_count(s.get('concepts', []), today_pool)
+            ferm = ferment_count(s.get('concepts', []), today_pool,
+                                 (today_map.get(s['code']) or {}).get('industry') or '')
             cands.append({
                 'node_type': n['type'], 'node_date': n['date'], 'node_id': n['id'],
                 'code': s['code'], 'market': s['market'], 'name': s['name'],

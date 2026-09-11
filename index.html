@@ -197,6 +197,16 @@
   #board-3d-box table th:nth-child(2), #board-3d-box table td:nth-child(2){ width: 50%; text-align: left; }
   #board-3d-box table th:nth-child(3), #board-3d-box table td:nth-child(3){ width: 26%; text-align: right; font-weight:600; }
   #board-3d-box table th:nth-child(4), #board-3d-box table td:nth-child(4){ width: 15%; text-align: center; }
+  /* 模块2 连板候选池：固定布局，列宽按比例分配，始终对齐（已删序号列） */
+  #cand-box table{ table-layout: fixed; }
+  #cand-box table .c2-name{ width: 13%; text-align: left; }
+  #cand-box table .c2-py{ width: 10%; text-align: center; }
+  #cand-box table .c2-region{ width: 10%; text-align: left; }
+  #cand-box table .c2-concepts{ width: 25%; text-align: left; }
+  #cand-box table .c2-boards{ width: 8%; text-align: center; }
+  #cand-box table .c2-node{ width: 14%; text-align: left; }
+  #cand-box table .c2-hit{ width: 9%; text-align: center; }
+  #cand-box table .c2-ferment{ width: 11%; text-align: center; }
   .rank-no { font-weight: 700; color: #9ca3af; }
   .star { color: #f59e0b; font-weight: 700; }
   /* 小结 */
@@ -438,6 +448,10 @@
     #board-daily-box table, #board-3d-box table{ display: table; width: 100%; table-layout: fixed; overflow: visible; white-space: normal; }
     #board-daily-box table th, #board-daily-box table td,
     #board-3d-box table th, #board-3d-box table td{ white-space: normal; word-break: break-word; padding: 5px 3px; font-size: 10.5px; }
+    /* 模块2 连板候选池：手机端自适应铺满，不横滑，文字换行，列严格对齐 */
+    #cand-box table{ display: table; width: 100%; table-layout: fixed; overflow: visible; white-space: normal; }
+    #cand-box table th, #cand-box table td{ white-space: normal; word-break: break-word; padding: 5px 2px; font-size: 10px; }
+    #cand-box table .cpt{ font-size: 9.5px; padding: 0 3px; }
   }
 </style>
 </head>
@@ -461,7 +475,7 @@
       </div>
       <div class="card" id="mv-card" data-page-node-id="mvCardTop">
         <div class="mv-head">
-          <div class="mv-title">沪深京量能</div>
+          <div class="mv-title">沪深量能</div>
           <div class="mv-head-right"><span id="mv-date">—</span><span id="mv-total">—</span></div>
         </div>
         <div id="mv-chart"></div>
@@ -896,15 +910,19 @@ function renderCandidates(){
   const arr=D.candidates||[];
   if(!arr.length){ box.innerHTML='<div class="empty">暂无候选</div>'; return; }
   box.innerHTML=`<table>
-    <thead><tr><th>#</th><th>名称</th><th>缩写</th><th>地域</th><th>题材概念</th><th>板数</th><th>来源节点</th><th>主线</th><th>发酵</th></tr></thead>
-    <tbody>${arr.map((c,i)=>{
+    <thead><tr><th class="c2-name">名称</th><th class="c2-py">缩写</th><th class="c2-region">地域</th><th class="c2-concepts">题材概念</th><th class="c2-boards">板数</th><th class="c2-node">来源节点</th><th class="c2-hit">主线</th><th class="c2-ferment">发酵</th></tr></thead>
+    <tbody>${arr.map(c=>{
       const cs=(c.concepts||[]).filter(x=>!/板块$/.test(x)).slice(0,3).map(x=>`<span class="cpt">${esc(x)}</span>`).join('');
       const f=c.ferment||{};
       return `<tr>
-        <td class="rank-no">${i+1}</td>
-        <td><b>${esc(c.name)}</b></td><td><span class="py" style="font-family:ui-monospace,monospace;font-size:11px;background:#eef2ff;padding:1px 6px;border-radius:4px;">${esc(c.pinyin)}</span></td>
-        <td>${esc(c.region)}</td><td>${cs}</td><td>${c.boards}板</td>
-        <td>${esc(c.node_type)}</td><td>${c.concept_hit}</td><td>${f.zt?f.zt+'家('+f.lb+')':'—'}</td></tr>`;
+        <td class="c2-name"><b>${esc(c.name)}</b></td>
+        <td class="c2-py"><span class="py" style="font-family:ui-monospace,monospace;font-size:11px;background:#eef2ff;padding:1px 6px;border-radius:4px;">${esc(c.pinyin)}</span></td>
+        <td class="c2-region">${esc(c.region)}</td>
+        <td class="c2-concepts">${cs}</td>
+        <td class="c2-boards">${c.boards}板</td>
+        <td class="c2-node">${esc(c.node_type)}</td>
+        <td class="c2-hit">${c.concept_hit}</td>
+        <td class="c2-ferment">${f.zt?f.zt+'家('+f.lb+')':'—'}</td></tr>`;
     }).join('')}</tbody></table>`;
 }
 
