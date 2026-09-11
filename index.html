@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="A股仪表盘">
 <link rel="apple-touch-icon" href="dashboard_icon.png">
 <link rel="icon" href="dashboard_icon.png">
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script src="echarts.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -825,11 +825,11 @@ function renderNews(k){
 }
 
 /* ---- 模块2 折线图 ---- */
-let chartInited=false;
+let ladderChart=null;
 function renderChart(){
   if(!D.ladder||!D.ladder.length) return;
   const L=D.ladder.slice(-7);   // 仅保留近 7 个交易日，避免 X 轴标签重叠
-  const chart=echarts.init(document.getElementById('echart-ladder'));
+  const chart=ladderChart=ladderChart||echarts.init(document.getElementById('echart-ladder'));
   const dates=L.map(s=>s.date.slice(5));  // MM-DD
   const mk=(key,color,name)=>({
     name,type:'line',smooth:true,data:L.map(s=>s[key]),
@@ -849,7 +849,6 @@ function renderChart(){
       mk('cyb','#ea580c','创业板')
     ]
   });
-  chartInited=true;
 }
 
 /* ---- 模块2 节点 ---- */
@@ -930,7 +929,7 @@ function renderNodes(){
           ${deadStocks.map(renderRow).join('')}
         </div>
       </div>` : '';
-    const more = activeStocks.length>25?`<div class="note">…其余 ${activeStocks.length-25} 只未展开</div>`:'';
+    const more = activeStocks.length>25?`<div class="note">共 ${activeStocks.length} 只在板票（已全部列出）</div>`:'';
     const relTag = n.top_related ? '<span class="rel-tag">最高标相关</span>' : '';
     return `<div class="node ${n.top_related?'rel-top':''}">
       <div class="node-head">
@@ -1345,7 +1344,7 @@ document.addEventListener('click', e=>{
 });
 
 window.addEventListener('resize',()=>{
-  if(chartInited) echarts.init(document.getElementById('echart-ladder')).resize();
+  if(ladderChart) ladderChart.resize();
   if(mvChart) mvChart.resize();
   if(heatChart) heatChart.resize();
   if(skChart && document.getElementById('sk-modal').classList.contains('show')) skChart.resize();

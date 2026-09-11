@@ -14,6 +14,7 @@ A股短线仪表盘 - 数据采集 / 节点判定 / 推荐计算
 
 import sys, os, json, time, re, argparse, copy
 from datetime import datetime, timedelta
+from concurrent.futures import ThreadPoolExecutor
 
 sys.stdout.reconfigure(encoding='utf-8')
 import urllib.request
@@ -436,7 +437,8 @@ BAD_KW = ['减持', '退市', '亏损', '下滑', '降价', '产能过剩', '处
 
 
 # ============ HTTP ============
-def http_get(url, timeout=15, retry=3, silent=False, enc='utf-8'):
+def http_get(url, timeout=8, retry=3, silent=False, enc='utf-8'):
+    # 说明：这些接口正常都在 1~2s 内返回，故超时压到 8s，避免网络抖动时单次请求阻塞 15s×重试。
     # 兼容企业代理/MITM 证书环境：关闭证书校验，避免 RemoteDisconnected / CERTIFICATE_VERIFY_FAILED
     try:
         import ssl as _ssl
@@ -455,7 +457,7 @@ def http_get(url, timeout=15, retry=3, silent=False, enc='utf-8'):
                 if not silent:
                     print('  [warn] 请求失败 %s: %s' % (type(e).__name__, url[:70]))
                 return None
-            time.sleep(1.0 + i * 0.8)
+            time.sleep(0.6 + i * 0.6)
     return None
 
 
@@ -1053,11 +1055,11 @@ def fetch_market_volume(days=15):
     secids = ['1.000001', '0.399106']   # 沪 / 深
 
     def _amt(secid, lmt=25):
-        for _ in range(8):
+        for _ in range(4):
             url = ('https://%s/api/qt/stock/kline/get?secid=%s&fields1=f1,f2,f3&'
                    'fields2=f51,f57&klt=101&fqt=0&end=20500101&lmt=%d'
                    % (host, secid, lmt))
-            txt = http_get(url, silent=True)
+            txt = http_get(url, timeout=8, retry=2, silent=True)
             if txt:
                 try:
                     ks = json.loads(txt)['data']['klines']
@@ -1065,15 +1067,15 @@ def fetch_market_volume(days=15):
                         return {k.split(',')[0]: float(k.split(',')[1]) for k in ks}
                 except Exception:
                     pass
-            time.sleep(2.0)          # 慢节奏，避免被限流
+            time.sleep(1.2)          # 慢节奏，避免被限流
         return None
 
+    # 沪/深相互独立 → 并行拉取（原先串行且各自 8 次重试，抖动时极易拖到分钟级）
     res = {}
-    for sid in secids:
-        m = _amt(sid)
-        if m:
-            res[sid] = m
-        time.sleep(3.0)
+    with ThreadPoolExecutor(max_workers=2) as ex:
+        for sid, m in zip(secids, ex.map(_amt, secids)):
+            if m:
+                res[sid] = m
     # 沪深为量能主体，任一缺失则放弃（宁缺勿假，避免出现严重偏小的假量能）
     if '1.000001' not in res or '0.399106' not in res:
         print('  [warn] 沪深量能主体缺失，跳过')
@@ -1796,26 +1798,36 @@ def main():
     print('  交易日 %d 个：%s ~ %s' % (len(days), days[0], days[-1]))
 
     print('\n[2/7] 抓取历史涨停池...')
-    zt_hist = {}
-    for i, d in enumerate(days):
-        pool = fetch_zt_pool(d.replace('-', ''))
-        if pool:
-            zt_hist[d] = pool
-        if (i + 1) % 10 == 0 or i == len(days) - 1:
-            print('  进度 %d/%d' % (i + 1, len(days)))
-        time.sleep(0.12)
+    # 并发抓取（4 线程）→ 对空结果顺序补抓一次（并发可能触发限流，保证不漏交易日）
+    with ThreadPoolExecutor(max_workers=4) as ex:
+        pairs = list(ex.map(lambda d: (d, fetch_zt_pool(d.replace('-', ''))), days))
+    zt_hist = {d: p for d, p in pairs if p}
+    miss = [d for d, p in pairs if not p]
+    if miss:
+        print('  补抓空结果 %d 天...' % len(miss))
+        for d in miss:
+            p = fetch_zt_pool(d.replace('-', ''))
+            if p:
+                zt_hist[d] = p
+            time.sleep(0.15)
     print('  有效交易日涨停数据：%d 天' % len(zt_hist))
 
-    print('\n[3/7] 抓取指数 / 板块 / 新闻...')
-    index = fetch_index()
-    board = fetch_board_rank(60)
-    news = fetch_news()
+    print('\n[3/7] 抓取指数 / 板块 / 新闻 / 量能...')
+    # 四项互不依赖 → 并行抓取（原先串行，网络抖动时最耗时）
+    with ThreadPoolExecutor(max_workers=4) as ex:
+        f_idx = ex.submit(fetch_index)
+        f_board = ex.submit(fetch_board_rank, 60)
+        f_news = ex.submit(fetch_news)
+        f_mv = ex.submit(fetch_market_volume, 15)
+        index = f_idx.result()
+        board = f_board.result()
+        news = f_news.result()
+        mv = f_mv.result()
     print('  指数 %d 条 | 板块 %d 条 | 新闻 宏观%d 利好%d 利空%d 外围%d'
           % (len(index), len(board), len(news['macro']), len(news['good']),
              len(news['bad']), len(news['overseas'])))
 
     # 沪深京量能（近 15 个已收盘交易日）
-    mv = fetch_market_volume(15)
     if mv:
         print('  沪深京量能 %d 日，最新 %s = %.0f 亿'
               % (len(mv), mv[-1]['date'], mv[-1]['amount_yi']))
@@ -2004,12 +2016,7 @@ def main():
         if not code:
             return False
         ent = evt_cache.get(code) or {}
-        if ent.get('ts') == stamp:
-            ev, bd = ent.get('events', []), ent.get('boards', [])
-        else:
-            ev, bd = fetch_stock_events(code, nm, own_concepts=obj.get('concepts'))
-            evt_cache[code] = {'events': ev, 'boards': bd, 'ts': stamp}
-            time.sleep(0.22)
+        ev, bd = ent.get('events', []), ent.get('boards', [])   # 已在上方并发预热
         if not (ev or bd):
             return False
         base = list(obj.get('concepts') or [])
@@ -2020,6 +2027,33 @@ def main():
         obj['events'] = ev
         obj['hot_boards'] = bd
         return True
+
+    # 并发预热「未缓存」的涨停原因（网络耗时为主，4 线程）→ 再顺序合并，避免竞态
+    def _need_evt(o):
+        c = o.get('code', '')
+        return bool(c) and (evt_cache.get(c) or {}).get('ts') != stamp
+
+    pending, seen = [], set()
+    for n in nodes_out:
+        for s in n.get('stocks', []):
+            if s.get('folded'):
+                continue
+            if _need_evt(s) and s.get('code') not in seen:
+                seen.add(s['code']); pending.append((s['code'], s.get('name', ''), s.get('concepts')))
+        tg = n.get('trigger') or {}
+        if _need_evt(tg) and tg.get('code') not in seen:
+            seen.add(tg['code']); pending.append((tg['code'], tg.get('name', ''), tg.get('concepts')))
+    if pending:
+        print('  并发抓取涨停原因 %d 只...' % len(pending))
+
+        def _grab(it):
+            code, nm, cc = it
+            ev, bd = fetch_stock_events(code, nm, own_concepts=cc)
+            return code, ev, bd
+
+        with ThreadPoolExecutor(max_workers=4) as ex:
+            for code, ev, bd in ex.map(_grab, pending):
+                evt_cache[code] = {'events': ev, 'boards': bd, 'ts': stamp}
 
     for n in nodes_out:
         for s in n.get('stocks', []):

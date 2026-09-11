@@ -18,6 +18,7 @@
 """
 import os, json, time, re
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor
 
 from fetch_data import (BASE, DATA_JSON, http_get, load_json, save_json, save_js, theme_of)
 
@@ -101,33 +102,34 @@ def norm_board(name):
 
 
 def build_em_board_map():
-    """东方财富 概念(t:3) + 行业(t:2) 板块列表 → {归一名: code, 原名: code}（带重试）"""
+    """东方财富 概念(t:3) + 行业(t:2) 板块列表 → {归一名: code, 原名: code}（分页并发拉取）
+
+    并发不影响结果：先并发取各页，再按「原遍历顺序」合并，保持后者覆盖前者的语义。
+    """
+    jobs = [(fs, pn) for fs in ('m:90+t:3+f:!50', 'm:90+t:2+f:!50') for pn in range(1, 13)]
+
+    def _page(job):
+        fs, pn = job
+        path = ('/api/qt/clist/get?pn=%d&pz=100&po=1&np=1'
+                '&fltt=2&invt=2&fid=f3&fs=%s&fields=f12,f14' % (pn, fs))
+        t = em_get(path)
+        if not t:
+            return []
+        try:
+            diff = (json.loads(t).get('data') or {}).get('diff') or []
+        except Exception:
+            return []
+        return [(it.get('f12'), it.get('f14')) for it in diff]
+
+    with ThreadPoolExecutor(max_workers=6) as ex:
+        pages = list(ex.map(_page, jobs))
+
     m = {}
-    for fs in ('m:90+t:3+f:!50', 'm:90+t:2+f:!50'):
-        # 东财单次返回有上限，需分页拉全，否则大量板块名匹配不到
-        for pn in range(1, 13):
-            path = ('/api/qt/clist/get?pn=%d&pz=100&po=1&np=1'
-                    '&fltt=2&invt=2&fid=f3&fs=%s&fields=f12,f14' % (pn, fs))
-            t = em_get(path)
-            if not t:
-                break
-            try:
-                d = json.loads(t)
-                diff = (d.get('data') or {}).get('diff') or []
-            except Exception:
-                break
-            if not diff:
-                break
-            for it in diff:
-                c = it.get('f12')
-                n = it.get('f14')
-                if c and n:
-                    m[n] = c
-                    m[norm_board(n)] = c
-            if len(diff) < 100:
-                break
-            time.sleep(0.12)
-        time.sleep(0.3)
+    for rows in pages:
+        for c, n in rows:
+            if c and n:
+                m[n] = c
+                m[norm_board(n)] = c
     return m
 
 
@@ -347,11 +349,21 @@ def run():
           % (len(members), mx_used, em_used))
 
     cache = load_json(KLINE_CACHE, {})
+
+    def _cached(c):
+        v = cache.get(c) or {}
+        return v.get('last') == TODAY and bool(v.get('closes'))
+
+    # 并发拉取 K 线（腾讯源稳定）：只请求未命中缓存的，8 线程 → 大幅缩短耗时
+    todo = [c for c in members if not _cached(c)]
+    print('  拉取 K线：需请求 %d 只 / 缓存命中 %d 只' % (len(todo), len(members) - len(todo)))
+    if todo:
+        with ThreadPoolExecutor(max_workers=8) as ex:
+            list(ex.map(lambda c: tencent_kline(c, cache), todo))
+
     qual = []
     for i, (code, info) in enumerate(members.items()):
-        kv = tencent_kline(code, cache)
-        if i % 25 == 0:
-            print('  K线进度 %d/%d' % (i, len(members)))
+        kv = tencent_kline(code, cache)     # 此时基本都命中缓存，不再发网络请求
         if not kv:
             continue
         closes, vols = kv
@@ -370,7 +382,6 @@ def run():
             'vol_ratio': m['vol_ratio'], 'recent5_ret': m['recent5_ret'],
             'overbought': is_overbought(m), 'score': sc,
         })
-        time.sleep(0.05)
     save_json(KLINE_CACHE, cache)
 
     qual.sort(key=lambda x: -x['score'])

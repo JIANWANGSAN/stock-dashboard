@@ -125,9 +125,12 @@ def main():
     if not todo:
         print('✅ 标签已齐全，无需补齐')
     else:
+        # 并发抓取（网络耗时为主，4 线程）→ 再顺序回写，避免竞态
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=4) as ex:
+            fetched = list(ex.map(lambda it: fetch_stock_tags(it[2], it[3], it[4], cache), todo))
         ok, fail = 0, 0
-        for i, (kind, nid, code, market, name) in enumerate(todo):
-            tags = fetch_stock_tags(code, market, name, cache)
+        for i, ((kind, nid, code, market, name), tags) in enumerate(zip(todo, fetched)):
             good = bool(tags.get('concepts')) or tags.get('region', '—') != '—'
             if good:
                 ok += 1
@@ -148,7 +151,6 @@ def main():
                                       'industry': tags.get('industry', '')})
             if (i + 1) % 10 == 0 or i == len(todo) - 1:
                 print('  进度 %d/%d（成功%d 失败%d）' % (i + 1, len(todo), ok, fail))
-            time.sleep(0.45)
 
         save_json(STOCK_CACHE, cache)
         nodes_obj['updated'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
