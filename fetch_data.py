@@ -1090,6 +1090,64 @@ def fetch_market_volume(days=15):
     return out[-days:]
 
 
+# ============ 4c. 新闻关键词 ============
+# 金融/时事高频词补充进 jieba 词典，避免「央行/逆回购/工信部」被切碎或漏掉
+_NEWS_FIN_TERMS = ('央行 逆回购 公开市场操作 工信部 发改委 财政部 证监会 市场监管总局 金融监管总局 '
+                   '美联储 议息会议 降准 降息 加息 人工智能 大模型 折叠屏 新能源汽车 半导体 存储芯片 '
+                   '光模块 固态电池 稀土 军工 创新药 稳定币 数据中心 算力 机器人 消费电子 光伏 风电 '
+                   '储能 氢能 核聚变 充电桩 智能驾驶 低空经济 商业航天 国企改革 市值管理 并购重组 光刻机').split()
+
+# 泛动词/泛名词/格式噪声，一律不作为关键词
+_NEWS_STOP = set(('开展 持平 提出 促进 印发 统一 采用 使用 表示 指出 显示 发布 宣布 推出 相关 认为 '
+                  '影响 进行 实现 推动 加强 加快 加大 完善 优化 支持 鼓励 引导 要求 确保 提高 提升 '
+                  '降低 完成 达到 超过 突破 出现 成为 属于 包括 以及 同时 此外 目前 已经 今日 昨日 '
+                  '晚间 盘后 早盘 盘中 收盘 开盘 消息 报道 记者 公告 公司 集团 股份 有限 亿元 万元 '
+                  '百分点 市场 投资者 板块 概念 个股 股票 证券 上市 新闻 日报 时报 财经 天期 现报 联社 '
+                  '日电 首款 操作 扩大 记者 编辑 有限公司').split())
+
+_jieba_ready = False
+
+
+def _ensure_jieba():
+    global _jieba_ready
+    if _jieba_ready:
+        return
+    try:
+        import jieba
+        for w in _NEWS_FIN_TERMS:
+            jieba.add_word(w)
+        _jieba_ready = True
+    except Exception:
+        pass
+
+
+def news_keywords(text, topk=4):
+    """从新闻标题/摘要里提取重点关键词（jieba TF-IDF）；jieba 缺失时回退粗分词。
+
+    原句常被源站截断，前端只展示这些关键词。
+    """
+    text = (text or '').strip()
+    if not text:
+        return []
+    _ensure_jieba()
+    try:
+        import jieba.analyse
+        kws = jieba.analyse.extract_tags(text, topK=topk + 6)
+    except Exception:
+        kws = re.findall(r'[\u4e00-\u9fa5A-Za-z]{2,8}', text)
+    out = []
+    for w in kws:
+        w = (w or '').strip()
+        if not w or w in _NEWS_STOP or w in out:
+            continue
+        if re.fullmatch(r'[\d.%]+', w):     # 纯数字 / 百分比 噪声
+            continue
+        out.append(w)
+        if len(out) >= topk:
+            break
+    return out
+
+
 # ============ 5. 新闻 ============
 def fetch_news(days=1):
     """抓取每日必看新闻。
@@ -1127,7 +1185,9 @@ def fetch_news(days=1):
         if not brief:
             continue
         # 跨天时时间带上日期（MM-DD HH:MM），避免分不清是周末还是当天的消息
-        row = {'time': show_time[5:16] if multi else show_time[11:16], 'text': brief}
+        # 另附「重点关键词」：句子常被源站截断，前端只展示关键词，text 作为悬浮完整原句
+        row = {'time': show_time[5:16] if multi else show_time[11:16],
+               'text': brief, 'kw': news_keywords(text)}
         low = brief.lower()
         # 个股公告（形如"某某(600xxx.SH)公告称..."）不入宏观，只按利好/利空归类
         is_ann = bool(re.search(r'\(\d{6}\.(SH|SZ|BJ)\)', brief)) or '公告' in brief[:20]
@@ -2083,6 +2143,8 @@ def main():
         'index': index,
         'news': news,
         'board_daily': board[:15],
+        'board_heat': [{'name': b['name'], 'pct': b['pct'], 'zljlr_wan': b.get('zljlr_wan', 0)}
+                       for b in board[:40]],   # 板块涨幅热力图（必看第3块，东财概念板块）
         'board_3d': board_3d,
         'board_3d_note': board_3d_note,
         'board_3d_days': len(recent_days),

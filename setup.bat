@@ -35,11 +35,11 @@ if exist ".venv\Scripts\python.exe" (
 )
 
 echo.
-echo [3/3] Installing pypinyin (needed for name abbreviation) ...
-".venv\Scripts\python.exe" -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pypinyin
+echo [3/3] Installing pypinyin + jieba (name abbreviation + news keywords) ...
+".venv\Scripts\python.exe" -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pypinyin jieba
 if errorlevel 1 (
     echo [!] Tsinghua mirror failed, trying default source ...
-    ".venv\Scripts\python.exe" -m pip install pypinyin
+    ".venv\Scripts\python.exe" -m pip install pypinyin jieba
 )
 
 echo.

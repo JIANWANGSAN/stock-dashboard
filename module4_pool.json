@@ -1,546 +1,37 @@
 {
-  "date": "2026-09-10",
+  "date": "2026-09-11",
   "overlap_boards": [
-    "覆铜板"
+    "中兵系",
+    "印巴冲突概念"
   ],
-  "stocks": [
-    {
-      "code": "002815",
-      "name": "崇达技术",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 16.802,
-      "ma10": 15.712,
-      "ma20": 14.64,
-      "close": 18.31,
-      "bias20": 25.07,
-      "div_strength": 14.77,
-      "vol_ratio": 0.68,
-      "recent5_ret": 24.64,
-      "overbought": true,
-      "score": 59.4,
-      "rank": 1
-    },
-    {
-      "code": "688655",
-      "name": "迅捷兴",
-      "market": "1",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 52.236,
-      "ma10": 47.833,
-      "ma20": 45.372,
-      "close": 57.18,
-      "bias20": 26.02,
-      "div_strength": 15.13,
-      "vol_ratio": 0.69,
-      "recent5_ret": 24.9,
-      "overbought": true,
-      "score": 58.9,
-      "rank": 2
-    },
-    {
-      "code": "301132",
-      "name": "满坤科技",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 43.55,
-      "ma10": 41.163,
-      "ma20": 38.89,
-      "close": 48.4,
-      "bias20": 24.45,
-      "div_strength": 11.98,
-      "vol_ratio": 1.18,
-      "recent5_ret": 22.66,
-      "overbought": true,
-      "score": 57.9,
-      "rank": 3
-    },
-    {
-      "code": "600601",
-      "name": "方正科技",
-      "market": "1",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 14.184,
-      "ma10": 13.299,
-      "ma20": 12.799,
-      "close": 14.76,
-      "bias20": 15.32,
-      "div_strength": 10.82,
-      "vol_ratio": 0.51,
-      "recent5_ret": 16.96,
-      "overbought": false,
-      "score": 57.7,
-      "rank": 4
-    },
-    {
-      "code": "301511",
-      "name": "德福科技",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 100.546,
-      "ma10": 96.332,
-      "ma20": 92.648,
-      "close": 109.42,
-      "bias20": 18.1,
-      "div_strength": 8.52,
-      "vol_ratio": 0.77,
-      "recent5_ret": 22.24,
-      "overbought": false,
-      "score": 57.1,
-      "rank": 5
-    },
-    {
-      "code": "603228",
-      "name": "景旺电子",
-      "market": "1",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 105.62,
-      "ma10": 98.502,
-      "ma20": 95.98,
-      "close": 109.23,
-      "bias20": 13.81,
-      "div_strength": 10.04,
-      "vol_ratio": 0.37,
-      "recent5_ret": 23.54,
-      "overbought": false,
-      "score": 56.8,
-      "rank": 6
-    },
-    {
-      "code": "603186",
-      "name": "华正新材",
-      "market": "1",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 195.254,
-      "ma10": 187.511,
-      "ma20": 181.06,
-      "close": 216.17,
-      "bias20": 19.39,
-      "div_strength": 7.84,
-      "vol_ratio": 0.91,
-      "recent5_ret": 19.85,
-      "overbought": false,
-      "score": 56.6,
-      "rank": 7
-    },
-    {
-      "code": "002579",
-      "name": "中京电子",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 16.042,
-      "ma10": 15.092,
-      "ma20": 14.818,
-      "close": 16.73,
-      "bias20": 12.91,
-      "div_strength": 8.26,
-      "vol_ratio": 1.27,
-      "recent5_ret": 21.76,
-      "overbought": false,
-      "score": 56.0,
-      "rank": 8
-    },
-    {
-      "code": "000823",
-      "name": "超声电子",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 16.532,
-      "ma10": 15.933,
-      "ma20": 15.512,
-      "close": 18.7,
-      "bias20": 20.55,
-      "div_strength": 6.57,
-      "vol_ratio": 1.1,
-      "recent5_ret": 24.83,
-      "overbought": true,
-      "score": 55.1,
-      "rank": 9
-    },
-    {
-      "code": "300739",
-      "name": "明阳电路",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 24.596,
-      "ma10": 23.75,
-      "ma20": 23.326,
-      "close": 26.9,
-      "bias20": 15.32,
-      "div_strength": 5.44,
-      "vol_ratio": 1.4,
-      "recent5_ret": 18.19,
-      "overbought": false,
-      "score": 54.1,
-      "rank": 10
-    },
-    {
-      "code": "300964",
-      "name": "本川智能",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 62.79,
-      "ma10": 60.598,
-      "ma20": 59.22,
-      "close": 68.3,
-      "bias20": 15.33,
-      "div_strength": 6.03,
-      "vol_ratio": 1.24,
-      "recent5_ret": 16.93,
-      "overbought": false,
-      "score": 53.8,
-      "rank": 11
-    },
-    {
-      "code": "002913",
-      "name": "奥士康",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 66.422,
-      "ma10": 64.219,
-      "ma20": 61.308,
-      "close": 70.03,
-      "bias20": 14.23,
-      "div_strength": 8.34,
-      "vol_ratio": 1.01,
-      "recent5_ret": 10.41,
-      "overbought": false,
-      "score": 52.0,
-      "rank": 12
-    },
-    {
-      "code": "300852",
-      "name": "四会富仕",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 56.094,
-      "ma10": 51.239,
-      "ma20": 48.7,
-      "close": 65.65,
-      "bias20": 34.8,
-      "div_strength": 15.18,
-      "vol_ratio": 1.14,
-      "recent5_ret": 32.89,
-      "overbought": true,
-      "score": 51.3,
-      "rank": 13
-    },
-    {
-      "code": "301041",
-      "name": "金百泽",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 30.526,
-      "ma10": 29.763,
-      "ma20": 27.927,
-      "close": 31.43,
-      "bias20": 12.54,
-      "div_strength": 9.31,
-      "vol_ratio": 0.73,
-      "recent5_ret": 6.9,
-      "overbought": false,
-      "score": 49.0,
-      "rank": 14
-    },
-    {
-      "code": "301176",
-      "name": "逸豪新材",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 48.738,
-      "ma10": 47.279,
-      "ma20": 47.227,
-      "close": 58.8,
-      "bias20": 24.5,
-      "div_strength": 3.2,
-      "vol_ratio": 1.62,
-      "recent5_ret": 32.49,
-      "overbought": true,
-      "score": 48.4,
-      "rank": 15
-    },
-    {
-      "code": "002436",
-      "name": "兴森科技",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 37.888,
-      "ma10": 36.494,
-      "ma20": 35.706,
-      "close": 39.71,
-      "bias20": 11.21,
-      "div_strength": 6.11,
-      "vol_ratio": 0.87,
-      "recent5_ret": 12.84,
-      "overbought": false,
-      "score": 47.1,
-      "rank": 16
-    },
-    {
-      "code": "688020",
-      "name": "方邦股份",
-      "market": "1",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 140.722,
-      "ma10": 133.162,
-      "ma20": 132.854,
-      "close": 145.01,
-      "bias20": 9.15,
-      "div_strength": 5.92,
-      "vol_ratio": 0.94,
-      "recent5_ret": 14.14,
-      "overbought": false,
-      "score": 45.7,
-      "rank": 17
-    },
-    {
-      "code": "002171",
-      "name": "楚江新材",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 10.606,
-      "ma10": 10.401,
-      "ma20": 10.108,
-      "close": 11.17,
-      "bias20": 10.5,
-      "div_strength": 4.92,
-      "vol_ratio": 1.32,
-      "recent5_ret": 6.38,
-      "overbought": false,
-      "score": 42.9,
-      "rank": 18
-    },
-    {
-      "code": "001389",
-      "name": "广合科技",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 167.824,
-      "ma10": 162.773,
-      "ma20": 160.365,
-      "close": 175.51,
-      "bias20": 9.44,
-      "div_strength": 4.65,
-      "vol_ratio": 0.58,
-      "recent5_ret": 10.98,
-      "overbought": false,
-      "score": 42.0,
-      "rank": 19
-    },
-    {
-      "code": "002916",
-      "name": "深南电路",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 370.978,
-      "ma10": 363.064,
-      "ma20": 361.416,
-      "close": 392.31,
-      "bias20": 8.55,
-      "div_strength": 2.65,
-      "vol_ratio": 0.93,
-      "recent5_ret": 14.87,
-      "overbought": false,
-      "score": 41.5,
-      "rank": 20
-    },
-    {
-      "code": "300395",
-      "name": "菲利华",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 95.282,
-      "ma10": 94.266,
-      "ma20": 91.733,
-      "close": 100.07,
-      "bias20": 9.09,
-      "div_strength": 3.87,
-      "vol_ratio": 1.11,
-      "recent5_ret": 8.21,
-      "overbought": false,
-      "score": 40.6,
-      "rank": 21
-    },
-    {
-      "code": "605058",
-      "name": "澳弘电子",
-      "market": "1",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 28.888,
-      "ma10": 28.34,
-      "ma20": 27.712,
-      "close": 30.06,
-      "bias20": 8.47,
-      "div_strength": 4.24,
-      "vol_ratio": 1.15,
-      "recent5_ret": 7.63,
-      "overbought": false,
-      "score": 40.2,
-      "rank": 22
-    },
-    {
-      "code": "002463",
-      "name": "沪电股份",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 123.076,
-      "ma10": 121.752,
-      "ma20": 120.376,
-      "close": 128.78,
-      "bias20": 6.98,
-      "div_strength": 2.24,
-      "vol_ratio": 0.47,
-      "recent5_ret": 10.62,
-      "overbought": false,
-      "score": 36.2,
-      "rank": 23
-    },
-    {
-      "code": "301366",
-      "name": "一博科技",
-      "market": "0",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 57.756,
-      "ma10": 56.791,
-      "ma20": 56.314,
-      "close": 59.11,
-      "bias20": 4.96,
-      "div_strength": 2.56,
-      "vol_ratio": 0.77,
-      "recent5_ret": 5.69,
-      "overbought": false,
-      "score": 32.8,
-      "rank": 24
-    },
-    {
-      "code": "603175",
-      "name": "超颖电子",
-      "market": "1",
-      "boards": [
-        "覆铜板"
-      ],
-      "best_rank": 1,
-      "multi_board": 1,
-      "ma5": 92.91,
-      "ma10": 92.192,
-      "ma20": 92.02,
-      "close": 96.38,
-      "bias20": 4.74,
-      "div_strength": 0.97,
-      "vol_ratio": 0.71,
-      "recent5_ret": 7.77,
-      "overbought": false,
-      "score": 31.6,
-      "rank": 25
-    }
-  ],
-  "added_today": [
+  "stocks": [],
+  "added_today": [],
+  "removed_today": [
+    "崇达技术",
+    "迅捷兴",
+    "满坤科技",
+    "方正科技",
+    "德福科技",
+    "景旺电子",
+    "华正新材",
     "中京电子",
+    "超声电子",
+    "明阳电路",
+    "本川智能",
+    "奥士康",
+    "四会富仕",
+    "金百泽",
+    "逸豪新材",
     "兴森科技",
     "方邦股份",
-    "深南电路"
-  ],
-  "removed_today": [
-    "四方达",
-    "锐科激光",
-    "依顿电子",
-    "康达新材"
+    "楚江新材",
+    "广合科技",
+    "深南电路",
+    "菲利华",
+    "澳弘电子",
+    "沪电股份",
+    "一博科技",
+    "超颖电子"
   ],
   "history": [
     {
@@ -698,6 +189,37 @@
         "锐科激光",
         "依顿电子",
         "康达新材"
+      ]
+    },
+    {
+      "date": "2026-09-11",
+      "added": [],
+      "removed": [
+        "崇达技术",
+        "迅捷兴",
+        "满坤科技",
+        "方正科技",
+        "德福科技",
+        "景旺电子",
+        "华正新材",
+        "中京电子",
+        "超声电子",
+        "明阳电路",
+        "本川智能",
+        "奥士康",
+        "四会富仕",
+        "金百泽",
+        "逸豪新材",
+        "兴森科技",
+        "方邦股份",
+        "楚江新材",
+        "广合科技",
+        "深南电路",
+        "菲利华",
+        "澳弘电子",
+        "沪电股份",
+        "一博科技",
+        "超颖电子"
       ]
     }
   ]

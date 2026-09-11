@@ -248,15 +248,17 @@
 
   /* ============ 手机 / 平板适配（≤900px）============ */
   @media (max-width: 900px){
-    body{ flex-direction: column; height: auto; overflow: auto; font-size: 13px; padding-bottom: 58px; }
+    /* 壳层布局：body 固定高、内容区内部滚动 → 底部 tab 永远贴在屏幕底部，不随内容滚动消失 */
+    body{ flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; font-size: 13px; }
     /* 侧边栏转底部固定 tab 栏（原生 App 风格，单手操作） */
     .sidebar{
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;
       width: 100%; flex-direction: row; height: 52px;
       align-items: stretch; justify-content: center;
       padding: 0; border-top: 1px solid #374151;
       box-shadow: 0 -2px 10px rgba(0,0,0,.18);
       padding-bottom: env(safe-area-inset-bottom, 0);
+      transform: translateZ(0); will-change: transform;
     }
     .logo{ display: none; }   /* 底部不要 logo */
     .menu{
@@ -285,9 +287,9 @@
       background: #1f2937; border-top: 1px solid #374151; border-bottom: none;
       text-align: center; line-height: 1.4; white-space: nowrap; z-index: 99;
     }
-    body{ padding-bottom: calc(52px + env(safe-area-inset-bottom, 0px) + 24px); }   /* tab 栏(52+安全区) + 信息条 24 */
-    /* 内容区域：给底部 tab 留出空间 */
-    .content{ padding: 10px 11px 16px; overflow-y: visible; }
+    /* 内容区域：内部滚动，并给底部 tab 栏(52+安全区) + 信息条(24) 留出空间 */
+    .content{ flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
+              padding: 10px 11px calc(52px + env(safe-area-inset-bottom, 0px) + 24px); }
     .panel-head{ margin-bottom: 9px; }
     .panel-head h2{ font-size: 17px; }
     .panel-head .sub{ font-size: 11.5px; line-height: 1.5; }
@@ -382,7 +384,7 @@
     .logo{ font-size: 13px; padding: 4px 7px; }
     .menu-item{ padding: 7px 7px; font-size: 11.5px; }
     .footer-tag{ font-size: 10.5px; padding: 0 6px; }
-    .content{ padding: 8px 9px; }
+    .content{ padding: 8px 9px calc(52px + env(safe-area-inset-bottom, 0px) + 24px); }
     .card{ padding: 10px; margin-bottom: 8px; }
     .panel-head{ margin-bottom: 7px; }
     .panel-head h2{ font-size: 15.5px; }
@@ -452,7 +454,38 @@
     #cand-box table{ display: table; width: 100%; table-layout: fixed; overflow: visible; white-space: normal; }
     #cand-box table th, #cand-box table td{ white-space: normal; word-break: break-word; padding: 5px 2px; font-size: 10px; }
     #cand-box table .cpt{ font-size: 9.5px; padding: 0 3px; }
+    #heat-chart{ height: 288px; }
+    .sk-chart{ height: 264px; }
+    .kw{ font-size: 11px; padding: 1px 6px; }
   }
+
+  /* ===== 板块热力图 / 新闻关键词 / 个股行情弹层 ===== */
+  #heat-chart{ width: 100%; height: 340px; }
+  .news-item{ display: flex; align-items: flex-start; gap: 8px; }
+  .news-item .t{ flex: 0 0 auto; color: #9ca3af; font-size: 11px; padding-top: 2px; }
+  .kws{ display: flex; flex-wrap: wrap; gap: 4px; }
+  .kw{ background: #eef2ff; color: #3730a3; border-radius: 5px; padding: 1px 8px; font-size: 12px; line-height: 1.65; }
+  /* 可点击的股票名 */
+  .sk{ cursor: pointer; border-bottom: 1px dashed rgba(37,99,235,.5); }
+  .sk:active{ opacity: .55; }
+  /* 个股行情弹层 */
+  .sk-modal{ position: fixed; inset: 0; background: rgba(17,24,39,.55); z-index: 2000;
+             display: none; align-items: center; justify-content: center; padding: 14px; }
+  .sk-modal.show{ display: flex; }
+  .sk-panel{ background: #fff; border-radius: 12px; width: 100%; max-width: 580px; max-height: 92vh;
+             overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 12px 34px rgba(0,0,0,.32); }
+  .sk-head{ display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid #eef2f7; }
+  .sk-head b{ font-size: 16px; }
+  .sk-code{ color: #6b7280; font-size: 12px; margin-left: 6px; }
+  .sk-pct{ font-weight: 700; margin-left: 8px; font-size: 14px; }
+  .sk-close{ cursor: pointer; font-size: 15px; color: #6b7280; padding: 2px 9px; border-radius: 6px; }
+  .sk-close:hover{ background: #f1f5f9; }
+  .sk-tabs{ display: flex; gap: 8px; padding: 8px 14px 0; }
+  .sk-tab{ font-size: 12.5px; padding: 4px 12px; border-radius: 999px; background: #f1f5f9; color: #475569; cursor: pointer; }
+  .sk-tab.active{ background: #2563eb; color: #fff; }
+  .sk-chart{ width: 100%; height: 330px; }
+  .sk-loading{ padding: 44px; text-align: center; color: #9ca3af; font-size: 13px; }
+  .sk-tip{ padding: 6px 14px 10px; font-size: 11px; color: #9ca3af; text-align: center; }
 </style>
 </head>
 <body data-page-node-id="ZdJuHsnkYj78gkNicmu0Dh">
@@ -470,9 +503,6 @@
   <div class="content" data-page-node-id="18AvzqcVR5vcfGLGn4kYYY">
     <!-- 模块1 -->
     <div class="panel active" id="panel-daily" data-page-node-id="bzl2oEk4CteCHy41Vx8ERy">
-      <div class="panel-head" data-page-node-id="GrRbO1V95Q7cO8D9djVfNH">
-        <div class="sub" data-page-node-id="qsh0ieLeny9BFyuZZKk10A">仅筛选对 A股板块 / 题材 / 个股有实质影响的消息，每条一句话极简，剔除无效杂讯</div>
-      </div>
       <div class="card" id="mv-card" data-page-node-id="mvCardTop">
         <div class="mv-head">
           <div class="mv-title">沪深量能</div>
@@ -488,6 +518,14 @@
       <div class="card" data-page-node-id="VCMsMQPZBqK3VyowQEJHAd">
         <div class="card-title" data-page-node-id="UFtmjyiSTCDZzLjtwR001m">盘后全景 · 指数与量能 <span class="tag" id="idx-date" data-page-node-id="JSvTvQOI9d5iqx2GfqJPq1">—</span></div>
         <div class="idx-bar" id="idx-bar" data-page-node-id="dSTEw45JNDX1ltrYgop4Tw"></div>
+      </div>
+      <div class="card" id="heat-card" data-page-node-id="heatCard">
+        <div class="card-title" data-page-node-id="heatTitle">板块涨幅热力图 <span class="tag" id="heat-date" data-page-node-id="heatDate">—</span>
+          <span class="tag" style="background:#fee2e2;color:#dc2626;">红·涨</span>
+          <span class="tag" style="background:#dcfce7;color:#16a34a;">绿·跌</span>
+        </div>
+        <div id="heat-chart" data-page-node-id="heatChart"></div>
+        <div class="note" style="margin-top:4px;" data-page-node-id="heatNote">块面越大＝资金关注越高 · 块色＝当日涨跌幅（东财概念板块）</div>
       </div>
       <div class="card bp-card" data-page-node-id="bpCard">
         <div class="card-title" data-page-node-id="bpTitle">连板晋级 · 昨日涨停表现</div>
@@ -586,6 +624,22 @@
     </div>
   </div>
 
+  <!-- 个股行情弹层：点击任意股票名 → 当日分时 / 日K线（东财实时接口） -->
+  <div id="sk-modal" class="sk-modal" data-page-node-id="skModal">
+    <div class="sk-panel">
+      <div class="sk-head">
+        <div class="sk-head-l"><b id="sk-name">—</b><span class="sk-code" id="sk-code">—</span><span class="sk-pct" id="sk-pct"></span></div>
+        <div class="sk-close" id="sk-close">✕</div>
+      </div>
+      <div class="sk-tabs">
+        <span class="sk-tab active" data-v="min" data-page-node-id="skTabMin">当日分时</span>
+        <span class="sk-tab" data-v="k" data-page-node-id="skTabK">日K线</span>
+      </div>
+      <div id="sk-chart" class="sk-chart"></div>
+      <div class="sk-tip">数据来源：东方财富 · 点击空白处关闭</div>
+    </div>
+  </div>
+
 <script src="data.js"></script>
 <script>
 const D = window.DASHBOARD_DATA || null;
@@ -605,6 +659,7 @@ function init(){
   if(!D){ document.getElementById('foot-updated').textContent='未加载到数据(data.js)'; return; }
   document.getElementById('foot-updated').textContent = '数据更新：'+D.updated+'　|　交易日 '+D.date;
   renderMarketVolume();
+  renderBoardHeat();
   renderIndex();
   renderBoardPerf();
   renderNews('macro');
@@ -727,12 +782,49 @@ function renderMarketVolume(){
   });
 }
 
+/* ---- 模块1 板块涨幅热力图（东财概念板块 · treemap） ---- */
+let heatChart=null;
+function renderBoardHeat(){
+  const box=document.getElementById('heat-chart');
+  const arr=(D.board_heat||[]).slice();
+  if(!arr.length){ box.innerHTML='<div class="empty">暂无板块数据</div>'; return; }
+  document.getElementById('heat-date').textContent=D.date||'';
+  const color=p=>{
+    const t=Math.min(1,Math.abs(p)/6), a=(0.5+0.5*t).toFixed(2);
+    return p>=0 ? `rgba(220,38,38,${a})` : `rgba(22,163,74,${a})`;   // 红涨绿跌
+  };
+  const data=arr.map(b=>({
+    name:b.name,
+    value:Math.max(0.4, Math.abs(b.zljlr_wan||0)/10000),   // 块面=资金关注度(亿)
+    pct:b.pct,
+    itemStyle:{color:color(b.pct)}
+  }));
+  heatChart=echarts.init(box);
+  heatChart.setOption({
+    tooltip:{formatter:p=>`${p.name}<br/>涨跌幅 ${p.data.pct>0?'+':''}${p.data.pct.toFixed(2)}%`},
+    series:[{
+      type:'treemap', roam:false, nodeClick:false, breadcrumb:{show:false},
+      left:0, top:0, right:0, bottom:0,
+      label:{show:true, fontSize:11, color:'#fff', lineHeight:14,
+        formatter:p=>`${p.name}\n${p.data.pct>0?'+':''}${p.data.pct.toFixed(1)}%`},
+      upperLabel:{show:false},
+      itemStyle:{borderColor:'#fff', borderWidth:1.5, gapWidth:1},
+      data:data
+    }]
+  });
+}
+
 /* ---- 模块1 新闻 ---- */
 function renderNews(k){
   const list=document.getElementById('news-list');
   const arr=(D.news&&D.news[k])||[];
   if(!arr.length){ list.innerHTML='<div class="empty">该分类暂无消息</div>'; return; }
-  list.innerHTML=arr.map(n=>`<div class="news-item"><span class="t">${esc(n.time)}</span>${esc(n.text)}</div>`).join('');
+  // 原句常被源站截断 → 只展示「重点关键词」；完整原句放进 title，hover/长按可看
+  list.innerHTML=arr.map(n=>{
+    const kws=(n.kw&&n.kw.length)?n.kw:[(n.text||'').slice(0,14)];
+    const chips=kws.map(w=>`<span class="kw">${esc(w)}</span>`).join('');
+    return `<div class="news-item" title="${esc(n.text||'')}"><span class="t">${esc(n.time)}</span><span class="kws">${chips}</span></div>`;
+  }).join('');
 }
 
 /* ---- 模块2 折线图 ---- */
@@ -824,7 +916,7 @@ function renderNodes(){
           : `<span class="cpt">${esc(c)}</span>`).join('');
       const capTxt = s.total_cap_yi!=null ? `<span class="st-cap">${s.total_cap_yi}亿</span>` : '';
       return `<div class="stock-row">
-        <span class="nm ${s.is_yizi?'yizi':''}">${esc(s.name)}</span>${yizi}
+        <span class="nm sk ${s.is_yizi?'yizi':''}" data-scode="${esc(s.code)}" data-smkt="${s.market}" data-sname="${esc(s.name)}">${esc(s.name)}</span>${yizi}
         <span class="py">${pyHtml}</span>
         <span class="rg ${o.regionHit?'hl-region':''}">${esc(s.region)}</span>
         ${s.industry?`<span class="${o.industryHit?'hl-industry':''}" style="font-size:11px;${o.industryHit?'':'color:#6b7280;'}">${esc(s.industry)}</span>`:''}
@@ -850,7 +942,7 @@ function renderNodes(){
         <span class="node-desc">${esc(n.desc||'')}</span>
         ${relTag}
       </div>
-      <div class="trigger">触发股：<b>${esc(tg.name||'-')}</b>（<span class="py">${esc(tg.pinyin||'')}</span>）　地域 <b>${esc(tg.region||'-')}</b>　${esc(tg.industry||'')}
+      <div class="trigger">触发股：<b class="sk" data-scode="${esc(tg.code||'')}" data-sname="${esc(tg.name||'')}">${esc(tg.name||'-')}</b>（<span class="py">${esc(tg.pinyin||'')}</span>）　地域 <b>${esc(tg.region||'-')}</b>　${esc(tg.industry||'')}
         ${(tgConcepts.length?'　'+tgConcepts.map(c=>`<span class="cpt">${esc(c)}</span>`).join(''):'')}
         ${n.volume_ratio?`　涨停日量/启动量 <b>${n.volume_ratio}</b>`:''}
       </div>
@@ -885,7 +977,7 @@ function renderReco(){
          <span style="opacity:.75;font-size:12px;">口径：${esc(r.bid_basis||'上板分时量')}（首次封板时点）</span>`
       : `· 竞价量 ≥ <b>${r.bid_required_yi}亿</b>（分时数据缺失，暂按全天成交额 ${r.amount_yi}亿 × 50% 回退）`;
     box.innerHTML=`<div class="reco">
-    <h3>🎯 次日连板首选：${esc(r.name)}（${esc(r.pinyin)}）</h3>
+    <h3>🎯 次日连板首选：<span class="sk" data-scode="${esc(r.code||'')}" data-sname="${esc(r.name)}">${esc(r.name)}</span>（${esc(r.pinyin)}）</h3>
     <div class="pv">
       <div><div class="k">连板高度</div><div class="val">${r.boards}板</div></div>
       <div><div class="k">地域</div><div class="val">${esc(r.region)}</div></div>
@@ -907,7 +999,13 @@ function renderReco(){
 /* ---- 模块2 候选 ---- */
 function renderCandidates(){
   const box=document.getElementById('cand-box');
-  const arr=D.candidates||[];
+  // 按「发酵」降序（次键：板数 > 主线共振）
+  const arr=[...(D.candidates||[])].sort((a,b)=>{
+    const fa=(a.ferment||{}).zt||0, fb=(b.ferment||{}).zt||0;
+    if(fb!==fa) return fb-fa;
+    if((b.boards||0)!==(a.boards||0)) return (b.boards||0)-(a.boards||0);
+    return (b.concept_hit||0)-(a.concept_hit||0);
+  });
   if(!arr.length){ box.innerHTML='<div class="empty">暂无候选</div>'; return; }
   box.innerHTML=`<table>
     <thead><tr><th class="c2-name">名称</th><th class="c2-py">缩写</th><th class="c2-region">地域</th><th class="c2-concepts">题材概念</th><th class="c2-boards">板数</th><th class="c2-node">来源节点</th><th class="c2-hit">主线</th><th class="c2-ferment">发酵</th></tr></thead>
@@ -915,7 +1013,7 @@ function renderCandidates(){
       const cs=(c.concepts||[]).filter(x=>!/板块$/.test(x)).slice(0,3).map(x=>`<span class="cpt">${esc(x)}</span>`).join('');
       const f=c.ferment||{};
       return `<tr>
-        <td class="c2-name"><b>${esc(c.name)}</b></td>
+        <td class="c2-name"><b class="sk" data-scode="${esc(c.code)}" data-smkt="${c.market}" data-sname="${esc(c.name)}">${esc(c.name)}</b></td>
         <td class="c2-py"><span class="py" style="font-family:ui-monospace,monospace;font-size:11px;background:#eef2ff;padding:1px 6px;border-radius:4px;">${esc(c.pinyin)}</span></td>
         <td class="c2-region">${esc(c.region)}</td>
         <td class="c2-concepts">${cs}</td>
@@ -1077,7 +1175,7 @@ function renderModule4(){
       const boards = (s.boards||[]).map(b=>esc(b)).join('、');
       return `<tr>
         <td class="c-rank">${i+1}</td>
-        <td class="c-name"><b>${esc(s.name)}</b></td><td class="c-code">${esc(s.code)}</td>
+        <td class="c-name"><b class="sk" data-scode="${esc(s.code)}" data-sname="${esc(s.name)}">${esc(s.name)}</b></td><td class="c-code">${esc(s.code)}</td>
         <td class="c-board" style="font-size:12px;">${boards}</td>
         <td class="c-ma"><span style="color:#16a34a;">多头✓</span></td>
         <td class="c-price">${s.close!=null?s.close.toFixed(2):'-'} / ${s.ma20!=null?s.ma20.toFixed(2):'-'}</td>
@@ -1099,9 +1197,121 @@ function renderModule4(){
     (st.turnover?('<b>轮动规则</b>：'+esc(st.turnover)+'<br><br>'):'') +
     (st.disclaimer?('<span style="color:#9ca3af;">'+esc(st.disclaimer)+'</span>'):'');
 }
+/* ---- 个股行情弹层：当日分时 / 日K线（东财接口，前端直连） ---- */
+let skChart=null, skSecid='', skView='min';
+function secidOf(code, market){
+  const m=(market===0||market===1)?market:(String(code).charAt(0)==='6'?1:0);
+  return m+'.'+String(code);
+}
+function skFetch(url){
+  let tries=0;
+  const once=()=>fetch(url,{cache:'no-store'})
+    .then(r=>{ if(!r.ok) throw new Error('http'); return r.json(); })
+    .catch(e=>{ if(++tries<3) return new Promise(res=>setTimeout(res,700)).then(once); throw e; });
+  return once();
+}
+function openStock(code, market, name){
+  code=String(code||''); if(!code) return;
+  skSecid=secidOf(code, market); skView='min';
+  document.getElementById('sk-name').textContent=name||code;
+  document.getElementById('sk-code').textContent=code;
+  document.getElementById('sk-pct').textContent='';
+  document.querySelectorAll('#sk-modal .sk-tab').forEach(t=>t.classList.toggle('active', t.dataset.v==='min'));
+  document.getElementById('sk-modal').classList.add('show');
+  drawStock();
+}
+function closeStock(){ document.getElementById('sk-modal').classList.remove('show'); }
+function drawStock(){
+  const el=document.getElementById('sk-chart');
+  el.innerHTML='<div class="sk-loading">加载中…</div>';
+  if(skChart){ try{ skChart.dispose(); }catch(e){} skChart=null; }
+  const isMin=(skView==='min');
+  const url=isMin
+    ? 'https://push2his.eastmoney.com/api/qt/stock/trends2/get?secid='+skSecid+'&fields1=f1,f2,f3,f4,f5,f6,f7,f8&fields2=f51,f52,f53,f54,f55,f56,f57,f58&iscr=0&ndays=1'
+    : 'https://push2his.eastmoney.com/api/qt/stock/kline/get?secid='+skSecid+'&fields1=f1,f2,f3&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&end=20500101&lmt=120';
+  skFetch(url).then(d=>{
+    const dd=(d&&d.data)||null;
+    if(!dd || !(isMin?dd.trends:dd.klines)){ el.innerHTML='<div class="empty">暂无数据（可能停牌/退市）</div>'; return; }
+    if(isMin) renderMinute(el, dd); else renderKline(el, dd);
+  }).catch(()=>{ el.innerHTML='<div class="empty">加载失败，点空白关闭后重试</div>'; });
+}
+function renderMinute(el, dd){
+  const pre=dd.preClose||0;
+  const rows=(dd.trends||[]).map(s=>s.split(','));
+  const times=rows.map(r=>r[0].slice(11));
+  const price=rows.map(r=>+r[2]);
+  const avg=rows.map(r=>+r[7]);
+  const last=price.length?price[price.length-1]:pre;
+  const up=last>=pre;
+  const color=up?'#dc2626':'#16a34a';
+  const pctEl=document.getElementById('sk-pct');
+  if(pctEl && pre){ pctEl.textContent=(up?'+':'')+((last-pre)/pre*100).toFixed(2)+'%'; pctEl.style.color=color; }
+  skChart=echarts.init(el);
+  skChart.setOption({
+    animation:false,
+    grid:{left:48,right:46,top:16,bottom:26},
+    tooltip:{trigger:'axis',valueFormatter:v=>v!=null?(+v).toFixed(2):'-'},
+    xAxis:{type:'category',data:times,boundaryGap:false,
+      axisLabel:{fontSize:10,interval:Math.max(0,Math.floor(times.length/4))},axisLine:{lineStyle:{color:'#cbd5e1'}}},
+    yAxis:[
+      {type:'value',scale:true,min:pre?+(pre*0.94).toFixed(2):null,max:pre?+(pre*1.06).toFixed(2):null,
+       axisLabel:{fontSize:10,color:color},splitLine:{lineStyle:{color:'#eef2f7'}}},
+      {type:'value',min:-6,max:6,axisLabel:{fontSize:10,formatter:v=>v.toFixed(1)+'%'},splitLine:{show:false},axisLine:{show:false}}
+    ],
+    series:[
+      {type:'line',data:price,symbol:'none',lineStyle:{width:1.4,color},
+       areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[
+         {offset:0,color:up?'rgba(220,38,38,.28)':'rgba(22,163,74,.28)'},{offset:1,color:'rgba(255,255,255,0)'}])},
+       markLine:{silent:true,symbol:'none',label:{show:false},lineStyle:{color:'#94a3b8',type:'dashed',width:1},data:[{yAxis:pre}]}},
+      {type:'line',data:avg,symbol:'none',lineStyle:{width:1,color:'#f59e0b'}}
+    ]
+  });
+}
+function renderKline(el, dd){
+  const rows=(dd.klines||[]).map(s=>s.split(','));
+  const dates=rows.map(r=>r[0]);
+  const kd=rows.map(r=>[+r[1],+r[2],+r[4],+r[3]]);   // [开,收,低,高]
+  const vol=rows.map(r=>({value:+r[5],itemStyle:{color:+r[2]>=+r[1]?'#dc2626':'#16a34a'}}));
+  skChart=echarts.init(el);
+  skChart.setOption({
+    animation:false,
+    grid:[{left:52,right:16,top:16,height:'60%'},{left:52,right:16,top:'72%',height:'17%'}],
+    tooltip:{trigger:'axis',axisPointer:{type:'cross'}},
+    axisPointer:{link:[{xAxisIndex:'all'}]},
+    xAxis:[{type:'category',data:dates,gridIndex:0,axisLabel:{show:false}},
+           {type:'category',data:dates,gridIndex:1,axisLabel:{fontSize:9,interval:Math.max(0,Math.floor(dates.length/6))}}],
+    yAxis:[{scale:true,gridIndex:0,axisLabel:{fontSize:10},splitLine:{lineStyle:{color:'#eef2f7'}}},
+           {gridIndex:1,axisLabel:{show:false},splitLine:{show:false},axisLine:{show:false}}],
+    dataZoom:[{type:'inside',xAxisIndex:[0,1]}],
+    series:[
+      {type:'candlestick',data:kd,xAxisIndex:0,yAxisIndex:0,
+       itemStyle:{color:'#dc2626',color0:'#16a34a',borderColor:'#dc2626',borderColor0:'#16a34a'}},
+      {type:'bar',data:vol,xAxisIndex:1,yAxisIndex:1,barWidth:'55%'}
+    ]
+  });
+}
+document.getElementById('sk-close').addEventListener('click', closeStock);
+document.getElementById('sk-modal').addEventListener('click', e=>{ if(e.target.id==='sk-modal') closeStock(); });
+document.querySelectorAll('#sk-modal .sk-tab').forEach(t=>t.addEventListener('click',()=>{
+  skView=t.dataset.v;
+  document.querySelectorAll('#sk-modal .sk-tab').forEach(x=>x.classList.toggle('active',x===t));
+  drawStock();
+}));
+// 全局委托：点击任意带 data-scode 的股票名 → 打开行情弹层
+document.addEventListener('click', e=>{
+  if(!(e.target instanceof Element)) return;
+  const t=e.target.closest('[data-scode]');
+  if(!t) return;
+  e.preventDefault();
+  const mk=(t.dataset.smkt!==undefined && t.dataset.smkt!=='') ? parseInt(t.dataset.smkt,10) : undefined;
+  openStock(t.dataset.scode, mk, t.dataset.sname||t.textContent.trim());
+});
+
 window.addEventListener('resize',()=>{
   if(chartInited) echarts.init(document.getElementById('echart-ladder')).resize();
   if(mvChart) mvChart.resize();
+  if(heatChart) heatChart.resize();
+  if(skChart && document.getElementById('sk-modal').classList.contains('show')) skChart.resize();
 });
 </script>
 </body>

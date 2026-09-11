@@ -1,7 +1,7 @@
 /* A股短线仪表盘 · Service Worker
  * 策略：网络优先（保证打开即最新数据），断网时回退缓存（离线也能看）。
  */
-const CACHE = 'a-stock-dashboard-v1';
+const CACHE = 'a-stock-dashboard-v2';
 const ASSETS = [
   './',
   './index.html',
