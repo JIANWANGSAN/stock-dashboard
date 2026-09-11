@@ -454,18 +454,13 @@
     #cand-box table{ display: table; width: 100%; table-layout: fixed; overflow: visible; white-space: normal; }
     #cand-box table th, #cand-box table td{ white-space: normal; word-break: break-word; padding: 5px 2px; font-size: 10px; }
     #cand-box table .cpt{ font-size: 9.5px; padding: 0 3px; }
-    #heat-chart{ height: 340px; }
     .sk-chart{ height: 300px; flex: 0 0 auto; }
-    .kw{ font-size: 11px; padding: 1px 6px; }
   }
 
-  /* ===== 板块热力图 / 新闻简述 / 个股行情弹层 ===== */
-  #heat-chart{ width: 100%; height: 420px; }
+  /* ===== 新闻简述 / 个股行情弹层 ===== */
   .news-item{ display: flex; align-items: flex-start; gap: 8px; }
   .news-item .t{ flex: 0 0 auto; color: #9ca3af; font-size: 11px; padding-top: 2px; }
   .news-item .tx{ flex: 1; line-height: 1.6; }
-  .kws{ display: flex; flex-wrap: wrap; gap: 4px; }
-  .kw{ background: #eef2ff; color: #3730a3; border-radius: 5px; padding: 1px 8px; font-size: 12px; line-height: 1.65; }
   /* 可点击的股票名 */
   .sk{ cursor: pointer; border-bottom: 1px dashed rgba(37,99,235,.5); }
   .sk:active{ opacity: .55; }
@@ -519,14 +514,6 @@
       <div class="card" data-page-node-id="VCMsMQPZBqK3VyowQEJHAd">
         <div class="card-title" data-page-node-id="UFtmjyiSTCDZzLjtwR001m">盘后全景 · 指数与量能 <span class="tag" id="idx-date" data-page-node-id="JSvTvQOI9d5iqx2GfqJPq1">—</span></div>
         <div class="idx-bar" id="idx-bar" data-page-node-id="dSTEw45JNDX1ltrYgop4Tw"></div>
-      </div>
-      <div class="card" id="heat-card" data-page-node-id="heatCard">
-        <div class="card-title" data-page-node-id="heatTitle">板块涨幅热力图 <span class="tag" id="heat-date" data-page-node-id="heatDate">—</span>
-          <span class="tag" style="background:#fee2e2;color:#dc2626;">红·涨</span>
-          <span class="tag" style="background:#dcfce7;color:#16a34a;">绿·跌</span>
-        </div>
-        <div id="heat-chart" data-page-node-id="heatChart"></div>
-        <div class="note" style="margin-top:4px;" data-page-node-id="heatNote">块面越大＝资金关注越高 · 块色＝当日涨跌幅（东财概念板块）</div>
       </div>
       <div class="card bp-card" data-page-node-id="bpCard">
         <div class="card-title" data-page-node-id="bpTitle">连板晋级 · 昨日涨停表现</div>
@@ -660,7 +647,6 @@ function init(){
   if(!D){ document.getElementById('foot-updated').textContent='未加载到数据(data.js)'; return; }
   document.getElementById('foot-updated').textContent = '数据更新：'+D.updated+'　|　交易日 '+D.date;
   renderMarketVolume();
-  renderBoardHeat();
   renderIndex();
   renderBoardPerf();
   renderNews('macro');
@@ -779,38 +765,6 @@ function renderMarketVolume(){
         lineStyle:{color:'#f59e0b',type:'dashed',width:2},
         label:{formatter:'3万亿',color:'#f59e0b',fontSize:10,position:'insideEndTop'},
         data:[{yAxis:30000}]}
-    }]
-  });
-}
-
-/* ---- 模块1 板块涨幅热力图（东财概念板块 · treemap） ---- */
-let heatChart=null;
-function renderBoardHeat(){
-  const box=document.getElementById('heat-chart');
-  const arr=(D.board_heat||[]).slice(0,28);   // 只取前 28 个板块，块面更大、文字放得下
-  if(!arr.length){ box.innerHTML='<div class="empty">暂无板块数据</div>'; return; }
-  document.getElementById('heat-date').textContent=D.date||'';
-  const color=p=>{
-    const t=Math.min(1,Math.abs(p)/6), a=(0.45+0.55*t).toFixed(2);
-    return p>=0 ? `rgba(214,31,31,${a})` : `rgba(21,152,66,${a})`;   // 红涨绿跌
-  };
-  const data=arr.map(b=>({
-    name:b.name,
-    value:Math.max(0.5, Math.abs(b.zljlr_wan||0)/10000),   // 块面=资金关注度(亿)
-    pct:b.pct,
-    itemStyle:{color:color(b.pct)}
-  }));
-  heatChart=echarts.init(box);
-  heatChart.setOption({
-    tooltip:{formatter:p=>`${p.name}　${p.data.pct>0?'+':''}${p.data.pct.toFixed(2)}%`},
-    series:[{
-      type:'treemap', roam:false, nodeClick:false, breadcrumb:{show:false},
-      left:0, top:0, right:0, bottom:0,
-      label:{show:true, fontSize:12, lineHeight:15, color:'#fff', overflow:'break',
-        formatter:p=>`${p.name} ${p.data.pct>0?'+':''}${p.data.pct.toFixed(1)}%`},
-      upperLabel:{show:false},
-      itemStyle:{borderColor:'#fff', borderWidth:2, gapWidth:2},
-      data:data
     }]
   });
 }
@@ -1346,7 +1300,6 @@ document.addEventListener('click', e=>{
 window.addEventListener('resize',()=>{
   if(ladderChart) ladderChart.resize();
   if(mvChart) mvChart.resize();
-  if(heatChart) heatChart.resize();
   if(skChart && document.getElementById('sk-modal').classList.contains('show')) skChart.resize();
 });
 </script>
