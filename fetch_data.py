@@ -1121,6 +1121,28 @@ def _ensure_jieba():
         pass
 
 
+def news_brief(title, summary, limit=72):
+    """把新闻压成「完整句子」的简述：取摘要正文（去【标题】前缀）里的完整句，拼到接近 limit 字。
+
+    源站摘要常在句中被截断，故只保留以 。！？ 结尾的完整句；全无完整句时回退标题。
+    """
+    t = (title or '').strip()
+    s = re.sub(r'^【[^】]*】', '', (summary or '').strip()).strip()
+    if not s:
+        return t
+    parts = re.split(r'(?<=[。！？])', s)
+    out = ''
+    for p in parts:
+        p = p.strip()
+        if not p:
+            continue
+        if out and len(out) + len(p) > limit:
+            break
+        out += p
+    out = out.strip()
+    return out or t or s[:60]
+
+
 def news_keywords(text, topk=4):
     """从新闻标题/摘要里提取重点关键词（jieba TF-IDF）；jieba 缺失时回退粗分词。
 
@@ -1176,18 +1198,14 @@ def fetch_news(days=1):
             continue
         title = (it.get('title') or '').strip()
         summary = (it.get('summary') or '').strip()
-        text = summary if summary else title
-        # 一句话极简：截到第一个句号
-        m = re.split(r'[。；;]', text)
-        brief = m[0].strip() if m and m[0].strip() else title
-        brief = re.sub(r'^【[^】]*】', '', brief).strip()
-        brief = brief[:90]
+        # 只显示「完整句子」的简述（源站摘要常被截断，故按句号取完整句）
+        brief = news_brief(title, summary)
         if not brief:
             continue
         # 跨天时时间带上日期（MM-DD HH:MM），避免分不清是周末还是当天的消息
-        # 另附「重点关键词」：句子常被源站截断，前端只展示关键词，text 作为悬浮完整原句
+        # text = 完整句简述（前端主展示）；kw = 关键词（备用）
         row = {'time': show_time[5:16] if multi else show_time[11:16],
-               'text': brief, 'kw': news_keywords(text)}
+               'text': brief, 'kw': news_keywords(title + ' ' + brief)}
         low = brief.lower()
         # 个股公告（形如"某某(600xxx.SH)公告称..."）不入宏观，只按利好/利空归类
         is_ann = bool(re.search(r'\(\d{6}\.(SH|SZ|BJ)\)', brief)) or '公告' in brief[:20]
