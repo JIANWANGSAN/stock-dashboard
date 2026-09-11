@@ -1041,6 +1041,55 @@ def fetch_index():
     return out
 
 
+# ============ 4b. 沪深京量能 ============
+def fetch_market_volume(days=15):
+    """沪深京两市量能（亿元）：上证综指 + 深证综指 + 北证50 的日成交额之和。
+
+    数据源：东财 push2his 日K，fields2=f51(日期),f57(成交额,元)。
+    push2his 连接不稳定（偶发 RemoteDisconnected），故单节点 + 慢节奏重试。
+    返回升序列表 [{'date','amount_yi'}]，末尾为最新一个「已收盘」交易日。
+    """
+    host = 'push2his.eastmoney.com'
+    secids = ['1.000001', '0.399106', '0.899050']   # 沪 / 深 / 北证50
+
+    def _amt(secid, lmt=25):
+        for _ in range(8):
+            url = ('https://%s/api/qt/stock/kline/get?secid=%s&fields1=f1,f2,f3&'
+                   'fields2=f51,f57&klt=101&fqt=0&end=20500101&lmt=%d'
+                   % (host, secid, lmt))
+            txt = http_get(url, silent=True)
+            if txt:
+                try:
+                    ks = json.loads(txt)['data']['klines']
+                    if ks:
+                        return {k.split(',')[0]: float(k.split(',')[1]) for k in ks}
+                except Exception:
+                    pass
+            time.sleep(2.0)          # 慢节奏，避免被限流
+        return None
+
+    res = {}
+    for sid in secids:
+        m = _amt(sid)
+        if m:
+            res[sid] = m
+        time.sleep(3.0)
+    # 沪深为量能主体，任一缺失则放弃（宁缺勿假，避免出现严重偏小的假量能）
+    if '1.000001' not in res or '0.399106' not in res:
+        print('  [warn] 沪深量能主体缺失，跳过')
+        return []
+    base = res['1.000001']
+    out = []
+    for d in sorted(base.keys()):
+        tot = sum(m.get(d, 0.0) for m in res.values())
+        out.append({'date': d, 'amount_yi': round(tot / 1e8, 1)})
+    # 排除未收盘的当日（盘中量能不完整，不计入统计）
+    now = datetime.now()
+    if out and out[-1]['date'] == now.strftime('%Y-%m-%d') and now.hour < 15:
+        out = out[:-1]
+    return out[-days:]
+
+
 # ============ 5. 新闻 ============
 def fetch_news(days=1):
     """抓取每日必看新闻。
@@ -1676,6 +1725,16 @@ def main():
           % (len(index), len(board), len(news['macro']), len(news['good']),
              len(news['bad']), len(news['overseas'])))
 
+    # 沪深京量能（近 15 个已收盘交易日）
+    mv = fetch_market_volume(15)
+    if mv:
+        print('  沪深京量能 %d 日，最新 %s = %.0f 亿'
+              % (len(mv), mv[-1]['date'], mv[-1]['amount_yi']))
+    else:
+        mv = (load_json(DATA_JSON, {}) or {}).get('market_volume', {}).get('list', [])
+        print('  沪深京量能：本次未取到，%s'
+              % ('沿用上次 %d 日' % len(mv) if mv else '无数据'))
+
     # 板块历史累积（3日榜用）
     print('\n[4/7] 更新板块涨幅历史...')
     today = days[-1]
@@ -2020,6 +2079,11 @@ def main():
         'zt_pool': today_pool,
         'nodes': nodes_out[:12],
         'board_perf': build_board_perf(today_pool),  # 连板晋级 + 昨日涨停表现
+        'market_volume': {                           # 沪深京量能（近15个已收盘交易日）
+            'list': mv,
+            'date': mv[-1]['date'] if mv else None,
+            'total_yi': mv[-1]['amount_yi'] if mv else None,
+        },
         'recommend': reco,
         'candidates': cands,
         'elnino': elnino_out,    # 厄尔尼诺事件静态主题（置顶于模块3，阶段自动识别）

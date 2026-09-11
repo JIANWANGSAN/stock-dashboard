@@ -49,6 +49,18 @@
   .panel-head { margin-bottom: 16px; }
   .panel-head h2 { font-size: 20px; font-weight: 700; }
   .panel-head .sub { font-size: 12px; color: #6b7280; margin-top: 4px; }
+  /* 沪深京量能（必看·置顶） */
+  #mv-card .mv-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+  #mv-card .mv-title { font-size: 15px; font-weight: 700; color: #111827; }
+  #mv-card .mv-head-right { display: flex; gap: 12px; align-items: baseline; }
+  #mv-card #mv-date { font-size: 13px; color: #6b7280; }
+  #mv-card #mv-total { font-size: 19px; font-weight: 700; color: #111827; }
+  #mv-chart { width: 100%; height: 210px; }
+  #mv-card .mv-tips { margin-top: 4px; font-size: 11.5px; color: #9ca3af; line-height: 1.7; }
+  #mv-card .mv-tips-h { color: #6b7280; font-weight: 600; }
+  #mv-card .mv-orange { color: #ea580c; }
+  #mv-card .mv-red { color: #dc2626; }
+  #mv-card .mv-green { color: #16a34a; }
   .card { background: #fff; border-radius: 10px; padding: 18px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
   .card-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
   .card-title .tag { font-size: 11px; font-weight: 500; color: #6b7280; background: #f3f4f6; padding: 2px 8px; border-radius: 10px; }
@@ -367,6 +379,11 @@
     .panel-head .sub{ font-size: 10.5px; }
     .card-title{ font-size: 12.5px; margin-bottom: 6px; }
     .card-title .tag{ font-size: 10px; padding: 1px 5px; }
+    #mv-card .mv-title{ font-size: 14px; }
+    #mv-card #mv-total{ font-size: 17px; }
+    #mv-card #mv-date{ font-size: 12px; }
+    #mv-chart{ height: 185px; }
+    #mv-card .mv-tips{ font-size: 10.5px; }
     .bp-tiles{ grid-template-columns: repeat(2, 1fr); }
     .bp-promo{ font-size: 11.5px; padding: 7px 10px; }
     .bp-promo b{ font-size: 13.5px; }
@@ -440,8 +457,19 @@
     <!-- 模块1 -->
     <div class="panel active" id="panel-daily" data-page-node-id="bzl2oEk4CteCHy41Vx8ERy">
       <div class="panel-head" data-page-node-id="GrRbO1V95Q7cO8D9djVfNH">
-        <h2 data-page-node-id="YLy3kCZPsPJh6EYj4Ld4A0">模块1 · 每日必看</h2>
         <div class="sub" data-page-node-id="qsh0ieLeny9BFyuZZKk10A">仅筛选对 A股板块 / 题材 / 个股有实质影响的消息，每条一句话极简，剔除无效杂讯</div>
+      </div>
+      <div class="card" id="mv-card" data-page-node-id="mvCardTop">
+        <div class="mv-head">
+          <div class="mv-title">沪深京量能</div>
+          <div class="mv-head-right"><span id="mv-date">—</span><span id="mv-total">—</span></div>
+        </div>
+        <div id="mv-chart"></div>
+        <div class="mv-tips">
+          <div class="mv-tips-h">温馨提示</div>
+          <div>1、<b class="mv-orange">橙色虚线</b>代表量能 <b>3万亿</b></div>
+          <div>2、量能柱<b class="mv-red">红</b><b class="mv-green">绿</b>颜色代表相对于昨日放量/缩量</div>
+        </div>
       </div>
       <div class="card" data-page-node-id="VCMsMQPZBqK3VyowQEJHAd">
         <div class="card-title" data-page-node-id="UFtmjyiSTCDZzLjtwR001m">盘后全景 · 指数与量能 <span class="tag" id="idx-date" data-page-node-id="JSvTvQOI9d5iqx2GfqJPq1">—</span></div>
@@ -466,7 +494,6 @@
     <!-- 模块2 -->
     <div class="panel" id="panel-ladder" data-page-node-id="4l1bp0vKx6YDy6R8iGIOio">
       <div class="panel-head" data-page-node-id="5WoYpzvUFtzzFhwUzLuf0t">
-        <h2 data-page-node-id="XAuw09EGD6DLDz2scKsFYn">模块2 · 梯队复盘</h2>
         <div class="sub" data-page-node-id="GzlsKBRwqHHws2d6uZVO3O">连板高度折线（节点标注股票名）+ 节点票池 + 次日连板推荐</div>
       </div>
       <div class="card" data-page-node-id="4LDXHmInSblrqZKmH2SbLk">
@@ -496,7 +523,6 @@
     <!-- 模块3 -->
     <div class="panel" id="panel-boards" data-page-node-id="U2xpMFmCTxJljlad4pfv9w">
       <div class="panel-head" data-page-node-id="I2MCCZtiUy8YyT9DBOofj7">
-        <h2 data-page-node-id="dkg5E2zXutD6YrdXIBAEGk">模块3 · 重点板块</h2>
         <div class="sub" data-page-node-id="X6qmChTtjLCN2k3fxnoa37">单日涨幅 TOP15 与累计涨幅 TOP10 双榜对照，<span class="star" data-page-node-id="bpMB6sd1pLOk8cF91Hcvyg">★</span> 为两榜重合（持续性最强方向）</div>
       </div>
       <div class="card" id="elnino-card" style="background:linear-gradient(135deg,#fff7ed,#ffedd5);border-left:4px solid #ea580c;" data-page-node-id="eLnInOo1234567890abcdeFG">
@@ -532,8 +558,7 @@
     <!-- 模块4 -->
     <div class="panel" id="panel-m4" data-page-node-id="FJ1dKlo5JHQMM9c0H8Fm6u">
       <div class="panel-head" data-page-node-id="GqJHR8tIaJArm7WBZyBL1Q">
-        <h2 data-page-node-id="ds0QwpFUfXi8dKA3fA0IUC">模块4 · 均线共振动态池</h2>
-        <div class="sub" data-page-node-id="I0tgUHbBcvZTAczfnEJhYR">从模块3「两榜重合板块」成分股中，筛选 <b data-page-node-id="OGpuP91R9GPJa635NWcO1Z">MA5&gt;MA10&gt;MA20（多头排列）且三线斜率向上、差值扩大（向上发散）且收盘价站上MA20</b> 的票；每日增量更新，符合进、不符出</div>
+        <div class="sub" data-page-node-id="I0tgUHbBcvZTAczfnEJhYR">从「两榜重合板块」成分股中，筛选 <b data-page-node-id="OGpuP91R9GPJa635NWcO1Z">MA5&gt;MA10&gt;MA20（多头排列）且三线斜率向上、差值扩大（向上发散）且收盘价站上MA20</b> 的票；每日增量更新，符合进、不符出</div>
       </div>
       <div class="card" data-page-node-id="SO2gqZizgJrfnpowaTIGbA">
         <div class="card-title" data-page-node-id="voqgQICcrmBxHjJfwEQrJX">动态股票池 <span class="tag" id="m4-stat" data-page-node-id="Lmsyh7zLS2PghVUeLM1jAw">—</span></div>
@@ -565,6 +590,7 @@ function pct(p){ return (p>0?'+':'')+p.toFixed(2)+'%'; }
 function init(){
   if(!D){ document.getElementById('foot-updated').textContent='未加载到数据(data.js)'; return; }
   document.getElementById('foot-updated').textContent = '数据更新：'+D.updated+'　|　交易日 '+D.date;
+  renderMarketVolume();
   renderIndex();
   renderBoardPerf();
   renderNews('macro');
@@ -647,6 +673,44 @@ function renderIndex(){
       <div class="v ${cls(i.chg_pct)}">${i.price!=null?i.price.toFixed(2):'-'}</div>
       <div class="${cls(i.chg_pct)}">${pct(i.chg_pct)}${i.amount_yi?'　'+(i.amount_yi/10000).toFixed(2)+'万亿':''}</div></div>`;
   }).join('');
+}
+
+/* ---- 模块1 沪深京量能（近15交易日） ---- */
+let mvChart=null;
+function renderMarketVolume(){
+  const box=document.getElementById('mv-chart');
+  const mv=D.market_volume||{};
+  const all=mv.list||[];
+  if(!all.length){ box.innerHTML='<div class="empty">无量能数据</div>'; return; }
+  const N=15;
+  const disp=all.slice(-N);
+  const start=all.length-disp.length;
+  document.getElementById('mv-date').textContent=mv.date||D.date||'';
+  document.getElementById('mv-total').textContent=(mv.total_yi!=null?Math.round(mv.total_yi):'—')+'亿';
+  const dates=disp.map(x=>x.date.slice(5));
+  const bars=disp.map((x,i)=>{
+    const prev=all[start+i-1];
+    const shrink=prev && x.amount_yi<prev.amount_yi;   // 相对昨日缩量→绿，放量→红
+    return {value:x.amount_yi,itemStyle:{color:shrink?'#16a34a':'#dc2626'}};
+  });
+  mvChart=echarts.init(box);
+  mvChart.setOption({
+    grid:{left:56,right:14,top:12,bottom:26},
+    tooltip:{trigger:'axis',axisPointer:{type:'shadow'},
+      formatter:p=>p[0].axisValue+'　'+Math.round(p[0].data.value)+'亿'},
+    xAxis:{type:'category',data:dates,axisTick:{show:false},
+      axisLabel:{fontSize:10,interval:Math.ceil(dates.length/5)-1}},
+    yAxis:{type:'value',min:15000,max:31000,interval:3000,
+      axisLabel:{fontSize:10,formatter:v=>(v/10000).toFixed(1)+'万亿'},
+      splitLine:{lineStyle:{type:'dashed',color:'#eceff3'}}},
+    series:[{
+      type:'bar',data:bars,barCategoryGap:'22%',
+      markLine:{silent:true,symbol:'none',
+        lineStyle:{color:'#f59e0b',type:'dashed',width:2},
+        label:{formatter:'3万亿',color:'#f59e0b',fontSize:10,position:'insideEndTop'},
+        data:[{yAxis:30000}]}
+    }]
+  });
 }
 
 /* ---- 模块1 新闻 ---- */
@@ -1017,7 +1081,10 @@ function renderModule4(){
     (st.turnover?('<b>轮动规则</b>：'+esc(st.turnover)+'<br><br>'):'') +
     (st.disclaimer?('<span style="color:#9ca3af;">'+esc(st.disclaimer)+'</span>'):'');
 }
-window.addEventListener('resize',()=>{ if(chartInited) echarts.init(document.getElementById('echart-ladder')).resize(); });
+window.addEventListener('resize',()=>{
+  if(chartInited) echarts.init(document.getElementById('echart-ladder')).resize();
+  if(mvChart) mvChart.resize();
+});
 </script>
 </body>
 </html>
