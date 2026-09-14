@@ -979,7 +979,7 @@ function renderCandidates(){
         <td class="c2-hit">${c.concept_hit}</td>
         <td class="c2-ferment">${f.zt?f.zt+'家('+f.lb+')':'—'}</td>
         <td class="c2-zbc">${c.zbc?('<span style="color:#dc2626;font-weight:600;">'+c.zbc+'次</span>'):'—'}</td>
-        <td class="c2-line">${c.bid_required_yi!=null?(c.bid_required_yi+'亿'):'—'}</td>
+        <td class="c2-line" title="${esc(c.bid_basis||'上板分时量×50%')}">${c.bid_required_yi!=null?(c.bid_required_yi+'亿'):'—'}</td>
         <td class="c2-ok">${(c.auction_amt_yi!=null)
             ? ((c.auction_ok?'<span class="auc-ok">合格</span>':'<span class="auc-no">不足</span>')
                +'<br><span style="color:#9ca3af;font-size:10px;">竞价'+c.auction_amt_yi+'亿</span>')

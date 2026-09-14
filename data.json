@@ -9214,6 +9214,10 @@
       "first_seal": 104800,
       "amount_yi": 11.65,
       "total_cap_yi": 38.44,
+      "seal_amount_yi": 1.06,
+      "bid_required_yi": 0.53,
+      "bid_basis": "上板分时量",
+      "day_amount_yi": 11.65,
       "auction_amt_yi": 11.65,
       "auction_ok": true,
       "auction_open": 4.56,
@@ -9248,6 +9252,10 @@
       "first_seal": 95013,
       "amount_yi": 7.88,
       "total_cap_yi": 110.7,
+      "seal_amount_yi": 0.88,
+      "bid_required_yi": 0.44,
+      "bid_basis": "上板分时量",
+      "day_amount_yi": 7.89,
       "auction_amt_yi": 7.88,
       "auction_ok": true,
       "auction_open": 18.65,
@@ -9282,6 +9290,10 @@
       "first_seal": 94854,
       "amount_yi": 4.1,
       "total_cap_yi": 105.64,
+      "seal_amount_yi": 0.41,
+      "bid_required_yi": 0.2,
+      "bid_basis": "上板分时量",
+      "day_amount_yi": 4.1,
       "auction_amt_yi": 4.1,
       "auction_ok": true,
       "auction_open": 45.0,
@@ -9314,6 +9326,10 @@
       "first_seal": 100509,
       "amount_yi": 3.56,
       "total_cap_yi": 66.08,
+      "seal_amount_yi": 0.65,
+      "bid_required_yi": 0.33,
+      "bid_basis": "上板分时量",
+      "day_amount_yi": 3.56,
       "auction_amt_yi": 3.56,
       "auction_ok": true,
       "auction_open": 21.38,
@@ -9347,6 +9363,10 @@
       "first_seal": 94845,
       "amount_yi": 2.37,
       "total_cap_yi": 36.55,
+      "seal_amount_yi": 0.31,
+      "bid_required_yi": 0.16,
+      "bid_basis": "上板分时量",
+      "day_amount_yi": 2.37,
       "auction_amt_yi": 2.37,
       "auction_ok": true,
       "auction_open": 32.05,
@@ -9379,6 +9399,10 @@
       "first_seal": 95920,
       "amount_yi": 3.81,
       "total_cap_yi": 61.79,
+      "seal_amount_yi": 0.34,
+      "bid_required_yi": 0.17,
+      "bid_basis": "上板分时量",
+      "day_amount_yi": 3.81,
       "auction_amt_yi": 3.81,
       "auction_ok": true,
       "auction_open": 9.24,
@@ -9413,6 +9437,10 @@
       "first_seal": 92500,
       "amount_yi": 0.44,
       "total_cap_yi": 44.16,
+      "seal_amount_yi": 0.2,
+      "bid_required_yi": 0.1,
+      "bid_basis": "上板分时量",
+      "day_amount_yi": 0.44,
       "auction_amt_yi": 0.44,
       "auction_ok": true,
       "auction_open": 25.86,
@@ -9829,106 +9857,15 @@
       "MLCC",
       "中国建材集团"
     ],
-    "pool_count": 9,
-    "added_today": [
-      "沃尔德",
-      "奥浦迈",
-      "国机精工",
-      "宏辉果蔬",
-      "泰格医药",
-      "力量钻石"
-    ],
+    "pool_count": 7,
+    "added_today": [],
     "removed_today": [
-      "满坤科技",
-      "迅捷兴",
-      "中京电子",
-      "景旺电子",
-      "奥士康",
-      "澳弘电子",
-      "明阳电路",
-      "华正新材",
-      "四会富仕",
-      "方正科技",
-      "本川智能",
-      "协和电子",
-      "骏亚科技",
-      "金安国纪",
-      "崇达技术",
-      "依顿电子",
-      "金百泽",
-      "方邦股份",
-      "博敏电子",
-      "超声电子",
-      "逸豪新材",
-      "深南电路",
-      "南亚新材",
-      "广合科技",
-      "威尔高",
-      "世运电路",
-      "兴森科技",
-      "泰金新能",
-      "沪电股份",
-      "生益科技",
-      "一博科技",
-      "金信诺",
-      "利扬芯片",
-      "正业科技",
-      "远 望 谷",
-      "华体科技",
-      "信通电子",
-      "海星股份",
-      "秋田微",
-      "气派科技",
-      "沃尔核材",
-      "莱宝高科",
-      "领益智造",
-      "汇创达"
+      "沃尔德",
+      "奥浦迈"
     ],
     "em_used": false,
     "mx_used": 3,
     "stocks": [
-      {
-        "code": "688028",
-        "name": "沃尔德",
-        "market": "1",
-        "boards": [
-          "培育钻石"
-        ],
-        "best_rank": 3,
-        "multi_board": 1,
-        "ma5": 118.948,
-        "ma10": 108.465,
-        "ma20": 100.067,
-        "close": 120.2,
-        "bias20": 20.12,
-        "div_strength": 18.87,
-        "vol_ratio": 0.91,
-        "recent5_ret": 16.59,
-        "overbought": true,
-        "score": 60.1,
-        "rank": 1
-      },
-      {
-        "code": "688293",
-        "name": "奥浦迈",
-        "market": "1",
-        "boards": [
-          "CRO"
-        ],
-        "best_rank": 2,
-        "multi_board": 1,
-        "ma5": 67.662,
-        "ma10": 61.521,
-        "ma20": 60.295,
-        "close": 67.08,
-        "bias20": 11.25,
-        "div_strength": 12.22,
-        "vol_ratio": 0.97,
-        "recent5_ret": 17.87,
-        "overbought": false,
-        "score": 53.3,
-        "rank": 2
-      },
       {
         "code": "002046",
         "name": "国机精工",
@@ -9948,7 +9885,7 @@
         "recent5_ret": 16.26,
         "overbought": false,
         "score": 49.5,
-        "rank": 3
+        "rank": 1
       },
       {
         "code": "300179",
@@ -9969,7 +9906,7 @@
         "recent5_ret": 12.36,
         "overbought": false,
         "score": 47.2,
-        "rank": 4
+        "rank": 2
       },
       {
         "code": "603336",
@@ -9990,7 +9927,7 @@
         "recent5_ret": 10.89,
         "overbought": false,
         "score": 41.3,
-        "rank": 5
+        "rank": 3
       },
       {
         "code": "300347",
@@ -10011,7 +9948,7 @@
         "recent5_ret": 14.49,
         "overbought": false,
         "score": 38.8,
-        "rank": 6
+        "rank": 4
       },
       {
         "code": "002171",
@@ -10032,7 +9969,7 @@
         "recent5_ret": 8.92,
         "overbought": false,
         "score": 36.0,
-        "rank": 7
+        "rank": 5
       },
       {
         "code": "002669",
@@ -10053,7 +9990,7 @@
         "recent5_ret": 11.7,
         "overbought": false,
         "score": 32.6,
-        "rank": 8
+        "rank": 6
       },
       {
         "code": "301071",
@@ -10074,7 +10011,7 @@
         "recent5_ret": 7.18,
         "overbought": false,
         "score": 31.2,
-        "rank": 9
+        "rank": 7
       }
     ],
     "strategy": {
@@ -10090,7 +10027,7 @@
       "disclaimer": "以上为客观技术信号整理与策略框架，不构成投资建议，亦不对收益作任何承诺。市场有风险，决策需自担。"
     }
   },
-  "premarket_updated": "2026-09-14 17:38:34",
-  "auction_updated": "2026-09-14 17:38:43",
+  "premarket_updated": "2026-09-14 17:50:03",
+  "auction_updated": "2026-09-14 17:50:15",
   "auction_is_live": false
 }

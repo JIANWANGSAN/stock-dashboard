@@ -20,7 +20,8 @@ import os, json, time, re
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 
-from fetch_data import (BASE, DATA_JSON, http_get, load_json, save_json, save_js, theme_of)
+from fetch_data import (BASE, DATA_JSON, http_get, load_json, save_json, save_js, theme_of,
+                        is_excluded)
 
 MODULE4_POOL = os.path.join(BASE, 'module4_pool.json')
 KLINE_CACHE  = os.path.join(BASE, '.module4_kline_cache.json')
@@ -345,8 +346,12 @@ def run():
                     members[mc] = {'name': info['name'], 'boards': []}
                 if bname not in members[mc]['boards']:
                     members[mc]['boards'].append(bname)
-    print('[模块4] 候选成分股 %d 只（妙想源板块%d个 / 东财主源=%s）'
-          % (len(members), mx_used, em_used))
+    # 全局剔除：科创板(688/689) / 北交所(4/8/92) / ST —— 复用 fetch_data.is_excluded，与其它股票池同一口径
+    _before = len(members)
+    members = {c: v for c, v in members.items()
+               if not is_excluded(c, (v or {}).get('name', ''))}
+    print('[模块4] 候选成分股 %d 只（妙想源板块%d个 / 东财主源=%s / 已剔除科创·北交·ST %d 只）'
+          % (len(members), mx_used, em_used, _before - len(members)))
 
     cache = load_json(KLINE_CACHE, {})
 

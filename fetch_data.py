@@ -1748,25 +1748,28 @@ def build_candidates(nodes_out, today_pool, hot_concepts, cache):
 def build_reco(cands, today_map, today, verbose=True):
     """给候选池补「上板分时量」（= 次日竞价硬线的基准），并生成次日首选推荐卡。
 
-    返回 (cands, reco)。上板分时量只对前 5 只请求（分时接口易限流）。
+    返回 (cands, reco)。上板分时量**全量并发**计算（6 线程，逐只 1 个请求，带当日缓存）。
     抽成独立函数是为了让「盘前竞价任务(premarket.py)」与盘后流程共用同一口径。
     """
-    for c in cands[:5]:
-        cur = today_map.get(c['code'])
-        fbt = cur.get('first_seal') if cur else None
-        is_yizi = bool(cur.get('is_yizi')) if cur else False
-        seal, day_total = fetch_seal_amount(c['code'], c['market'], today, fbt, is_yizi)
+    def _seal_of(c):
+        cur = today_map.get(c['code']) or {}
+        return fetch_seal_amount(c['code'], c.get('market', 0), today,
+                                 cur.get('first_seal'), bool(cur.get('is_yizi')))
+
+    with ThreadPoolExecutor(max_workers=6) as ex:
+        seals = list(ex.map(_seal_of, cands))
+
+    for c, (seal, day_total) in zip(cands, seals):
         if seal:
             c['seal_amount_yi'] = round(seal / 1e8, 2)
             c['bid_required_yi'] = round(seal / 1e8 * 0.5, 2)
             c['bid_basis'] = '上板分时量'
         else:
             c['seal_amount_yi'] = None
-            c['bid_required_yi'] = round(c['amount_yi'] * 0.5, 2)
-            c['bid_basis'] = '全天成交额(分时缺失回退)'
+            c['bid_required_yi'] = round((c.get('amount_yi') or 0) * 0.5, 2)
+            c['bid_basis'] = '全天成交额×50%(分时缺失回退)'
         if day_total:
             c['day_amount_yi'] = round(day_total / 1e8, 2)
-        time.sleep(0.3)
 
     reco = None
     if cands:
