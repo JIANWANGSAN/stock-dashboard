@@ -62,6 +62,35 @@ def fetch_indices():
     return out
 
 
+def fetch_amount_today():
+    """两市成交额当日值（上证综指 + 深证综指口径）。
+
+    本网络 push2his（历史K线）不可达，故当日值改用 ulist.np 的 f6，
+    环比基准取本地 data.json 的 market_volume 历史末值（同口径，可为 T-1）。
+    """
+    t = em_get('/api/qt/ulist.np/get?fltt=2&secids=1.000001,0.399106&fields=f2,f6,f12,f14')
+    d = js(t)
+    sh = sz = None
+    if d:
+        for it in (d.get('data') or {}).get('diff') or []:
+            if it.get('f12') == '000001':
+                sh = round((it.get('f6') or 0) / 1e8, 2)
+            elif it.get('f12') == '399106':
+                sz = round((it.get('f6') or 0) / 1e8, 2)
+    if sh is None and sz is None:
+        return {}
+    tot = round((sh or 0) + (sz or 0), 2)
+    hist = load_json(os.path.join(BASE, 'data.json'), {}).get('market_volume') or {}
+    # 环比基准 = 序列中「今天之前」的最后一个交易日（今天可能已被上一次运行写入）
+    cand = [x for x in (hist.get('list') or []) if x.get('date', '') < TODAY]
+    base = cand[-1] if cand else {}
+    prev = base.get('amount_yi')
+    return {'sh_yi': sh, 'sz_yi': sz, 'total_yi': tot,
+            'prev_date': base.get('date'), 'prev_yi': prev,
+            'delta_yi': round(tot - prev, 2) if prev else None,
+            'delta_pct': round((tot - prev) / prev * 100, 2) if prev else None}
+
+
 def fetch_amount_hist():
     """沪+深 近5日成交额（亿元），用于环比"""
     res = {}
@@ -141,7 +170,8 @@ def fetch_dt_pool(date_yyyymmdd):
         for it in d['data'].get('pool') or []:
             out.append({'code': it.get('c'), 'name': it.get('n'),
                         'price': round((it.get('p') or 0) / 1000, 2),
-                        'chg': round((it.get('zdp') or 0) / 100, 2),
+                        # 注意：push2ex 的 zdp 已是百分比（如 -10.03），不能再 /100
+                        'chg': round(it.get('zdp') or 0, 2),
                         'amount_yi': round((it.get('amount') or 0) / 1e8, 2),
                         'lbc': it.get('lbc')})
     return out
@@ -157,7 +187,7 @@ def fetch_zb_pool(date_yyyymmdd):
         for it in d['data'].get('pool') or []:
             out.append({'code': it.get('c'), 'name': it.get('n'),
                         'price': round((it.get('p') or 0) / 1000, 2),
-                        'chg': round((it.get('zdp') or 0) / 100, 2),
+                        'chg': round(it.get('zdp') or 0, 2),
                         'lbc': it.get('lbc'),
                         'amount_yi': round((it.get('amount') or 0) / 1e8, 2)})
     return out
@@ -189,6 +219,10 @@ def main():
     print('[2] 成交额历史...')
     r['amount_hist'] = fetch_amount_hist()
     print('    %s' % list(r['amount_hist'].keys()))
+
+    print('[2b] 两市成交额（ulist.np 口径）...')
+    r['amount_today'] = fetch_amount_today()
+    print('    %s' % json.dumps(r['amount_today'], ensure_ascii=False))
 
     print('[3] 板块资金流...')
     r['board_flow'] = fetch_board_flow()

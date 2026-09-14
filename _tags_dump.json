@@ -1,0 +1,2992 @@
+{
+  "date": "2026-09-14",
+  "zt": [
+    {
+      "code": "000981",
+      "market": 0,
+      "name": "山子高科",
+      "price": 2.85,
+      "chg": 10.04,
+      "amount": 773003856,
+      "float_cap": 27113064865.05,
+      "total_cap": 28492792281.600002,
+      "turnover": 2.85,
+      "lbc": 1,
+      "first_seal": 92500,
+      "last_seal": 92500,
+      "seal_fund": 454003010,
+      "zbc": 0,
+      "is_yizi": true,
+      "industry": "汽车零部件",
+      "region": "甘肃",
+      "concepts": [
+        "西部大开发",
+        "阿里概念",
+        "智能驾驶",
+        "新能源车",
+        "华为汽车",
+        "减速器"
+      ],
+      "top_concepts": [
+        "西部大开发",
+        "阿里概念",
+        "智能驾驶",
+        "新能源车"
+      ]
+    },
+    {
+      "code": "002212",
+      "market": 0,
+      "name": "天融信",
+      "price": 7.4,
+      "chg": 9.96,
+      "amount": 407014848,
+      "float_cap": 8634683954.2,
+      "total_cap": 8727958652.800001,
+      "turnover": 4.71,
+      "lbc": 1,
+      "first_seal": 92500,
+      "last_seal": 92500,
+      "seal_fund": 174762640,
+      "zbc": 0,
+      "is_yizi": true,
+      "industry": "横向通用软件",
+      "region": "广东",
+      "concepts": [
+        "一带一路",
+        "AI",
+        "华为概念",
+        "数字孪生",
+        "VPN",
+        "稳定币"
+      ],
+      "top_concepts": [
+        "一带一路",
+        "AI",
+        "华为概念",
+        "数字孪生"
+      ]
+    },
+    {
+      "code": "002912",
+      "market": 0,
+      "name": "中新赛克",
+      "price": 25.86,
+      "chg": 10.0,
+      "amount": 44469063,
+      "float_cap": 4195082538.96,
+      "total_cap": 4415646720.0,
+      "turnover": 1.06,
+      "lbc": 3,
+      "first_seal": 92500,
+      "last_seal": 92500,
+      "seal_fund": 249636717,
+      "zbc": 0,
+      "is_yizi": true,
+      "industry": "其他计算机设备",
+      "region": "广东",
+      "concepts": [
+        "AI",
+        "网络安全",
+        "国产软件",
+        "国企改革",
+        "大数据",
+        "安防概念"
+      ],
+      "top_concepts": [
+        "AI",
+        "网络安全",
+        "国产软件",
+        "国企改革"
+      ]
+    },
+    {
+      "code": "605069",
+      "market": 1,
+      "name": "正和生态",
+      "price": 12.65,
+      "chg": 10.0,
+      "amount": 60345307,
+      "float_cap": 2677976891.7000003,
+      "total_cap": 2677976891.7000003,
+      "turnover": 2.25,
+      "lbc": 2,
+      "first_seal": 92501,
+      "last_seal": 92501,
+      "seal_fund": 3249785,
+      "zbc": 0,
+      "is_yizi": true,
+      "industry": "综合环境治理",
+      "region": "北京",
+      "concepts": [
+        "水利建设",
+        "智谱AI概念",
+        "节能环保",
+        "土壤修复",
+        "乡村振兴",
+        "新型城镇化"
+      ],
+      "top_concepts": [
+        "水利建设",
+        "智谱AI概念",
+        "节能环保",
+        "土壤修复"
+      ]
+    },
+    {
+      "code": "000839",
+      "market": 0,
+      "name": "国安股份",
+      "price": 3.11,
+      "chg": 9.89,
+      "amount": 558290976,
+      "float_cap": 12190659954.72,
+      "total_cap": 12190659954.72,
+      "turnover": 4.58,
+      "lbc": 1,
+      "first_seal": 93000,
+      "last_seal": 93000,
+      "seal_fund": 157861575,
+      "zbc": 0,
+      "is_yizi": true,
+      "industry": "通信",
+      "region": "北京",
+      "concepts": [
+        "AI",
+        "网络安全",
+        "创投",
+        "虚拟数字人",
+        "国企改革",
+        "中字头"
+      ],
+      "top_concepts": [
+        "AI",
+        "网络安全",
+        "创投",
+        "虚拟数字人"
+      ]
+    },
+    {
+      "code": "000978",
+      "market": 0,
+      "name": "桂林旅游",
+      "price": 10.86,
+      "chg": 10.03,
+      "amount": 1690317680,
+      "float_cap": 5083800174.179999,
+      "total_cap": 5083891800.0,
+      "turnover": 33.72,
+      "lbc": 1,
+      "first_seal": 93009,
+      "last_seal": 142627,
+      "seal_fund": 44825736,
+      "zbc": 8,
+      "is_yizi": false,
+      "industry": "自然景区",
+      "region": "广西",
+      "concepts": [
+        "国企改革",
+        "西部大开发",
+        "旅游酒店",
+        "旅游概念",
+        "文娱消费"
+      ],
+      "top_concepts": [
+        "国企改革",
+        "西部大开发",
+        "旅游酒店",
+        "旅游概念"
+      ]
+    },
+    {
+      "code": "002560",
+      "market": 0,
+      "name": "通达股份",
+      "price": 7.57,
+      "chg": 10.03,
+      "amount": 591996384,
+      "float_cap": 4794429068.6,
+      "total_cap": 5566006617.6,
+      "turnover": 12.42,
+      "lbc": 2,
+      "first_seal": 93009,
+      "last_seal": 93430,
+      "seal_fund": 70757395,
+      "zbc": 1,
+      "is_yizi": false,
+      "industry": "电网设备",
+      "region": "河南",
+      "concepts": [
+        "军民融合",
+        "智能电网",
+        "军工",
+        "无人机",
+        "充电桩",
+        "一带一路"
+      ],
+      "top_concepts": [
+        "军民融合",
+        "智能电网",
+        "军工",
+        "无人机"
+      ]
+    },
+    {
+      "code": "600088",
+      "market": 1,
+      "name": "中视传媒",
+      "price": 14.74,
+      "chg": 10.0,
+      "amount": 605659328,
+      "float_cap": 5862192336.0,
+      "total_cap": 5862192336.0,
+      "turnover": 10.78,
+      "lbc": 2,
+      "first_seal": 93013,
+      "last_seal": 133455,
+      "seal_fund": 8783566,
+      "zbc": 1,
+      "is_yizi": false,
+      "industry": "影视动漫制作",
+      "region": "上海",
+      "concepts": [
+        "影视概念",
+        "中字头",
+        "国企改革",
+        "旅游概念",
+        "乡村振兴",
+        "文娱消费"
+      ],
+      "top_concepts": [
+        "影视概念",
+        "中字头",
+        "国企改革",
+        "旅游概念"
+      ]
+    },
+    {
+      "code": "000993",
+      "market": 0,
+      "name": "闽东电力",
+      "price": 15.27,
+      "chg": 10.01,
+      "amount": 846164336,
+      "float_cap": 6992918717.849999,
+      "total_cap": 6992918733.12,
+      "turnover": 12.25,
+      "lbc": 4,
+      "first_seal": 93024,
+      "last_seal": 100127,
+      "seal_fund": 90001654,
+      "zbc": 2,
+      "is_yizi": false,
+      "industry": "水力发电",
+      "region": "福建",
+      "concepts": [
+        "风电",
+        "绿色电力",
+        "碳交易",
+        "光伏",
+        "国企改革",
+        "新能源"
+      ],
+      "top_concepts": [
+        "风电",
+        "绿色电力",
+        "碳交易",
+        "光伏"
+      ]
+    },
+    {
+      "code": "002585",
+      "market": 0,
+      "name": "双星新材",
+      "price": 10.96,
+      "chg": 10.04,
+      "amount": 1104325648,
+      "float_cap": 9717045996.480001,
+      "total_cap": 12508895783.68,
+      "turnover": 11.45,
+      "lbc": 2,
+      "first_seal": 93039,
+      "last_seal": 93206,
+      "seal_fund": 159052462,
+      "zbc": 2,
+      "is_yizi": false,
+      "industry": "塑料",
+      "region": "江苏",
+      "concepts": [
+        "光伏",
+        "MLCC",
+        "华为概念",
+        "降解塑料",
+        "小米概念",
+        "新材料"
+      ],
+      "top_concepts": [
+        "光伏",
+        "MLCC",
+        "华为概念",
+        "降解塑料"
+      ]
+    },
+    {
+      "code": "002232",
+      "market": 0,
+      "name": "启明信息",
+      "price": 15.28,
+      "chg": 10.01,
+      "amount": 119071579,
+      "float_cap": 6242620392.4,
+      "total_cap": 6242620285.44,
+      "turnover": 1.92,
+      "lbc": 1,
+      "first_seal": 93103,
+      "last_seal": 93103,
+      "seal_fund": 22230872,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "IT服务",
+      "region": "吉林",
+      "concepts": [
+        "国产软件",
+        "工业互联网",
+        "充电桩",
+        "VR",
+        "百度概念",
+        "一带一路"
+      ],
+      "top_concepts": [
+        "国产软件",
+        "工业互联网",
+        "充电桩",
+        "VR"
+      ]
+    },
+    {
+      "code": "600697",
+      "market": 1,
+      "name": "欧亚集团",
+      "price": 12.16,
+      "chg": 10.05,
+      "amount": 123196762,
+      "float_cap": 1889372342.4,
+      "total_cap": 1934510992.0,
+      "turnover": 6.59,
+      "lbc": 1,
+      "first_seal": 93333,
+      "last_seal": 93351,
+      "seal_fund": 3888768,
+      "zbc": 1,
+      "is_yizi": false,
+      "industry": "一般零售",
+      "region": "吉林",
+      "concepts": [
+        "中俄贸易概念",
+        "电商概念",
+        "跨境电商",
+        "新零售",
+        "国企改革",
+        "地摊经济"
+      ],
+      "top_concepts": [
+        "中俄贸易概念",
+        "电商概念",
+        "跨境电商",
+        "新零售"
+      ]
+    },
+    {
+      "code": "603657",
+      "market": 1,
+      "name": "春光科技",
+      "price": 31.39,
+      "chg": 9.99,
+      "amount": 146226584,
+      "float_cap": 4243615669.5,
+      "total_cap": 4243615669.5,
+      "turnover": 3.5,
+      "lbc": 1,
+      "first_seal": 93521,
+      "last_seal": 94106,
+      "seal_fund": 1506720,
+      "zbc": 4,
+      "is_yizi": false,
+      "industry": "家电零部件",
+      "region": "浙江",
+      "concepts": [
+        "小米概念"
+      ],
+      "top_concepts": [
+        "小米概念"
+      ]
+    },
+    {
+      "code": "000572",
+      "market": 0,
+      "name": "海马汽车",
+      "price": 4.33,
+      "chg": 9.9,
+      "amount": 227811707,
+      "float_cap": 7110955780.11,
+      "total_cap": 7121275750.56,
+      "turnover": 3.26,
+      "lbc": 1,
+      "first_seal": 93642,
+      "last_seal": 93642,
+      "seal_fund": 82216251,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "乘用车",
+      "region": "海南",
+      "concepts": [
+        "新能源车",
+        "共享经济",
+        "换电概念",
+        "充电桩",
+        "综合乘用车",
+        "婴童概念"
+      ],
+      "top_concepts": [
+        "新能源车",
+        "共享经济",
+        "换电概念",
+        "充电桩"
+      ]
+    },
+    {
+      "code": "001896",
+      "market": 0,
+      "name": "豫能控股",
+      "price": 12.99,
+      "chg": 9.99,
+      "amount": 2170406144,
+      "float_cap": 19819899476.7,
+      "total_cap": 19819899450.72,
+      "turnover": 11.08,
+      "lbc": 1,
+      "first_seal": 93903,
+      "last_seal": 131354,
+      "seal_fund": 110372133,
+      "zbc": 7,
+      "is_yizi": false,
+      "industry": "公用事业",
+      "region": "河南",
+      "concepts": [
+        "新能源",
+        "华为概念",
+        "光伏",
+        "创投",
+        "地热能",
+        "电商概念"
+      ],
+      "top_concepts": [
+        "新能源",
+        "华为概念",
+        "光伏",
+        "创投"
+      ]
+    },
+    {
+      "code": "000868",
+      "market": 0,
+      "name": "安凯客车",
+      "price": 3.91,
+      "chg": 10.14,
+      "amount": 58036629,
+      "float_cap": 3673499681.35,
+      "total_cap": 3673502617.76,
+      "turnover": 1.61,
+      "lbc": 1,
+      "first_seal": 94024,
+      "last_seal": 94024,
+      "seal_fund": 43678688,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "商用载客车",
+      "region": "安徽",
+      "concepts": [
+        "汽车整车",
+        "华为概念",
+        "燃料电池概念",
+        "氢能",
+        "PPP模式",
+        "国企改革"
+      ],
+      "top_concepts": [
+        "汽车整车",
+        "华为概念",
+        "燃料电池概念",
+        "氢能"
+      ]
+    },
+    {
+      "code": "000823",
+      "market": 0,
+      "name": "超声电子",
+      "price": 22.63,
+      "chg": 10.01,
+      "amount": 2490848832,
+      "float_cap": 13463314939.21,
+      "total_cap": 13463829658.56,
+      "turnover": 19.25,
+      "lbc": 3,
+      "first_seal": 94048,
+      "last_seal": 94048,
+      "seal_fund": 263328314,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "元件",
+      "region": "广东",
+      "concepts": [
+        "PCB",
+        "5G",
+        "纳米银",
+        "无人机",
+        "国企改革",
+        "苹果概念"
+      ],
+      "top_concepts": [
+        "PCB",
+        "5G",
+        "纳米银",
+        "无人机"
+      ]
+    },
+    {
+      "code": "000980",
+      "market": 0,
+      "name": "众泰汽车",
+      "price": 2.33,
+      "chg": 9.91,
+      "amount": 1172779392,
+      "float_cap": 11748992004.87,
+      "total_cap": 11749136168.960001,
+      "turnover": 10.28,
+      "lbc": 2,
+      "first_seal": 94106,
+      "last_seal": 95821,
+      "seal_fund": 133851277,
+      "zbc": 2,
+      "is_yizi": false,
+      "industry": "汽车零部件",
+      "region": "浙江",
+      "concepts": [
+        "汽车整车",
+        "氢能",
+        "中俄贸易概念",
+        "一带一路",
+        "新能源车",
+        "百度概念"
+      ],
+      "top_concepts": [
+        "汽车整车",
+        "氢能",
+        "中俄贸易概念",
+        "一带一路"
+      ]
+    },
+    {
+      "code": "603090",
+      "market": 1,
+      "name": "宏盛股份",
+      "price": 36.55,
+      "chg": 9.99,
+      "amount": 236523336,
+      "float_cap": 3654999999.9999995,
+      "total_cap": 3654999999.9999995,
+      "turnover": 6.71,
+      "lbc": 1,
+      "first_seal": 94845,
+      "last_seal": 94845,
+      "seal_fund": 2010250,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "其他通用设备",
+      "region": "江苏",
+      "concepts": [
+        "煤化工概念",
+        "液冷服务器",
+        "新能源车",
+        "乡村振兴",
+        "贬值受益"
+      ],
+      "top_concepts": [
+        "煤化工概念",
+        "液冷服务器",
+        "新能源车",
+        "乡村振兴"
+      ]
+    },
+    {
+      "code": "605168",
+      "market": 1,
+      "name": "三人行",
+      "price": 50.11,
+      "chg": 10.01,
+      "amount": 409699392,
+      "float_cap": 10564039168.46,
+      "total_cap": 10564039168.46,
+      "turnover": 3.98,
+      "lbc": 1,
+      "first_seal": 94854,
+      "last_seal": 95409,
+      "seal_fund": 1137497,
+      "zbc": 2,
+      "is_yizi": false,
+      "industry": "传媒",
+      "region": "陕西",
+      "concepts": [
+        "无人机",
+        "西部大开发",
+        "AI",
+        "大数据",
+        "体育产业",
+        "数字经济"
+      ],
+      "top_concepts": [
+        "无人机",
+        "西部大开发",
+        "AI",
+        "大数据"
+      ]
+    },
+    {
+      "code": "603626",
+      "market": 1,
+      "name": "科森科技",
+      "price": 19.95,
+      "chg": 9.98,
+      "amount": 787830176,
+      "float_cap": 11069849815.5,
+      "total_cap": 11069849935.199999,
+      "turnover": 7.3,
+      "lbc": 1,
+      "first_seal": 95013,
+      "last_seal": 95410,
+      "seal_fund": 6008940,
+      "zbc": 1,
+      "is_yizi": false,
+      "industry": "电子",
+      "region": "江苏",
+      "concepts": [
+        "苹果概念",
+        "特斯拉概念",
+        "无线耳机",
+        "电子烟",
+        "华为概念",
+        "医疗器械概念"
+      ],
+      "top_concepts": [
+        "苹果概念",
+        "特斯拉概念",
+        "无线耳机",
+        "电子烟"
+      ]
+    },
+    {
+      "code": "603439",
+      "market": 1,
+      "name": "三力制药",
+      "price": 13.79,
+      "chg": 9.97,
+      "amount": 421329936,
+      "float_cap": 5568956578.639999,
+      "total_cap": 5568956688.96,
+      "turnover": 7.79,
+      "lbc": 2,
+      "first_seal": 95101,
+      "last_seal": 95101,
+      "seal_fund": 7944419,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "中药",
+      "region": "贵州",
+      "concepts": [
+        "独家药品",
+        "互联网医疗",
+        "中药概念",
+        "西部大开发",
+        "特色药",
+        "婴童概念"
+      ],
+      "top_concepts": [
+        "独家药品",
+        "互联网医疗",
+        "中药概念",
+        "西部大开发"
+      ]
+    },
+    {
+      "code": "600330",
+      "market": 1,
+      "name": "天通股份",
+      "price": 30.23,
+      "chg": 10.01,
+      "amount": 2343183104,
+      "float_cap": 37286722395.68,
+      "total_cap": 37286722395.68,
+      "turnover": 6.56,
+      "lbc": 1,
+      "first_seal": 95725,
+      "last_seal": 95725,
+      "seal_fund": 8023042,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "电子化学品",
+      "region": "浙江",
+      "concepts": [
+        "光伏",
+        "长江三角",
+        "LED概念",
+        "锂电池",
+        "智能穿戴",
+        "新材料"
+      ],
+      "top_concepts": [
+        "光伏",
+        "长江三角",
+        "LED概念",
+        "锂电池"
+      ]
+    },
+    {
+      "code": "002669",
+      "market": 0,
+      "name": "康达新材",
+      "price": 13.75,
+      "chg": 10.0,
+      "amount": 384658992,
+      "float_cap": 4162369750.0,
+      "total_cap": 4171750000.0,
+      "turnover": 9.45,
+      "lbc": 1,
+      "first_seal": 95848,
+      "last_seal": 95848,
+      "seal_fund": 96635000,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "基础化工",
+      "region": "上海",
+      "concepts": [
+        "MLCC",
+        "PCB",
+        "新材料",
+        "风电",
+        "军工",
+        "国企改革"
+      ],
+      "top_concepts": [
+        "MLCC",
+        "PCB",
+        "新材料",
+        "风电"
+      ]
+    },
+    {
+      "code": "600876",
+      "market": 1,
+      "name": "凯盛新能",
+      "price": 9.57,
+      "chg": 10.0,
+      "amount": 380654752,
+      "float_cap": 3786609395.9100003,
+      "total_cap": 6179109367.2,
+      "turnover": 10.41,
+      "lbc": 3,
+      "first_seal": 95920,
+      "last_seal": 145444,
+      "seal_fund": 1403919,
+      "zbc": 5,
+      "is_yizi": false,
+      "industry": "建筑材料",
+      "region": "河南",
+      "concepts": [
+        "光伏",
+        "玻璃制造",
+        "国企改革",
+        "反内卷概念"
+      ],
+      "top_concepts": [
+        "光伏",
+        "玻璃制造",
+        "国企改革",
+        "反内卷概念"
+      ]
+    },
+    {
+      "code": "002976",
+      "market": 0,
+      "name": "瑞玛精密",
+      "price": 25.72,
+      "chg": 10.01,
+      "amount": 345296832,
+      "float_cap": 3130881402.56,
+      "total_cap": 5005392167.96,
+      "turnover": 11.26,
+      "lbc": 1,
+      "first_seal": 95948,
+      "last_seal": 112327,
+      "seal_fund": 33431421,
+      "zbc": 3,
+      "is_yizi": false,
+      "industry": "其他汽车零部件",
+      "region": "江苏",
+      "concepts": [
+        "华为汽车",
+        "锂电池",
+        "新能源车",
+        "特斯拉概念",
+        "5G",
+        "一带一路"
+      ],
+      "top_concepts": [
+        "华为汽车",
+        "锂电池",
+        "新能源车",
+        "特斯拉概念"
+      ]
+    },
+    {
+      "code": "600186",
+      "market": 1,
+      "name": "莲花控股",
+      "price": 13.18,
+      "chg": 10.02,
+      "amount": 3639909824,
+      "float_cap": 23580842675.38,
+      "total_cap": 23628637955.2,
+      "turnover": 15.95,
+      "lbc": 1,
+      "first_seal": 100236,
+      "last_seal": 135230,
+      "seal_fund": 9981214,
+      "zbc": 1,
+      "is_yizi": false,
+      "industry": "食品饮料",
+      "region": "河南",
+      "concepts": [
+        "电商概念",
+        "AI",
+        "新零售",
+        "人造肉",
+        "半导体",
+        "调味品概念"
+      ],
+      "top_concepts": [
+        "电商概念",
+        "AI",
+        "新零售",
+        "人造肉"
+      ]
+    },
+    {
+      "code": "605580",
+      "market": 1,
+      "name": "恒盛能源",
+      "price": 23.6,
+      "chg": 10.02,
+      "amount": 356056944,
+      "float_cap": 6608000000.0,
+      "total_cap": 6608000000.0,
+      "turnover": 5.62,
+      "lbc": 1,
+      "first_seal": 100509,
+      "last_seal": 100703,
+      "seal_fund": 2739960,
+      "zbc": 2,
+      "is_yizi": false,
+      "industry": "热力服务",
+      "region": "浙江",
+      "concepts": [
+        "培育钻石",
+        "绿色电力",
+        "氢能",
+        "反转股"
+      ],
+      "top_concepts": [
+        "培育钻石",
+        "绿色电力",
+        "氢能",
+        "反转股"
+      ]
+    },
+    {
+      "code": "002346",
+      "market": 0,
+      "name": "柘中股份",
+      "price": 19.82,
+      "chg": 9.99,
+      "amount": 253261076,
+      "float_cap": 8752024745.12,
+      "total_cap": 8752024903.68,
+      "turnover": 2.97,
+      "lbc": 1,
+      "first_seal": 100512,
+      "last_seal": 100512,
+      "seal_fund": 86942154,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "电网设备",
+      "region": "上海",
+      "concepts": [
+        "半导体",
+        "锂电池",
+        "碳化硅",
+        "充电桩",
+        "体育产业",
+        "创投"
+      ],
+      "top_concepts": [
+        "半导体",
+        "锂电池",
+        "碳化硅",
+        "充电桩"
+      ]
+    },
+    {
+      "code": "600172",
+      "market": 1,
+      "name": "黄河旋风",
+      "price": 16.53,
+      "chg": 9.98,
+      "amount": 4892615680,
+      "float_cap": 21229125390.24,
+      "total_cap": 23839309454.4,
+      "turnover": 23.74,
+      "lbc": 1,
+      "first_seal": 101014,
+      "last_seal": 133117,
+      "seal_fund": 6854991,
+      "zbc": 8,
+      "is_yizi": false,
+      "industry": "通用设备",
+      "region": "河南",
+      "concepts": [
+        "节能环保",
+        "新材料",
+        "国企改革",
+        "小盘价值",
+        "培育钻石"
+      ],
+      "top_concepts": [
+        "节能环保",
+        "新材料",
+        "国企改革",
+        "小盘价值"
+      ]
+    },
+    {
+      "code": "002141",
+      "market": 0,
+      "name": "贤丰控股",
+      "price": 6.97,
+      "chg": 9.94,
+      "amount": 1438326400,
+      "float_cap": 7199562512.059999,
+      "total_cap": 7199562470.24,
+      "turnover": 20.48,
+      "lbc": 1,
+      "first_seal": 101909,
+      "last_seal": 135051,
+      "seal_fund": 45351002,
+      "zbc": 1,
+      "is_yizi": false,
+      "industry": "印制电路板",
+      "region": "广东",
+      "concepts": [
+        "PCB",
+        "锂电池",
+        "消费电子概念",
+        "创投",
+        "生物疫苗"
+      ],
+      "top_concepts": [
+        "PCB",
+        "锂电池",
+        "消费电子概念",
+        "创投"
+      ]
+    },
+    {
+      "code": "600488",
+      "market": 1,
+      "name": "津药药业",
+      "price": 5.89,
+      "chg": 10.09,
+      "amount": 672027088,
+      "float_cap": 6431212545.2,
+      "total_cap": 6431212592.32,
+      "turnover": 10.94,
+      "lbc": 1,
+      "first_seal": 101920,
+      "last_seal": 101920,
+      "seal_fund": 3723658,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "原料药",
+      "region": "天津",
+      "concepts": [
+        "辅助生殖",
+        "滨海新区"
+      ],
+      "top_concepts": [
+        "辅助生殖",
+        "滨海新区"
+      ]
+    },
+    {
+      "code": "301132",
+      "market": 0,
+      "name": "满坤科技",
+      "price": 58.37,
+      "chg": 20.0,
+      "amount": 898002256,
+      "float_cap": 5530017110.54,
+      "total_cap": 8643794354.13,
+      "turnover": 17.51,
+      "lbc": 1,
+      "first_seal": 102306,
+      "last_seal": 135948,
+      "seal_fund": 13534076,
+      "zbc": 4,
+      "is_yizi": false,
+      "industry": "印制电路板",
+      "region": "江西",
+      "concepts": [
+        "PCB",
+        "机器人",
+        "存储芯片",
+        "新能源车",
+        "CPO",
+        "车联网(车路云)"
+      ],
+      "top_concepts": [
+        "PCB",
+        "机器人",
+        "存储芯片",
+        "新能源车"
+      ]
+    },
+    {
+      "code": "002579",
+      "market": 0,
+      "name": "中京电子",
+      "price": 18.79,
+      "chg": 10.01,
+      "amount": 2637352992,
+      "float_cap": 10962804849.029999,
+      "total_cap": 11511103944.96,
+      "turnover": 25.49,
+      "lbc": 1,
+      "first_seal": 102600,
+      "last_seal": 102600,
+      "seal_fund": 195703205,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "元件",
+      "region": "广东",
+      "concepts": [
+        "PCB",
+        "5G",
+        "OLED",
+        "工业互联网",
+        "电子烟",
+        "小米概念"
+      ],
+      "top_concepts": [
+        "PCB",
+        "5G",
+        "OLED",
+        "工业互联网"
+      ]
+    },
+    {
+      "code": "301520",
+      "market": 0,
+      "name": "万邦医药",
+      "price": 63.6,
+      "chg": 20.0,
+      "amount": 749438176,
+      "float_cap": 2079620974.8,
+      "total_cap": 5925699322.8,
+      "turnover": 38.71,
+      "lbc": 1,
+      "first_seal": 102945,
+      "last_seal": 132642,
+      "seal_fund": 42318104,
+      "zbc": 2,
+      "is_yizi": false,
+      "industry": "医疗研发外包",
+      "region": "安徽",
+      "concepts": [
+        "CRO",
+        "减肥药",
+        "微利股",
+        "创新医疗服务"
+      ],
+      "top_concepts": [
+        "CRO",
+        "减肥药",
+        "微利股",
+        "创新医疗服务"
+      ]
+    },
+    {
+      "code": "002172",
+      "market": 0,
+      "name": "澳洋健康",
+      "price": 5.02,
+      "chg": 10.09,
+      "amount": 1165320736,
+      "float_cap": 3841006464.6,
+      "total_cap": 3843976487.3599997,
+      "turnover": 31.51,
+      "lbc": 1,
+      "first_seal": 104800,
+      "last_seal": 141757,
+      "seal_fund": 37348062,
+      "zbc": 1,
+      "is_yizi": false,
+      "industry": "医疗服务",
+      "region": "江苏",
+      "concepts": [
+        "冷链物流",
+        "节能环保",
+        "AI",
+        "精准医疗",
+        "中药概念",
+        "养老概念"
+      ],
+      "top_concepts": [
+        "冷链物流",
+        "节能环保",
+        "AI",
+        "精准医疗"
+      ]
+    },
+    {
+      "code": "300903",
+      "market": 0,
+      "name": "科翔股份",
+      "price": 108.3,
+      "chg": 20.0,
+      "amount": 3508513360,
+      "float_cap": 38054426275.2,
+      "total_cap": 47152364448.0,
+      "turnover": 9.93,
+      "lbc": 1,
+      "first_seal": 105136,
+      "last_seal": 105136,
+      "seal_fund": 35185478,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "元件",
+      "region": "广东",
+      "concepts": [
+        "充电桩",
+        "无人机",
+        "5G",
+        "小米概念",
+        "华为概念",
+        "PCB"
+      ],
+      "top_concepts": [
+        "充电桩",
+        "无人机",
+        "5G",
+        "小米概念"
+      ]
+    },
+    {
+      "code": "002918",
+      "market": 0,
+      "name": "蒙娜丽莎",
+      "price": 11.7,
+      "chg": 9.96,
+      "amount": 364715280,
+      "float_cap": 2506198078.7999997,
+      "total_cap": 4783193064.0,
+      "turnover": 15.09,
+      "lbc": 1,
+      "first_seal": 110703,
+      "last_seal": 142730,
+      "seal_fund": 38453220,
+      "zbc": 2,
+      "is_yizi": false,
+      "industry": "瓷砖地板",
+      "region": "广东",
+      "concepts": [
+        "智能家居",
+        "体育产业"
+      ],
+      "top_concepts": [
+        "智能家居",
+        "体育产业"
+      ]
+    },
+    {
+      "code": "001212",
+      "market": 0,
+      "name": "中旗新材",
+      "price": 35.02,
+      "chg": 9.99,
+      "amount": 198615228,
+      "float_cap": 6325538243.9800005,
+      "total_cap": 7037606032.4800005,
+      "turnover": 3.25,
+      "lbc": 1,
+      "first_seal": 111236,
+      "last_seal": 111236,
+      "seal_fund": 37296300,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "其他建材",
+      "region": "广东",
+      "concepts": [
+        "半导体",
+        "新材料",
+        "光伏",
+        "粤港自贸"
+      ],
+      "top_concepts": [
+        "半导体",
+        "新材料",
+        "光伏",
+        "粤港自贸"
+      ]
+    },
+    {
+      "code": "601123",
+      "market": 1,
+      "name": "马矿股份",
+      "price": 16.79,
+      "chg": 10.03,
+      "amount": 464467424,
+      "float_cap": 1608956451.82,
+      "total_cap": 20729120436.16,
+      "turnover": 29.97,
+      "lbc": 1,
+      "first_seal": 111444,
+      "last_seal": 111723,
+      "seal_fund": 2778745,
+      "zbc": 1,
+      "is_yizi": false,
+      "industry": "冶钢原料",
+      "region": "福建",
+      "concepts": [
+        "铁矿石",
+        "小金属",
+        "国企改革"
+      ],
+      "top_concepts": [
+        "铁矿石",
+        "小金属",
+        "国企改革"
+      ]
+    },
+    {
+      "code": "603020",
+      "market": 1,
+      "name": "爱普股份",
+      "price": 11.17,
+      "chg": 10.05,
+      "amount": 173887946,
+      "float_cap": 4195873935.58,
+      "total_cap": 4195873957.92,
+      "turnover": 4.28,
+      "lbc": 1,
+      "first_seal": 112433,
+      "last_seal": 112433,
+      "seal_fund": 1356038,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "食品及饲料添加剂",
+      "region": "上海",
+      "concepts": [
+        "人造肉",
+        "味蕾经济",
+        "调味品概念"
+      ],
+      "top_concepts": [
+        "人造肉",
+        "味蕾经济",
+        "调味品概念"
+      ]
+    },
+    {
+      "code": "601567",
+      "market": 1,
+      "name": "三星电气",
+      "price": 14.17,
+      "chg": 10.02,
+      "amount": 480692240,
+      "float_cap": 19911817198.0,
+      "total_cap": 19911817311.36,
+      "turnover": 2.5,
+      "lbc": 1,
+      "first_seal": 130311,
+      "last_seal": 130414,
+      "seal_fund": 2234609,
+      "zbc": 1,
+      "is_yizi": false,
+      "industry": "电网设备",
+      "region": "浙江",
+      "concepts": [
+        "养老概念",
+        "智能家居",
+        "充电桩",
+        "储能",
+        "智能电网",
+        "物联网"
+      ],
+      "top_concepts": [
+        "养老概念",
+        "智能家居",
+        "充电桩",
+        "储能"
+      ]
+    },
+    {
+      "code": "000812",
+      "market": 0,
+      "name": "陕西金叶",
+      "price": 4.14,
+      "chg": 10.11,
+      "amount": 182375947,
+      "float_cap": 3130376879.3399997,
+      "total_cap": 3131211101.7599998,
+      "turnover": 6.07,
+      "lbc": 1,
+      "first_seal": 130421,
+      "last_seal": 130421,
+      "seal_fund": 41876100,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "纸包装",
+      "region": "陕西",
+      "concepts": [
+        "教育",
+        "创投",
+        "西部大开发",
+        "包装材料"
+      ],
+      "top_concepts": [
+        "教育",
+        "创投",
+        "西部大开发",
+        "包装材料"
+      ]
+    },
+    {
+      "code": "600228",
+      "market": 1,
+      "name": "返利科技",
+      "price": 10.46,
+      "chg": 9.99,
+      "amount": 258143874,
+      "float_cap": 4351748871.42,
+      "total_cap": 4358393638.72,
+      "turnover": 6.15,
+      "lbc": 1,
+      "first_seal": 130658,
+      "last_seal": 130658,
+      "seal_fund": 1123404,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "门户网站",
+      "region": "江西",
+      "concepts": [
+        "AI",
+        "AI应用",
+        "百度概念",
+        "跨境电商",
+        "电商概念",
+        "互联网服务"
+      ],
+      "top_concepts": [
+        "AI",
+        "AI应用",
+        "百度概念",
+        "跨境电商"
+      ]
+    },
+    {
+      "code": "605058",
+      "market": 1,
+      "name": "澳弘电子",
+      "price": 36.64,
+      "chg": 10.0,
+      "amount": 555040224,
+      "float_cap": 5236776396.8,
+      "total_cap": 5236776396.8,
+      "turnover": 11.21,
+      "lbc": 2,
+      "first_seal": 131203,
+      "last_seal": 133818,
+      "seal_fund": 795088,
+      "zbc": 7,
+      "is_yizi": false,
+      "industry": "印制电路板",
+      "region": "江苏",
+      "concepts": [
+        "卫星互联网",
+        "商业航天",
+        "工业互联网",
+        "一带一路",
+        "新能源车",
+        "新型工业化"
+      ],
+      "top_concepts": [
+        "卫星互联网",
+        "商业航天",
+        "工业互联网",
+        "一带一路"
+      ]
+    },
+    {
+      "code": "603285",
+      "market": 1,
+      "name": "键邦股份",
+      "price": 39.07,
+      "chg": 9.99,
+      "amount": 419865632,
+      "float_cap": 2433935194.6,
+      "total_cap": 6251200000.0,
+      "turnover": 17.68,
+      "lbc": 1,
+      "first_seal": 132524,
+      "last_seal": 132524,
+      "seal_fund": 3660859,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "其他化学制品",
+      "region": "山东",
+      "concepts": [
+        "锂电池",
+        "新材料",
+        "节能环保",
+        "一带一路",
+        "化工原料"
+      ],
+      "top_concepts": [
+        "锂电池",
+        "新材料",
+        "节能环保",
+        "一带一路"
+      ]
+    },
+    {
+      "code": "000962",
+      "market": 0,
+      "name": "东方钽业",
+      "price": 54.55,
+      "chg": 10.0,
+      "amount": 1548286576,
+      "float_cap": 27439799804.899998,
+      "total_cap": 28768860914.399998,
+      "turnover": 5.81,
+      "lbc": 1,
+      "first_seal": 133857,
+      "last_seal": 133857,
+      "seal_fund": 131463699,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "有色金属",
+      "region": "宁夏",
+      "concepts": [
+        "稀缺资源",
+        "新材料",
+        "核能核电",
+        "光伏",
+        "西部大开发",
+        "超导"
+      ],
+      "top_concepts": [
+        "稀缺资源",
+        "新材料",
+        "核能核电",
+        "光伏"
+      ]
+    },
+    {
+      "code": "600802",
+      "market": 1,
+      "name": "福建水泥",
+      "price": 5.86,
+      "chg": 9.94,
+      "amount": 224807763,
+      "float_cap": 2685335624.0,
+      "total_cap": 2685335624.0,
+      "turnover": 8.9,
+      "lbc": 1,
+      "first_seal": 134449,
+      "last_seal": 134449,
+      "seal_fund": 631708,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "水泥制造",
+      "region": "福建",
+      "concepts": [
+        "反内卷概念",
+        "国企改革"
+      ],
+      "top_concepts": [
+        "反内卷概念",
+        "国企改革"
+      ]
+    },
+    {
+      "code": "603400",
+      "market": 1,
+      "name": "华之杰",
+      "price": 54.67,
+      "chg": 10.0,
+      "amount": 345844368,
+      "float_cap": 1980698200.25,
+      "total_cap": 7097810200.25,
+      "turnover": 18.15,
+      "lbc": 1,
+      "first_seal": 143530,
+      "last_seal": 143530,
+      "seal_fund": 1815044,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "机械设备",
+      "region": "江苏",
+      "concepts": [
+        "机器人",
+        "液冷服务器",
+        "充电桩",
+        "储能",
+        "金属制品"
+      ],
+      "top_concepts": [
+        "机器人",
+        "液冷服务器",
+        "充电桩",
+        "储能"
+      ]
+    },
+    {
+      "code": "601086",
+      "market": 1,
+      "name": "国芳集团",
+      "price": 17.99,
+      "chg": 10.03,
+      "amount": 1852252944,
+      "float_cap": 11981339999.999998,
+      "total_cap": 11981339999.999998,
+      "turnover": 16.34,
+      "lbc": 1,
+      "first_seal": 144423,
+      "last_seal": 144423,
+      "seal_fund": 5945695,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "一般零售",
+      "region": "甘肃",
+      "concepts": [
+        "红利股",
+        "西部大开发",
+        "新零售",
+        "谷子经济"
+      ],
+      "top_concepts": [
+        "红利股",
+        "西部大开发",
+        "新零售",
+        "谷子经济"
+      ]
+    },
+    {
+      "code": "002897",
+      "market": 0,
+      "name": "意华股份",
+      "price": 71.39,
+      "chg": 10.0,
+      "amount": 1621049888,
+      "float_cap": 13161331041.32,
+      "total_cap": 13839592296.64,
+      "turnover": 13.25,
+      "lbc": 1,
+      "first_seal": 145009,
+      "last_seal": 145009,
+      "seal_fund": 159535090,
+      "zbc": 0,
+      "is_yizi": false,
+      "industry": "通信设备",
+      "region": "浙江",
+      "concepts": [
+        "电子烟",
+        "小米概念",
+        "新能源",
+        "智能家居",
+        "光伏",
+        "5G"
+      ],
+      "top_concepts": [
+        "电子烟",
+        "小米概念",
+        "新能源",
+        "智能家居"
+      ]
+    }
+  ],
+  "zb": [
+    {
+      "code": "002790",
+      "name": "瑞尔特",
+      "price": 8.38,
+      "chg": -9.99,
+      "lbc": null,
+      "amount_yi": 6.95,
+      "zbc": 1,
+      "region": "福建",
+      "concepts": [
+        "智能家居"
+      ],
+      "industry": "卫浴制品",
+      "top_concepts": [
+        "智能家居"
+      ]
+    },
+    {
+      "code": "600929",
+      "name": "雪天盐业",
+      "price": 6.35,
+      "chg": 5.13,
+      "lbc": null,
+      "amount_yi": 8.26,
+      "zbc": 1,
+      "region": "湖南",
+      "concepts": [
+        "国企改革",
+        "味蕾经济",
+        "调味品概念",
+        "钠电池"
+      ],
+      "industry": "无机盐",
+      "top_concepts": [
+        "国企改革",
+        "味蕾经济",
+        "调味品概念",
+        "钠电池"
+      ]
+    },
+    {
+      "code": "603136",
+      "name": "天目湖",
+      "price": 10.81,
+      "chg": 2.17,
+      "lbc": null,
+      "amount_yi": 5.99,
+      "zbc": 4,
+      "region": "江苏",
+      "concepts": [
+        "国企改革",
+        "旅游概念",
+        "旅游酒店",
+        "文娱消费"
+      ],
+      "industry": "自然景区",
+      "top_concepts": [
+        "国企改革",
+        "旅游概念",
+        "旅游酒店",
+        "文娱消费"
+      ]
+    },
+    {
+      "code": "603082",
+      "name": "北自科技",
+      "price": 43.78,
+      "chg": -2.6,
+      "lbc": null,
+      "amount_yi": 6.03,
+      "zbc": 3,
+      "region": "北京",
+      "concepts": [
+        "军工",
+        "国企改革",
+        "机器人",
+        "新型工业化",
+        "数字孪生",
+        "国产软件"
+      ],
+      "industry": "其他自动化设备",
+      "top_concepts": [
+        "军工",
+        "国企改革",
+        "机器人",
+        "新型工业化"
+      ]
+    },
+    {
+      "code": "001299",
+      "name": "美能能源",
+      "price": 11.39,
+      "chg": 4.5,
+      "lbc": null,
+      "amount_yi": 3.43,
+      "zbc": 2,
+      "region": "陕西",
+      "concepts": [
+        "天然气",
+        "储能",
+        "西部大开发",
+        "油气资源"
+      ],
+      "industry": "燃气",
+      "top_concepts": [
+        "天然气",
+        "储能",
+        "西部大开发",
+        "油气资源"
+      ]
+    },
+    {
+      "code": "603188",
+      "name": "亚邦股份",
+      "price": 4.72,
+      "chg": 3.06,
+      "lbc": null,
+      "amount_yi": 1.16,
+      "zbc": 1,
+      "region": "江苏",
+      "concepts": [
+        "高成长股",
+        "国企改革"
+      ],
+      "industry": "纺织化学制品",
+      "top_concepts": [
+        "高成长股",
+        "国企改革"
+      ]
+    },
+    {
+      "code": "600798",
+      "name": "宁波海运",
+      "price": 3.6,
+      "chg": 5.26,
+      "lbc": null,
+      "amount_yi": 4.14,
+      "zbc": 1,
+      "region": "浙江",
+      "concepts": [
+        "中俄贸易概念",
+        "一带一路",
+        "国企改革",
+        "海洋经济",
+        "长江三角"
+      ],
+      "industry": "航运",
+      "top_concepts": [
+        "中俄贸易概念",
+        "一带一路",
+        "国企改革",
+        "海洋经济"
+      ]
+    },
+    {
+      "code": "002040",
+      "name": "南 京 港",
+      "price": 9.56,
+      "chg": 3.58,
+      "lbc": null,
+      "amount_yi": 6.73,
+      "zbc": 1,
+      "region": "江苏",
+      "concepts": [
+        "国企改革",
+        "一带一路",
+        "长江三角"
+      ],
+      "industry": "港口",
+      "top_concepts": [
+        "国企改革",
+        "一带一路",
+        "长江三角"
+      ]
+    },
+    {
+      "code": "605011",
+      "name": "杭州热电",
+      "price": 20.3,
+      "chg": 6.67,
+      "lbc": null,
+      "amount_yi": 8.09,
+      "zbc": 4,
+      "region": "浙江",
+      "concepts": [
+        "绿色电力",
+        "光伏",
+        "国企改革",
+        "节能环保"
+      ],
+      "industry": "热力服务",
+      "top_concepts": [
+        "绿色电力",
+        "光伏",
+        "国企改革",
+        "节能环保"
+      ]
+    },
+    {
+      "code": "603230",
+      "name": "内蒙新华",
+      "price": 10.42,
+      "chg": 3.68,
+      "lbc": null,
+      "amount_yi": 1.62,
+      "zbc": 1,
+      "region": "内蒙古",
+      "concepts": [
+        "国企改革",
+        "西部大开发"
+      ],
+      "industry": "大众出版",
+      "top_concepts": [
+        "国企改革",
+        "西部大开发"
+      ]
+    },
+    {
+      "code": "600280",
+      "name": "中央商场",
+      "price": 3.25,
+      "chg": 2.52,
+      "lbc": null,
+      "amount_yi": 5.14,
+      "zbc": 1,
+      "region": "江苏",
+      "concepts": [
+        "新零售",
+        "电商概念",
+        "长江三角"
+      ],
+      "industry": "百货",
+      "top_concepts": [
+        "新零售",
+        "电商概念",
+        "长江三角"
+      ]
+    },
+    {
+      "code": "601279",
+      "name": "英利汽车",
+      "price": 3.54,
+      "chg": 4.73,
+      "lbc": null,
+      "amount_yi": 1.68,
+      "zbc": 1,
+      "region": "吉林",
+      "concepts": [
+        "股权集中",
+        "新能源车"
+      ],
+      "industry": "其他汽车零部件",
+      "top_concepts": [
+        "股权集中",
+        "新能源车"
+      ]
+    },
+    {
+      "code": "600609",
+      "name": "金杯汽车",
+      "price": 3.52,
+      "chg": 6.67,
+      "lbc": null,
+      "amount_yi": 3.76,
+      "zbc": 3,
+      "region": "辽宁",
+      "concepts": [
+        "小米汽车",
+        "机器人",
+        "新能源车",
+        "东北振兴",
+        "国企改革"
+      ],
+      "industry": "车身附件及饰件",
+      "top_concepts": [
+        "小米汽车",
+        "机器人",
+        "新能源车",
+        "东北振兴"
+      ]
+    },
+    {
+      "code": "002339",
+      "name": "积成电子",
+      "price": 7.7,
+      "chg": 5.77,
+      "lbc": null,
+      "amount_yi": 3.62,
+      "zbc": 1,
+      "region": "山东",
+      "concepts": [
+        "电网自动化设备",
+        "物联网",
+        "智能电网",
+        "参股新三板",
+        "大数据",
+        "网络安全"
+      ],
+      "industry": "电网设备",
+      "top_concepts": [
+        "电网自动化设备",
+        "物联网",
+        "智能电网",
+        "参股新三板"
+      ]
+    },
+    {
+      "code": "002848",
+      "name": "高斯贝尔",
+      "price": 14.73,
+      "chg": -3.35,
+      "lbc": null,
+      "amount_yi": 7.92,
+      "zbc": 3,
+      "region": "湖南",
+      "concepts": [
+        "被动元件概念",
+        "5G",
+        "国企改革",
+        "商业航天",
+        "彩电",
+        "通信技术"
+      ],
+      "industry": "黑色家电",
+      "top_concepts": [
+        "被动元件概念",
+        "5G",
+        "国企改革",
+        "商业航天"
+      ]
+    },
+    {
+      "code": "002876",
+      "name": "三利谱",
+      "price": 30.59,
+      "chg": 8.67,
+      "lbc": null,
+      "amount_yi": 4.18,
+      "zbc": 2,
+      "region": "广东",
+      "concepts": [
+        "深圳特区",
+        "智能穿戴",
+        "VR",
+        "小米概念",
+        "OLED",
+        "柔性屏(折叠屏)"
+      ],
+      "industry": "面板",
+      "top_concepts": [
+        "深圳特区",
+        "智能穿戴",
+        "VR",
+        "小米概念"
+      ]
+    },
+    {
+      "code": "603773",
+      "name": "沃格光电",
+      "price": 88.9,
+      "chg": 5.57,
+      "lbc": null,
+      "amount_yi": 20.5,
+      "zbc": 1,
+      "region": "江西",
+      "concepts": [
+        "5G",
+        "小米概念",
+        "OLED",
+        "华为概念",
+        "智能穿戴",
+        "电子烟"
+      ],
+      "industry": "光学光电子",
+      "top_concepts": [
+        "5G",
+        "小米概念",
+        "OLED",
+        "华为概念"
+      ]
+    },
+    {
+      "code": "002349",
+      "name": "精华制药",
+      "price": 8.63,
+      "chg": 7.74,
+      "lbc": null,
+      "amount_yi": 12.43,
+      "zbc": 3,
+      "region": "江苏",
+      "concepts": [
+        "国企改革",
+        "流感",
+        "中药概念",
+        "单抗概念",
+        "养老概念",
+        "病原体防治"
+      ],
+      "industry": "中药",
+      "top_concepts": [
+        "国企改革",
+        "流感",
+        "中药概念",
+        "单抗概念"
+      ]
+    },
+    {
+      "code": "002362",
+      "name": "汉王科技",
+      "price": 15.91,
+      "chg": 4.19,
+      "lbc": null,
+      "amount_yi": 2.18,
+      "zbc": 1,
+      "region": "北京",
+      "concepts": [
+        "智能驾驶",
+        "AI",
+        "基因测序",
+        "安防概念",
+        "互联网医疗",
+        "智能穿戴"
+      ],
+      "industry": "垂直应用软件",
+      "top_concepts": [
+        "智能驾驶",
+        "AI",
+        "基因测序",
+        "安防概念"
+      ]
+    },
+    {
+      "code": "002134",
+      "name": "天津普林",
+      "price": 24.71,
+      "chg": 6.42,
+      "lbc": null,
+      "amount_yi": 8.13,
+      "zbc": 1,
+      "region": "天津",
+      "concepts": [
+        "PCB",
+        "大飞机",
+        "玻璃基板",
+        "滨海新区"
+      ],
+      "industry": "印制电路板",
+      "top_concepts": [
+        "PCB",
+        "大飞机",
+        "玻璃基板",
+        "滨海新区"
+      ]
+    },
+    {
+      "code": "301528",
+      "name": "多浦乐",
+      "price": 73.0,
+      "chg": 19.38,
+      "lbc": null,
+      "amount_yi": 4.06,
+      "zbc": 3,
+      "region": "广东",
+      "concepts": [
+        "医疗器械概念"
+      ],
+      "industry": "机械设备",
+      "top_concepts": [
+        "医疗器械概念"
+      ]
+    },
+    {
+      "code": "603661",
+      "name": "恒林股份",
+      "price": 33.28,
+      "chg": 8.4,
+      "lbc": null,
+      "amount_yi": 3.4,
+      "zbc": 9,
+      "region": "浙江",
+      "concepts": [
+        "跨境电商",
+        "培育钻石",
+        "小米概念",
+        "贬值受益"
+      ],
+      "industry": "成品家居",
+      "top_concepts": [
+        "跨境电商",
+        "培育钻石",
+        "小米概念",
+        "贬值受益"
+      ]
+    },
+    {
+      "code": "603683",
+      "name": "晶华新材",
+      "price": 15.76,
+      "chg": 4.93,
+      "lbc": null,
+      "amount_yi": 6.81,
+      "zbc": 1,
+      "region": "上海",
+      "concepts": [
+        "胶黏剂及胶带",
+        "高成长股",
+        "锂电池",
+        "AIPC",
+        "柔性屏(折叠屏)",
+        "机器人"
+      ],
+      "industry": "基础化工",
+      "top_concepts": [
+        "胶黏剂及胶带",
+        "高成长股",
+        "锂电池",
+        "AIPC"
+      ]
+    },
+    {
+      "code": "300112",
+      "name": "万讯自控",
+      "price": 10.46,
+      "chg": 14.82,
+      "lbc": null,
+      "amount_yi": 9.38,
+      "zbc": 4,
+      "region": "广东",
+      "concepts": [
+        "军工",
+        "传感器",
+        "工业母机",
+        "机器人",
+        "AI",
+        "深圳特区"
+      ],
+      "industry": "仪器仪表",
+      "top_concepts": [
+        "军工",
+        "传感器",
+        "工业母机",
+        "机器人"
+      ]
+    },
+    {
+      "code": "000713",
+      "name": "国投丰乐",
+      "price": 7.11,
+      "chg": 5.02,
+      "lbc": null,
+      "amount_yi": 5.67,
+      "zbc": 2,
+      "region": "安徽",
+      "concepts": [
+        "粮食",
+        "磷化工",
+        "化妆品概念",
+        "草甘膦",
+        "种业",
+        "农业种植"
+      ],
+      "industry": "种子",
+      "top_concepts": [
+        "粮食",
+        "磷化工",
+        "化妆品概念",
+        "草甘膦"
+      ]
+    },
+    {
+      "code": "002561",
+      "name": "徐家汇",
+      "price": 7.76,
+      "chg": 3.47,
+      "lbc": null,
+      "amount_yi": 3.5,
+      "zbc": 1,
+      "region": "上海",
+      "concepts": [
+        "社区团购",
+        "退税商店",
+        "新零售",
+        "国企改革",
+        "电商概念"
+      ],
+      "industry": "百货",
+      "top_concepts": [
+        "社区团购",
+        "退税商店",
+        "新零售",
+        "国企改革"
+      ]
+    },
+    {
+      "code": "002552",
+      "name": "宝鼎科技",
+      "price": 54.0,
+      "chg": 8.0,
+      "lbc": null,
+      "amount_yi": 29.02,
+      "zbc": 1,
+      "region": "浙江",
+      "concepts": [
+        "PCB",
+        "国企改革",
+        "一带一路",
+        "黄金",
+        "小盘成长"
+      ],
+      "industry": "印制电路板",
+      "top_concepts": [
+        "PCB",
+        "国企改革",
+        "一带一路",
+        "黄金"
+      ]
+    },
+    {
+      "code": "600738",
+      "name": "丽尚国潮",
+      "price": 4.56,
+      "chg": 4.83,
+      "lbc": null,
+      "amount_yi": 1.99,
+      "zbc": 1,
+      "region": "甘肃",
+      "concepts": [
+        "商业物业经营",
+        "跨境电商",
+        "新零售",
+        "国企改革",
+        "西部大开发"
+      ],
+      "industry": "商贸零售",
+      "top_concepts": [
+        "商业物业经营",
+        "跨境电商",
+        "新零售",
+        "国企改革"
+      ]
+    },
+    {
+      "code": "001232",
+      "name": "嘉立创",
+      "price": 197.68,
+      "chg": 8.33,
+      "lbc": null,
+      "amount_yi": 23.41,
+      "zbc": 6,
+      "region": "广东",
+      "concepts": [
+        "3D打印",
+        "粤港自贸",
+        "小米概念",
+        "数字孪生",
+        "PCB",
+        "国产芯片"
+      ],
+      "industry": "元件",
+      "top_concepts": [
+        "3D打印",
+        "粤港自贸",
+        "小米概念",
+        "数字孪生"
+      ]
+    },
+    {
+      "code": "003033",
+      "name": "征和工业",
+      "price": 78.2,
+      "chg": 7.39,
+      "lbc": null,
+      "amount_yi": 2.84,
+      "zbc": 1,
+      "region": "山东",
+      "concepts": [
+        "摩托车",
+        "机器人",
+        "机器人执行器"
+      ],
+      "industry": "摩托车及其他",
+      "top_concepts": [
+        "摩托车",
+        "机器人",
+        "机器人执行器"
+      ]
+    }
+  ],
+  "dt": [
+    {
+      "code": "603321",
+      "name": "梅轮电梯",
+      "price": 6.62,
+      "chg": -9.93,
+      "lbc": null,
+      "amount_yi": 1.08,
+      "region": "浙江",
+      "concepts": [
+        "工业互联网"
+      ],
+      "industry": "楼宇设备",
+      "top_concepts": [
+        "工业互联网"
+      ]
+    },
+    {
+      "code": "003004",
+      "name": "声迅股份",
+      "price": 65.25,
+      "chg": -10.0,
+      "lbc": null,
+      "amount_yi": 2.83,
+      "region": "北京",
+      "concepts": [
+        "安防设备",
+        "物联网",
+        "智慧城市",
+        "安防概念",
+        "量子科技",
+        "雄安新区"
+      ],
+      "industry": "计算机",
+      "top_concepts": [
+        "安防设备",
+        "物联网",
+        "智慧城市",
+        "安防概念"
+      ]
+    },
+    {
+      "code": "002909",
+      "name": "集泰股份",
+      "price": 6.74,
+      "chg": -10.01,
+      "lbc": null,
+      "amount_yi": 6.66,
+      "region": "广东",
+      "concepts": [
+        "PCB",
+        "有机硅",
+        "一带一路",
+        "新能源车",
+        "小米概念",
+        "雄安新区"
+      ],
+      "industry": "基础化工",
+      "top_concepts": [
+        "PCB",
+        "有机硅",
+        "一带一路",
+        "新能源车"
+      ]
+    },
+    {
+      "code": "600706",
+      "name": "曲江文旅",
+      "price": 8.47,
+      "chg": -9.99,
+      "lbc": null,
+      "amount_yi": 3.17,
+      "region": "陕西",
+      "concepts": [
+        "旅游酒店",
+        "西部大开发",
+        "参股新三板",
+        "国企改革",
+        "旅游概念",
+        "体育产业"
+      ],
+      "industry": "人工景区",
+      "top_concepts": [
+        "旅游酒店",
+        "西部大开发",
+        "参股新三板",
+        "国企改革"
+      ]
+    },
+    {
+      "code": "600712",
+      "name": "南宁百货",
+      "price": 6.03,
+      "chg": -10.0,
+      "lbc": null,
+      "amount_yi": 5.03,
+      "region": "广西",
+      "concepts": [
+        "零售概念",
+        "国企改革",
+        "微利股",
+        "跨境电商",
+        "乡村振兴",
+        "新零售"
+      ],
+      "industry": "百货",
+      "top_concepts": [
+        "零售概念",
+        "国企改革",
+        "微利股",
+        "跨境电商"
+      ]
+    },
+    {
+      "code": "600354",
+      "name": "敦煌种业",
+      "price": 9.87,
+      "chg": -10.03,
+      "lbc": null,
+      "amount_yi": 9.87,
+      "region": "甘肃",
+      "concepts": [
+        "粮食",
+        "国企改革",
+        "一带一路",
+        "农业种植",
+        "西部大开发",
+        "乡村振兴"
+      ],
+      "industry": "农林牧渔",
+      "top_concepts": [
+        "粮食",
+        "国企改革",
+        "一带一路",
+        "农业种植"
+      ]
+    },
+    {
+      "code": "600108",
+      "name": "亚盛集团",
+      "price": 4.26,
+      "chg": -9.94,
+      "lbc": null,
+      "amount_yi": 17.97,
+      "region": "甘肃",
+      "concepts": [
+        "代糖概念",
+        "生态农业",
+        "国企改革",
+        "农业种植",
+        "西部大开发",
+        "乡村振兴"
+      ],
+      "industry": "农林牧渔",
+      "top_concepts": [
+        "代糖概念",
+        "生态农业",
+        "国企改革",
+        "农业种植"
+      ]
+    },
+    {
+      "code": "605577",
+      "name": "龙版传媒",
+      "price": 16.8,
+      "chg": -10.02,
+      "lbc": null,
+      "amount_yi": 0.35,
+      "region": "黑龙江",
+      "concepts": [
+        "国企改革",
+        "AI",
+        "教育",
+        "AI应用",
+        "谷子经济",
+        "教育出版"
+      ],
+      "industry": "传媒",
+      "top_concepts": [
+        "国企改革",
+        "AI",
+        "教育",
+        "AI应用"
+      ]
+    },
+    {
+      "code": "600359",
+      "name": "新农开发",
+      "price": 8.75,
+      "chg": -9.98,
+      "lbc": null,
+      "amount_yi": 2.1,
+      "region": "新疆",
+      "concepts": [
+        "粮食",
+        "国企改革",
+        "农业种植",
+        "西部大开发",
+        "乡村振兴",
+        "土地流转"
+      ],
+      "industry": "农林牧渔",
+      "top_concepts": [
+        "粮食",
+        "国企改革",
+        "农业种植",
+        "西部大开发"
+      ]
+    },
+    {
+      "code": "000930",
+      "name": "中粮科技",
+      "price": 5.29,
+      "chg": -10.03,
+      "lbc": null,
+      "amount_yi": 8.1,
+      "region": "安徽",
+      "concepts": [
+        "中字头",
+        "生态农业",
+        "降解塑料",
+        "国企改革",
+        "新能源",
+        "节能环保"
+      ],
+      "industry": "农林牧渔",
+      "top_concepts": [
+        "中字头",
+        "生态农业",
+        "降解塑料",
+        "国企改革"
+      ]
+    },
+    {
+      "code": "002790",
+      "name": "瑞尔特",
+      "price": 8.38,
+      "chg": -9.99,
+      "lbc": null,
+      "amount_yi": 6.95,
+      "region": "福建",
+      "concepts": [
+        "智能家居"
+      ],
+      "industry": "卫浴制品",
+      "top_concepts": [
+        "智能家居"
+      ]
+    },
+    {
+      "code": "002059",
+      "name": "云南旅游",
+      "price": 5.11,
+      "chg": -10.04,
+      "lbc": null,
+      "amount_yi": 6.59,
+      "region": "云南",
+      "concepts": [
+        "国企改革",
+        "西部大开发",
+        "VR",
+        "旅游概念",
+        "旅游酒店",
+        "REITs概念"
+      ],
+      "industry": "人工景区",
+      "top_concepts": [
+        "国企改革",
+        "西部大开发",
+        "VR",
+        "旅游概念"
+      ]
+    },
+    {
+      "code": "002769",
+      "name": "普路通",
+      "price": 6.64,
+      "chg": -10.03,
+      "lbc": null,
+      "amount_yi": 0.11,
+      "region": "广东",
+      "concepts": [
+        "锂电池",
+        "跨境电商",
+        "储能",
+        "稳定币",
+        "贬值受益",
+        "国企改革"
+      ],
+      "industry": "端到端供应链服务",
+      "top_concepts": [
+        "锂电池",
+        "跨境电商",
+        "储能",
+        "稳定币"
+      ]
+    },
+    {
+      "code": "002161",
+      "name": "远 望 谷",
+      "price": 7.24,
+      "chg": -9.95,
+      "lbc": null,
+      "amount_yi": 7.95,
+      "region": "广东",
+      "concepts": [
+        "铁路基建",
+        "物联网",
+        "ETC",
+        "一带一路",
+        "移动支付",
+        "食品安全"
+      ],
+      "industry": "其他电子",
+      "top_concepts": [
+        "铁路基建",
+        "物联网",
+        "ETC",
+        "一带一路"
+      ]
+    },
+    {
+      "code": "000523",
+      "name": "红棉股份",
+      "price": 3.61,
+      "chg": -9.98,
+      "lbc": null,
+      "amount_yi": 11.06,
+      "region": "广东",
+      "concepts": [
+        "代糖概念",
+        "国企改革",
+        "啤酒概念",
+        "新零售",
+        "粤港自贸"
+      ],
+      "industry": "综合",
+      "top_concepts": [
+        "代糖概念",
+        "国企改革",
+        "啤酒概念",
+        "新零售"
+      ]
+    },
+    {
+      "code": "002295",
+      "name": "精艺股份",
+      "price": 9.98,
+      "chg": -10.01,
+      "lbc": null,
+      "amount_yi": 0.63,
+      "region": "广东",
+      "concepts": [
+        "新材料",
+        "虚拟电厂",
+        "国企改革",
+        "电网概念"
+      ],
+      "industry": "铜",
+      "top_concepts": [
+        "新材料",
+        "虚拟电厂",
+        "国企改革",
+        "电网概念"
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "code": "600172",
+      "name": "黄河旋风",
+      "price": 16.53,
+      "chg": 9.98,
+      "turnover": 23.74,
+      "amount_yi": 48.93,
+      "zjlryi": 15.12,
+      "region": "河南",
+      "concepts": [
+        "节能环保",
+        "新材料",
+        "国企改革",
+        "小盘价值",
+        "培育钻石"
+      ],
+      "industry": "通用设备",
+      "top_concepts": [
+        "节能环保",
+        "新材料",
+        "国企改革",
+        "小盘价值"
+      ]
+    },
+    {
+      "code": "600186",
+      "name": "莲花控股",
+      "price": 13.18,
+      "chg": 10.02,
+      "turnover": 15.95,
+      "amount_yi": 36.4,
+      "zjlryi": 12.19,
+      "region": "河南",
+      "concepts": [
+        "电商概念",
+        "AI",
+        "新零售",
+        "人造肉",
+        "半导体",
+        "调味品概念"
+      ],
+      "industry": "食品饮料",
+      "top_concepts": [
+        "电商概念",
+        "AI",
+        "新零售",
+        "人造肉"
+      ]
+    },
+    {
+      "code": "001896",
+      "name": "豫能控股",
+      "price": 12.99,
+      "chg": 9.99,
+      "turnover": 11.08,
+      "amount_yi": 21.7,
+      "zjlryi": 8.21,
+      "region": "河南",
+      "concepts": [
+        "新能源",
+        "华为概念",
+        "光伏",
+        "创投",
+        "地热能",
+        "电商概念"
+      ],
+      "industry": "公用事业",
+      "top_concepts": [
+        "新能源",
+        "华为概念",
+        "光伏",
+        "创投"
+      ]
+    },
+    {
+      "code": "300285",
+      "name": "国瓷材料",
+      "price": 65.8,
+      "chg": 4.83,
+      "turnover": 13.17,
+      "amount_yi": 73.05,
+      "zjlryi": 7.32,
+      "region": "山东",
+      "concepts": [
+        "节能环保",
+        "新材料",
+        "3D打印",
+        "蓝宝石",
+        "MLCC",
+        "新能源车"
+      ],
+      "industry": "电子化学品",
+      "top_concepts": [
+        "节能环保",
+        "新材料",
+        "3D打印",
+        "蓝宝石"
+      ]
+    },
+    {
+      "code": "300750",
+      "name": "宁德时代",
+      "price": 337.11,
+      "chg": 2.0,
+      "turnover": 0.61,
+      "amount_yi": 88.72,
+      "zjlryi": 6.85,
+      "region": "福建",
+      "concepts": [
+        "券商金股",
+        "蚂蚁金服概念",
+        "华为概念",
+        "固态电池",
+        "锂电池",
+        "新能源车"
+      ],
+      "industry": "电池",
+      "top_concepts": [
+        "券商金股",
+        "蚂蚁金服概念",
+        "华为概念",
+        "固态电池"
+      ]
+    },
+    {
+      "code": "603186",
+      "name": "华正新材",
+      "price": 228.7,
+      "chg": 0.42,
+      "turnover": 13.69,
+      "amount_yi": 49.47,
+      "zjlryi": 6.04,
+      "region": "浙江",
+      "concepts": [
+        "PCB",
+        "半导体",
+        "5G",
+        "华为概念",
+        "固态电池",
+        "锂电池"
+      ],
+      "industry": "元件",
+      "top_concepts": [
+        "PCB",
+        "半导体",
+        "5G",
+        "华为概念"
+      ]
+    },
+    {
+      "code": "002141",
+      "name": "贤丰控股",
+      "price": 6.97,
+      "chg": 9.94,
+      "turnover": 20.48,
+      "amount_yi": 14.38,
+      "zjlryi": 5.98,
+      "region": "广东",
+      "concepts": [
+        "PCB",
+        "锂电池",
+        "消费电子概念",
+        "创投",
+        "生物疫苗"
+      ],
+      "industry": "印制电路板",
+      "top_concepts": [
+        "PCB",
+        "锂电池",
+        "消费电子概念",
+        "创投"
+      ]
+    },
+    {
+      "code": "603259",
+      "name": "药明康德",
+      "price": 158.86,
+      "chg": 5.04,
+      "turnover": 1.78,
+      "amount_yi": 68.69,
+      "zjlryi": 5.65,
+      "region": "江苏",
+      "concepts": [
+        "CRO",
+        "创新医疗服务",
+        "大盘成长",
+        "医药医疗风格",
+        "券商金股",
+        "CAR-T细胞疗法"
+      ],
+      "industry": "医疗研发外包",
+      "top_concepts": [
+        "CRO",
+        "创新医疗服务",
+        "大盘成长",
+        "医药医疗风格"
+      ]
+    },
+    {
+      "code": "600330",
+      "name": "天通股份",
+      "price": 30.23,
+      "chg": 10.01,
+      "turnover": 6.56,
+      "amount_yi": 23.43,
+      "zjlryi": 5.63,
+      "region": "浙江",
+      "concepts": [
+        "光伏",
+        "长江三角",
+        "LED概念",
+        "锂电池",
+        "智能穿戴",
+        "新材料"
+      ],
+      "industry": "电子化学品",
+      "top_concepts": [
+        "光伏",
+        "长江三角",
+        "LED概念",
+        "锂电池"
+      ]
+    },
+    {
+      "code": "002579",
+      "name": "中京电子",
+      "price": 18.79,
+      "chg": 10.01,
+      "turnover": 25.49,
+      "amount_yi": 26.37,
+      "zjlryi": 5.44,
+      "region": "广东",
+      "concepts": [
+        "PCB",
+        "5G",
+        "OLED",
+        "工业互联网",
+        "电子烟",
+        "小米概念"
+      ],
+      "industry": "元件",
+      "top_concepts": [
+        "PCB",
+        "5G",
+        "OLED",
+        "工业互联网"
+      ]
+    },
+    {
+      "code": "300408",
+      "name": "三环集团",
+      "price": 125.83,
+      "chg": 1.18,
+      "turnover": 3.97,
+      "amount_yi": 94.45,
+      "zjlryi": 4.19,
+      "region": "广东",
+      "concepts": [
+        "新材料",
+        "智能穿戴",
+        "燃料电池概念",
+        "5G",
+        "华为概念",
+        "MLCC"
+      ],
+      "industry": "元件",
+      "top_concepts": [
+        "新材料",
+        "智能穿戴",
+        "燃料电池概念",
+        "5G"
+      ]
+    },
+    {
+      "code": "603920",
+      "name": "世运电路",
+      "price": 43.42,
+      "chg": 4.75,
+      "turnover": 7.77,
+      "amount_yi": 23.87,
+      "zjlryi": 4.1,
+      "region": "广东",
+      "concepts": [
+        "特斯拉概念",
+        "国企改革",
+        "上证380",
+        "PCB",
+        "商业航天",
+        "机器人"
+      ],
+      "industry": "元件",
+      "top_concepts": [
+        "特斯拉概念",
+        "国企改革",
+        "上证380",
+        "PCB"
+      ]
+    }
+  ]
+}
