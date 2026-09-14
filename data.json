@@ -8985,10 +8985,10 @@
     },
     "industry": "水力发电",
     "amount_yi": 8.46,
-    "seal_amount_yi": 0.82,
+    "seal_amount_yi": 2.35,
     "bid_basis": "上板分时量",
     "total_cap_yi": 69.93,
-    "bid_required_yi": 0.41,
+    "bid_required_yi": 1.17,
     "seal_min_yi": 0.7,
     "seal_max_yi": 2.1
   },
@@ -9020,10 +9020,10 @@
       },
       "amount_yi": 8.46,
       "total_cap_yi": 69.93,
-      "seal_amount_yi": 0.82,
-      "bid_required_yi": 0.41,
+      "seal_amount_yi": 2.35,
+      "bid_required_yi": 1.17,
       "bid_basis": "上板分时量",
-      "day_amount_yi": 8.46
+      "day_amount_yi": 8.47
     },
     {
       "node_type": "穿越节点",
@@ -9052,8 +9052,8 @@
       },
       "amount_yi": 24.91,
       "total_cap_yi": 134.64,
-      "seal_amount_yi": 19.76,
-      "bid_required_yi": 9.88,
+      "seal_amount_yi": 2.08,
+      "bid_required_yi": 1.04,
       "bid_basis": "上板分时量",
       "day_amount_yi": 24.91
     },
@@ -9084,10 +9084,10 @@
       },
       "amount_yi": 26.37,
       "total_cap_yi": 115.11,
-      "seal_amount_yi": 22.15,
-      "bid_required_yi": 11.08,
+      "seal_amount_yi": 1.79,
+      "bid_required_yi": 0.9,
       "bid_basis": "上板分时量",
-      "day_amount_yi": 26.37
+      "day_amount_yi": 26.38
     },
     {
       "node_type": "穿越节点",
@@ -9114,10 +9114,10 @@
       },
       "amount_yi": 18.52,
       "total_cap_yi": 119.81,
-      "seal_amount_yi": 17.56,
-      "bid_required_yi": 8.78,
+      "seal_amount_yi": 0.55,
+      "bid_required_yi": 0.27,
       "bid_basis": "上板分时量",
-      "day_amount_yi": 18.52
+      "day_amount_yi": 18.55
     },
     {
       "node_type": "穿越节点",
@@ -9146,8 +9146,8 @@
       },
       "amount_yi": 16.9,
       "total_cap_yi": 50.84,
-      "seal_amount_yi": 1.99,
-      "bid_required_yi": 0.99,
+      "seal_amount_yi": 2.3,
+      "bid_required_yi": 1.15,
       "bid_basis": "上板分时量",
       "day_amount_yi": 16.9
     },
@@ -10016,7 +10016,7 @@
   },
   "auction": {
     "date": "2026-09-14",
-    "updated": "2026-09-14 17:08:49",
+    "updated": "2026-09-14 17:25:19",
     "src_date": "2026-09-14",
     "is_auction": false,
     "rows": [
@@ -10036,7 +10036,7 @@
         "pct": 4.54,
         "vol_shou": 561062.0,
         "amt_yi": 8.46,
-        "bid_line_yi": 0.41,
+        "bid_line_yi": 1.17,
         "bid_basis": "上板分时量×50%",
         "ok": true,
         "gap": "高开"
@@ -10057,7 +10057,7 @@
         "pct": 1.12,
         "vol_shou": 1145345.0,
         "amt_yi": 24.91,
-        "bid_line_yi": 9.88,
+        "bid_line_yi": 1.04,
         "bid_basis": "上板分时量×50%",
         "ok": true,
         "gap": "高开"
@@ -10078,7 +10078,7 @@
         "pct": -5.44,
         "vol_shou": 1487234.0,
         "amt_yi": 26.37,
-        "bid_line_yi": 11.08,
+        "bid_line_yi": 0.9,
         "bid_basis": "上板分时量×50%",
         "ok": true,
         "gap": "低开"
@@ -10099,7 +10099,7 @@
         "pct": 0.12,
         "vol_shou": 1088432.0,
         "amt_yi": 18.52,
-        "bid_line_yi": 8.78,
+        "bid_line_yi": 0.27,
         "bid_basis": "上板分时量×50%",
         "ok": true,
         "gap": "平开"
@@ -10120,7 +10120,7 @@
         "pct": 4.66,
         "vol_shou": 1578457.0,
         "amt_yi": 16.9,
-        "bid_line_yi": 0.99,
+        "bid_line_yi": 1.15,
         "bid_basis": "上板分时量×50%",
         "ok": true,
         "gap": "高开"
@@ -10275,5 +10275,5 @@
     ],
     "miss": []
   },
-  "premarket_updated": "2026-09-14 17:08:39"
+  "premarket_updated": "2026-09-14 17:25:10"
 }

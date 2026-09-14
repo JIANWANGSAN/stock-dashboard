@@ -824,16 +824,38 @@ def _node_type_priority(nt):
     return {'穿越节点': 3, '突破节点': 2, '最高标断板节点': 1}.get(nt, 0)
 
 
+def seal_bar_label(fbt):
+    """封板时间(fbt, 形如 93024 = 09:30:24) → 封板所在分时线的标签('09:31')。
+
+    分钟线标签 = 该分钟区间的**结束**时刻（首根 09:30 = 集合竞价），
+    且源站 fbt 的分秒常被截断（如 10:26:5x 报成 102600），
+    故**一律进位到下一分钟**，保证取到的是「封板那一刻所在的那根」。
+    """
+    try:
+        v = int(fbt)
+    except Exception:
+        return None
+    h, mi = v // 10000, (v % 10000) // 100
+    mi += 1
+    if mi >= 60:
+        mi -= 60
+        h += 1
+    return '%02d:%02d' % (h, mi)
+
+
 def fetch_seal_amount(code, market, date_str, fbt, is_yizi=False):
     """上板分时量 = 首次封板时刻的累计成交额（元）。
 
     注意与「全天成交额(amount)」区分：次日竞价量的基准是上板那一刻的分时量，
     不是全天成交额（炸板/回封会把全天额撑得远大于上板量）。
 
-    口径：
-      · 一字板(first_seal<=93005)：封板发生在 9:25 集合竞价，取首根分时累计额
-        （含集合竞价成交）= 上板分时量。切勿取 9:35 累计，那会把盘中量算进去。
-      · T字板/自然板：取封板时刻(fbt)所在分钟末的累计成交额。
+    口径（2026-09-14 修正）：
+      · 上板分时量 = 「封板时刻所在那一根分时线」的**成交额**（该分钟增量，不是累计）。
+        东财/腾讯的分钟线标签 = 该分钟区间的**结束**时刻（首根 09:30 = 集合竞价），
+        所以 fbt 带秒时要**向上进位到下一分钟**：如 09:30:24 → 落在 09:31 那根。
+        （旧实现把 09:30:24 截成 '09:30'，正好命中集合竞价那根 → 上板量被严重低估，
+          典型：闽东电力 000993 算出 0.82亿，实际上板那根是 2.35亿。）
+      · 一字板(first_seal<=93005)：封板发生在集合竞价，取首根（09:30）成交额 = 集合竞价额。
 
     返回 (seal_amount, day_amount)，失败返回 (None, None)
     """
@@ -861,33 +883,28 @@ def fetch_seal_amount(code, market, date_str, fbt, is_yizi=False):
             trends = []
         day = [t for t in trends if t.startswith(date_str)]
         if day:
-            hhmm = None
-            if fbt:
-                try:
-                    hhmm = '%02d:%02d' % (int(fbt) // 10000, (int(fbt) % 10000) // 100)
-                except Exception:
-                    hhmm = None
-            hhmm_comp = hhmm.replace(':', '') if hhmm else None   # 东财时刻 '09:35'
+            hhmm = seal_bar_label(fbt)                # 封板所在分时线（已进位到下一分钟）
+            hhmm_comp = hhmm.replace(':', '') if hhmm else None
             cum = 0.0
-            first_cum = None
-            seal_at = None
+            first_own = None
+            own_at_seal = None
             for t in day:
                 p = t.split(',')
                 tm = p[0][11:16]
                 try:
-                    amt = float(p[6])
+                    own = float(p[6])                 # 东财 f57 = 该分钟成交额（增量）
                 except Exception:
-                    amt = 0.0
-                cum += amt
-                if first_cum is None:
-                    first_cum = cum                       # 首分钟累计（含集合竞价）
-                if seal_at is None and hhmm and tm >= hhmm:
-                    seal_at = cum                          # 首次封板时刻累计（仅认第一次）
+                    own = 0.0
+                cum += own
+                if first_own is None:
+                    first_own = own                   # 首根 09:30（含集合竞价）
+                if own_at_seal is None and hhmm and tm >= hhmm:
+                    own_at_seal = own                 # 首次封板那一根的成交额（仅认第一次）
             total = cum
-            if is_yizi and first_cum is not None:
-                seal = first_cum          # 一字板：集合竞价首分钟累计
-            elif seal_at is not None:
-                seal = seal_at            # 自然/T板：首次封板时刻累计，炸板回封一律不计
+            if is_yizi and first_own is not None:
+                seal = first_own                      # 一字板：集合竞价额
+            elif own_at_seal is not None:
+                seal = own_at_seal                    # 自然/T板：封板那一根成交额，炸板回封不计
 
     # 兜底：腾讯分钟线（格式: 时间 价格 量(手) 累计额(元)，时间字段 'HHMM' 无冒号）
     if seal is None:
@@ -903,21 +920,27 @@ def fetch_seal_amount(code, market, date_str, fbt, is_yizi=False):
                 # date 形如 20260907，比较与 date_str 一致
                 if date_field and date_field == date_str.replace('-', '') and arr:
                     rows = [r.split() for r in arr]
-                    first_cum = float(rows[0][3]) if len(rows[0]) > 3 else None
-                    if is_yizi and first_cum is not None:
-                        # 一字板：首根分时累计（含集合竞价）= 上板分时量
-                        seal = first_cum
-                    else:
-                        # 自然/T板：取「首次封板时刻」所在分钟末累计（统一为 HHMM 比较，修原 bug）
-                        target_idx = None
-                        for i, r in enumerate(rows):
-                            if hhmm_comp and r[0] >= hhmm_comp:
-                                target_idx = i
-                                break
-                        if target_idx is None and rows:
-                            target_idx = len(rows) - 1
-                        seal = float(rows[target_idx][3])
-                    total = float(rows[-1][3])
+                    hhmm_c = seal_bar_label(fbt)
+                    hhmm_c = hhmm_c.replace(':', '') if hhmm_c else None   # 腾讯时刻 '0931'
+                    first_own = None
+                    own_at_seal = None
+                    prev = 0.0
+                    for rw in rows:
+                        try:
+                            cc = float(rw[3])      # 腾讯第4列 = 累计成交额
+                        except Exception:
+                            cc = prev
+                        own = cc - prev            # 该分钟成交额
+                        prev = cc
+                        if first_own is None:
+                            first_own = own        # 首根 0930（含集合竞价）
+                        if own_at_seal is None and hhmm_c and rw[0] >= hhmm_c:
+                            own_at_seal = own      # 首次封板那一根的成交额
+                    total = prev
+                    if is_yizi and first_own is not None:
+                        seal = first_own           # 一字板：集合竞价额
+                    elif own_at_seal is not None:
+                        seal = own_at_seal         # 自然/T板：封板那一根成交额
             except Exception:
                 pass
 
