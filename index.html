@@ -199,14 +199,17 @@
   #board-3d-box table th:nth-child(4), #board-3d-box table td:nth-child(4){ width: 15%; text-align: center; }
   /* 模块2 连板候选池：固定布局，列宽按比例分配，始终对齐（已删序号列） */
   #cand-box table{ table-layout: fixed; }
-  #cand-box table .c2-name{ width: 13%; text-align: left; }
-  #cand-box table .c2-py{ width: 10%; text-align: center; }
-  #cand-box table .c2-region{ width: 10%; text-align: left; }
-  #cand-box table .c2-concepts{ width: 25%; text-align: left; }
-  #cand-box table .c2-boards{ width: 8%; text-align: center; }
-  #cand-box table .c2-node{ width: 14%; text-align: left; }
-  #cand-box table .c2-hit{ width: 9%; text-align: center; }
-  #cand-box table .c2-ferment{ width: 11%; text-align: center; }
+  #cand-box table .c2-name{ width: 12%; text-align: left; }
+  #cand-box table .c2-py{ width: 8%; text-align: center; }
+  #cand-box table .c2-region{ width: 7%; text-align: left; }
+  #cand-box table .c2-concepts{ width: 17%; text-align: left; }
+  #cand-box table .c2-boards{ width: 5%; text-align: center; }
+  #cand-box table .c2-node{ width: 9%; text-align: left; }
+  #cand-box table .c2-hit{ width: 6%; text-align: center; }
+  #cand-box table .c2-ferment{ width: 8%; text-align: center; }
+  #cand-box table .c2-zbc{ width: 6%; text-align: center; }
+  #cand-box table .c2-line{ width: 10%; text-align: center; }
+  #cand-box table .c2-ok{ width: 12%; text-align: center; }
   .rank-no { font-weight: 700; color: #9ca3af; }
   .star { color: #f59e0b; font-weight: 700; }
   /* 小结 */
@@ -450,9 +453,6 @@
     #board-daily-box table, #board-3d-box table{ display: table; width: 100%; table-layout: fixed; overflow: visible; white-space: normal; }
     #board-daily-box table th, #board-daily-box table td,
     #board-3d-box table th, #board-3d-box table td{ white-space: normal; word-break: break-word; padding: 5px 3px; font-size: 10.5px; }
-    /* 竞价核对表：手机端自适应 */
-    .auc-table{ display: table; width: 100%; table-layout: fixed; overflow: visible; white-space: normal; }
-    .auc-table th, .auc-table td{ white-space: normal; word-break: break-word; padding: 5px 2px; font-size: 10px; }
     /* 模块2 连板候选池：手机端自适应铺满，不横滑，文字换行，列严格对齐 */
     #cand-box table{ display: table; width: 100%; table-layout: fixed; overflow: visible; white-space: normal; }
     #cand-box table th, #cand-box table td{ white-space: normal; word-break: break-word; padding: 5px 2px; font-size: 10px; }
@@ -460,15 +460,7 @@
     .sk-chart{ height: 300px; flex: 0 0 auto; }
   }
 
-  /* ===== 竞价核对表（梯队置顶） ===== */
-  .auc-table{ table-layout: fixed; }
-  .auc-table .a-src{ width: 11%; text-align: center; font-size: 11px; }
-  .auc-table .a-name{ width: 19%; }
-  .auc-table .a-b{ width: 7%; text-align: center; }
-  .auc-table .a-open{ width: 14%; text-align: right; }
-  .auc-table .a-pct{ width: 14%; text-align: right; }
-  .auc-table .a-amt{ width: 25%; text-align: right; }
-  .auc-table .a-ok{ width: 10%; text-align: center; }
+  /* 候选池 · 竞价合格判定 */
   .auc-ok{ color: #16a34a; font-weight: 700; }
   .auc-no{ color: #dc2626; font-weight: 700; }
 
@@ -549,12 +541,7 @@
     <!-- 模块2 -->
     <div class="panel" id="panel-ladder" data-page-node-id="4l1bp0vKx6YDy6R8iGIOio">
       <div class="panel-head" data-page-node-id="5WoYpzvUFtzzFhwUzLuf0t">
-        <div class="sub" data-page-node-id="GzlsKBRwqHHws2d6uZVO3O">竞价核对 → 次日连板推荐 → 连板候选池 → 连板高度梯队 → 节点票池（数据互通，同一批候选票）</div>
-      </div>
-      <div class="card" id="auction-card" data-page-node-id="auctionCard" style="border-left:4px solid #2563eb;">
-        <div class="card-title" data-page-node-id="auctionTitle">竞价核对 · 候选票 <span class="tag" id="auction-state" data-page-node-id="auctionState">—</span> <span class="tag" id="auction-time" data-page-node-id="auctionTime">—</span></div>
-        <div class="sub" id="auction-note" style="margin-bottom:6px;color:#6b7280;font-size:11.5px;">口径：竞价额 ≥ 该票「上板分时量 × 50%」为合格 · 9:15–9:25 打开本页会自动刷新（每 10 秒）</div>
-        <div id="auction-box" data-page-node-id="auctionBox"></div>
+        <div class="sub" data-page-node-id="GzlsKBRwqHHws2d6uZVO3O">次日连板推荐 → 连板候选池（含竞价硬线与合格判定）→ 连板高度梯队 → 节点票池</div>
       </div>
       <div class="card" data-page-node-id="JSgkXOoWUp4leNA9Wfbt15">
         <div class="card-title" data-page-node-id="DrUDTouhoYuh29fTFYfNOH">我的想法 · 次日连板推荐</div>
@@ -673,7 +660,6 @@ function init(){
   renderNodes();
   renderReco();
   renderCandidates();
-  renderAuction();
   renderElNino();
   renderBoards();
   renderModule4();
@@ -686,7 +672,7 @@ document.querySelectorAll('.menu-item').forEach(el=>{
     document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
     el.classList.add('active');
     document.getElementById('panel-'+el.dataset.panel).classList.add('active');
-    if(el.dataset.panel==='ladder'){ renderChart(); renderAuction(); refreshAuctionLive(); }
+    if(el.dataset.panel==='ladder') renderChart();
   });
 });
 document.querySelectorAll('#news-tabs .tab').forEach(t=>{
@@ -967,61 +953,6 @@ function renderReco(){
   </div>`;
 }
 
-/* ---- 模块2 竞价核对（梯队置顶） ---- */
-function aucMkt(code){ return /^6/.test(String(code)) ? 1 : 0; }
-function aucLive(){
-  const n=new Date(), m=n.getHours()*60+n.getMinutes(), d=n.getDay();
-  return d>=1 && d<=5 && m>=555 && m<=572;      // 交易日 9:15~9:32 视为竞价窗口
-}
-function renderAuction(){
-  const box=document.getElementById('auction-box');
-  if(!box) return;
-  const st=document.getElementById('auction-state'), tm=document.getElementById('auction-time');
-  const A=D.auction, live=aucLive();
-  if(!A||!(A.rows||[]).length){
-    box.innerHTML='<div class="empty">暂无竞价数据（每交易日 9:26 自动核对后生成）</div>';
-    st.textContent='等待核对'; st.style.background='#f1f5f9'; st.style.color='#64748b'; tm.textContent='';
-    return;
-  }
-  if(live){ st.textContent='竞价实时刷新中'; st.style.background='#dcfce7'; st.style.color='#15803d'; }
-  else if(A.is_auction){ st.textContent='竞价口径'; st.style.background='#dbeafe'; st.style.color='#1d4ed8'; }
-  else { st.textContent='非竞价时段·全日口径不可比'; st.style.background='#fef3c7'; st.style.color='#b45309'; }
-  tm.textContent='更新 '+String(A.updated||'').slice(11,16);
-  box.innerHTML=`<table class="auc-table">
-    <thead><tr><th class="a-src">来源</th><th class="a-name">名称</th><th class="a-b">板</th><th class="a-open">竞价开</th><th class="a-pct">涨幅</th><th class="a-amt">竞价额 / 硬线</th><th class="a-ok">结论</th></tr></thead>
-    <tbody>${A.rows.map(r=>{
-      const pc=(r.pct==null)?'#6b7280':(r.pct>0?'#dc2626':(r.pct<0?'#16a34a':'#6b7280'));
-      const pt=(r.pct==null)?'—':((r.pct>0?'+':'')+r.pct.toFixed(2)+'%');
-      return `<tr>
-        <td class="a-src">${r.src==='次日首选'?'<b style="color:#dc2626;">首选</b>':'候选'}</td>
-        <td class="a-name"><b class="sk" data-scode="${esc(r.code)}" data-smkt="${aucMkt(r.code)}" data-sname="${esc(r.name)}">${esc(r.name)}</b></td>
-        <td class="a-b">${r.boards||''}</td>
-        <td class="a-open">${r.open?r.open.toFixed(2):'—'}</td>
-        <td class="a-pct" style="color:${pc};font-weight:600;">${pt}</td>
-        <td class="a-amt">${r.amt_yi}<span style="color:#9ca3af;"> / ${r.bid_line_yi==null?'—':r.bid_line_yi}</span></td>
-        <td class="a-ok">${r.ok?'<span class="auc-ok">合格</span>':'<span class="auc-no">不足</span>'}</td>
-      </tr>`;
-    }).join('')}</tbody></table>
-    <div class="note" style="margin-top:5px;">核对对象＝${esc(A.src_date||'')} 收盘生成的候选（即今日待验证）· 硬线＝上板分时量×50%</div>`;
-}
-function refreshAuctionLive(){
-  const A=D.auction;
-  if(!aucLive()||!A||!(A.rows||[]).length) return;
-  Promise.all(A.rows.map(r=>{
-    const u='https://push2.eastmoney.com/api/qt/stock/get?secid='+aucMkt(r.code)+'.'+r.code+'&fields=f43,f46,f47,f48,f60';
-    return fetch(u,{cache:'no-store'}).then(x=>x.json()).then(j=>{
-      const d=j&&j.data; if(!d) return;
-      const op=(d.f46||0)/100, prev=(d.f60||0)/100;
-      r.open=op; r.prev=prev; r.amt_yi=+((d.f48||0)/1e8).toFixed(2);
-      r.pct=prev?+(((op-prev)/prev)*100).toFixed(2):null;
-      r.ok=!!(r.bid_line_yi&&r.amt_yi>=r.bid_line_yi);
-    }).catch(()=>{});
-  })).then(()=>{
-    A.updated=new Date().toLocaleString('zh-CN',{hour12:false});
-    renderAuction();
-  });
-}
-
 /* ---- 模块2 候选 ---- */
 function renderCandidates(){
   const box=document.getElementById('cand-box');
@@ -1034,7 +965,7 @@ function renderCandidates(){
   });
   if(!arr.length){ box.innerHTML='<div class="empty">暂无候选</div>'; return; }
   box.innerHTML=`<table>
-    <thead><tr><th class="c2-name">名称</th><th class="c2-py">缩写</th><th class="c2-region">地域</th><th class="c2-concepts">题材概念</th><th class="c2-boards">板数</th><th class="c2-node">来源节点</th><th class="c2-hit">主线</th><th class="c2-ferment">发酵</th></tr></thead>
+    <thead><tr><th class="c2-name">名称</th><th class="c2-py">缩写</th><th class="c2-region">地域</th><th class="c2-concepts">题材概念</th><th class="c2-boards">板数</th><th class="c2-node">来源节点</th><th class="c2-hit">主线</th><th class="c2-ferment">发酵</th><th class="c2-zbc">炸板</th><th class="c2-line">竞价硬线</th><th class="c2-ok">竞价结论</th></tr></thead>
     <tbody>${arr.map(c=>{
       const cs=(c.concepts||[]).filter(x=>!/板块$/.test(x)).slice(0,3).map(x=>`<span class="cpt">${esc(x)}</span>`).join('');
       const f=c.ferment||{};
@@ -1046,7 +977,13 @@ function renderCandidates(){
         <td class="c2-boards">${c.boards}板</td>
         <td class="c2-node">${esc(c.node_type)}</td>
         <td class="c2-hit">${c.concept_hit}</td>
-        <td class="c2-ferment">${f.zt?f.zt+'家('+f.lb+')':'—'}</td></tr>`;
+        <td class="c2-ferment">${f.zt?f.zt+'家('+f.lb+')':'—'}</td>
+        <td class="c2-zbc">${c.zbc?('<span style="color:#dc2626;font-weight:600;">'+c.zbc+'次</span>'):'—'}</td>
+        <td class="c2-line">${c.bid_required_yi!=null?(c.bid_required_yi+'亿'):'—'}</td>
+        <td class="c2-ok">${(c.auction_amt_yi!=null)
+            ? ((c.auction_ok?'<span class="auc-ok">合格</span>':'<span class="auc-no">不足</span>')
+               +'<br><span style="color:#9ca3af;font-size:10px;">竞价'+c.auction_amt_yi+'亿</span>')
+            : '<span style="color:#9ca3af;">待竞价</span>'}</td></tr>`;
     }).join('')}</tbody></table>`;
 }
 
@@ -1372,9 +1309,6 @@ document.addEventListener('click', e=>{
   const mk=(t.dataset.smkt!==undefined && t.dataset.smkt!=='') ? parseInt(t.dataset.smkt,10) : undefined;
   openStock(t.dataset.scode, mk, t.dataset.sname||t.textContent.trim());
 });
-
-// 竞价窗口（9:15~9:32）内每 10 秒实时刷新一次竞价核对表
-setInterval(()=>{ refreshAuctionLive(); }, 10000);
 
 window.addEventListener('resize',()=>{
   if(ladderChart) ladderChart.resize();

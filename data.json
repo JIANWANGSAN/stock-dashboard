@@ -8990,7 +8990,11 @@
     "total_cap_yi": 69.93,
     "bid_required_yi": 1.17,
     "seal_min_yi": 0.7,
-    "seal_max_yi": 2.1
+    "seal_max_yi": 2.1,
+    "auction_amt_yi": 8.46,
+    "auction_ok": true,
+    "auction_open": 14.51,
+    "auction_pct": 4.54
   },
   "candidates": [
     {
@@ -9018,12 +9022,18 @@
         "zt": 3,
         "lb": 1
       },
+      "zbc": 2,
+      "first_seal": 93024,
       "amount_yi": 8.46,
       "total_cap_yi": 69.93,
       "seal_amount_yi": 2.35,
       "bid_required_yi": 1.17,
       "bid_basis": "上板分时量",
-      "day_amount_yi": 8.47
+      "day_amount_yi": 8.47,
+      "auction_amt_yi": 8.46,
+      "auction_ok": true,
+      "auction_open": 14.51,
+      "auction_pct": 4.54
     },
     {
       "node_type": "穿越节点",
@@ -9050,12 +9060,18 @@
         "zt": 6,
         "lb": 2
       },
+      "zbc": 0,
+      "first_seal": 94048,
       "amount_yi": 24.91,
       "total_cap_yi": 134.64,
       "seal_amount_yi": 2.08,
       "bid_required_yi": 1.04,
       "bid_basis": "上板分时量",
-      "day_amount_yi": 24.91
+      "day_amount_yi": 24.91,
+      "auction_amt_yi": 24.91,
+      "auction_ok": true,
+      "auction_open": 20.8,
+      "auction_pct": 1.12
     },
     {
       "node_type": "穿越节点",
@@ -9082,12 +9098,18 @@
         "zt": 8,
         "lb": 2
       },
+      "zbc": 0,
+      "first_seal": 102600,
       "amount_yi": 26.37,
       "total_cap_yi": 115.11,
       "seal_amount_yi": 1.79,
       "bid_required_yi": 0.9,
       "bid_basis": "上板分时量",
-      "day_amount_yi": 26.38
+      "day_amount_yi": 26.38,
+      "auction_amt_yi": 26.37,
+      "auction_ok": true,
+      "auction_open": 16.15,
+      "auction_pct": -5.44
     },
     {
       "node_type": "穿越节点",
@@ -9112,12 +9134,18 @@
         "zt": 2,
         "lb": 0
       },
+      "zbc": 0,
+      "first_seal": 144423,
       "amount_yi": 18.52,
       "total_cap_yi": 119.81,
       "seal_amount_yi": 0.55,
       "bid_required_yi": 0.27,
       "bid_basis": "上板分时量",
-      "day_amount_yi": 18.55
+      "day_amount_yi": 18.55,
+      "auction_amt_yi": 18.52,
+      "auction_ok": true,
+      "auction_open": 16.37,
+      "auction_pct": 0.12
     },
     {
       "node_type": "穿越节点",
@@ -9144,12 +9172,18 @@
         "zt": 2,
         "lb": 0
       },
+      "zbc": 8,
+      "first_seal": 93009,
       "amount_yi": 16.9,
       "total_cap_yi": 50.84,
       "seal_amount_yi": 2.3,
       "bid_required_yi": 1.15,
       "bid_basis": "上板分时量",
-      "day_amount_yi": 16.9
+      "day_amount_yi": 16.9,
+      "auction_amt_yi": 16.9,
+      "auction_ok": true,
+      "auction_open": 10.33,
+      "auction_pct": 4.66
     },
     {
       "node_type": "穿越节点",
@@ -9176,8 +9210,14 @@
         "zt": 3,
         "lb": 1
       },
+      "zbc": 1,
+      "first_seal": 104800,
       "amount_yi": 11.65,
-      "total_cap_yi": 38.44
+      "total_cap_yi": 38.44,
+      "auction_amt_yi": 11.65,
+      "auction_ok": true,
+      "auction_open": 4.56,
+      "auction_pct": 0.0
     },
     {
       "node_type": "穿越节点",
@@ -9204,8 +9244,14 @@
         "zt": 4,
         "lb": 0
       },
+      "zbc": 1,
+      "first_seal": 95013,
       "amount_yi": 7.88,
-      "total_cap_yi": 110.7
+      "total_cap_yi": 110.7,
+      "auction_amt_yi": 7.88,
+      "auction_ok": true,
+      "auction_open": 18.65,
+      "auction_pct": 2.81
     },
     {
       "node_type": "穿越节点",
@@ -9232,8 +9278,14 @@
         "zt": 2,
         "lb": 0
       },
+      "zbc": 2,
+      "first_seal": 94854,
       "amount_yi": 4.1,
-      "total_cap_yi": 105.64
+      "total_cap_yi": 105.64,
+      "auction_amt_yi": 4.1,
+      "auction_ok": true,
+      "auction_open": 45.0,
+      "auction_pct": -1.21
     },
     {
       "node_type": "穿越节点",
@@ -9258,8 +9310,14 @@
         "zt": 3,
         "lb": 1
       },
+      "zbc": 2,
+      "first_seal": 100509,
       "amount_yi": 3.56,
-      "total_cap_yi": 66.08
+      "total_cap_yi": 66.08,
+      "auction_amt_yi": 3.56,
+      "auction_ok": true,
+      "auction_open": 21.38,
+      "auction_pct": -0.33
     },
     {
       "node_type": "穿越节点",
@@ -9285,8 +9343,14 @@
         "zt": 3,
         "lb": 0
       },
+      "zbc": 0,
+      "first_seal": 94845,
       "amount_yi": 2.37,
-      "total_cap_yi": 36.55
+      "total_cap_yi": 36.55,
+      "auction_amt_yi": 2.37,
+      "auction_ok": true,
+      "auction_open": 32.05,
+      "auction_pct": -3.55
     },
     {
       "node_type": "最高标断板节点",
@@ -9311,8 +9375,14 @@
         "zt": 1,
         "lb": 1
       },
+      "zbc": 5,
+      "first_seal": 95920,
       "amount_yi": 3.81,
-      "total_cap_yi": 61.79
+      "total_cap_yi": 61.79,
+      "auction_amt_yi": 3.81,
+      "auction_ok": true,
+      "auction_open": 9.24,
+      "auction_pct": 6.21
     },
     {
       "node_type": "最高标断板节点",
@@ -9339,8 +9409,14 @@
         "zt": 2,
         "lb": 1
       },
+      "zbc": 0,
+      "first_seal": 92500,
       "amount_yi": 0.44,
-      "total_cap_yi": 44.16
+      "total_cap_yi": 44.16,
+      "auction_amt_yi": 0.44,
+      "auction_ok": true,
+      "auction_open": 25.86,
+      "auction_pct": 10.0
     }
   ],
   "elnino": {
@@ -10014,266 +10090,7 @@
       "disclaimer": "以上为客观技术信号整理与策略框架，不构成投资建议，亦不对收益作任何承诺。市场有风险，决策需自担。"
     }
   },
-  "auction": {
-    "date": "2026-09-14",
-    "updated": "2026-09-14 17:25:19",
-    "src_date": "2026-09-14",
-    "is_auction": false,
-    "rows": [
-      {
-        "code": "000993",
-        "name": "闽东电力",
-        "boards": 4,
-        "region": "福建",
-        "concepts": [
-          "电力",
-          "新能源",
-          "光伏"
-        ],
-        "src": "次日首选",
-        "open": 14.51,
-        "prev": 13.88,
-        "pct": 4.54,
-        "vol_shou": 561062.0,
-        "amt_yi": 8.46,
-        "bid_line_yi": 1.17,
-        "bid_basis": "上板分时量×50%",
-        "ok": true,
-        "gap": "高开"
-      },
-      {
-        "code": "000823",
-        "name": "超声电子",
-        "boards": 3,
-        "region": "广东",
-        "concepts": [
-          "PCB",
-          "苹果概念",
-          "5G"
-        ],
-        "src": "候选池",
-        "open": 20.8,
-        "prev": 20.57,
-        "pct": 1.12,
-        "vol_shou": 1145345.0,
-        "amt_yi": 24.91,
-        "bid_line_yi": 1.04,
-        "bid_basis": "上板分时量×50%",
-        "ok": true,
-        "gap": "高开"
-      },
-      {
-        "code": "002579",
-        "name": "中京电子",
-        "boards": 1,
-        "region": "广东",
-        "concepts": [
-          "PCB",
-          "电子烟",
-          "OLED"
-        ],
-        "src": "候选池",
-        "open": 16.15,
-        "prev": 17.08,
-        "pct": -5.44,
-        "vol_shou": 1487234.0,
-        "amt_yi": 26.37,
-        "bid_line_yi": 0.9,
-        "bid_basis": "上板分时量×50%",
-        "ok": true,
-        "gap": "低开"
-      },
-      {
-        "code": "601086",
-        "name": "国芳集团",
-        "boards": 1,
-        "region": "甘肃",
-        "concepts": [
-          "红利股",
-          "新零售",
-          "西部大开发"
-        ],
-        "src": "候选池",
-        "open": 16.37,
-        "prev": 16.35,
-        "pct": 0.12,
-        "vol_shou": 1088432.0,
-        "amt_yi": 18.52,
-        "bid_line_yi": 0.27,
-        "bid_basis": "上板分时量×50%",
-        "ok": true,
-        "gap": "平开"
-      },
-      {
-        "code": "000978",
-        "name": "桂林旅游",
-        "boards": 1,
-        "region": "广西",
-        "concepts": [
-          "旅游",
-          "国企改革",
-          "西部大开发"
-        ],
-        "src": "候选池",
-        "open": 10.33,
-        "prev": 9.87,
-        "pct": 4.66,
-        "vol_shou": 1578457.0,
-        "amt_yi": 16.9,
-        "bid_line_yi": 1.15,
-        "bid_basis": "上板分时量×50%",
-        "ok": true,
-        "gap": "高开"
-      },
-      {
-        "code": "002172",
-        "name": "澳洋健康",
-        "boards": 1,
-        "region": "江苏",
-        "concepts": [
-          "精准医疗",
-          "AI",
-          "中药概念"
-        ],
-        "src": "候选池",
-        "open": 4.56,
-        "prev": 4.56,
-        "pct": 0.0,
-        "vol_shou": 2411130.0,
-        "amt_yi": 11.65,
-        "bid_line_yi": 5.83,
-        "bid_basis": "全天成交额×50%(回退)",
-        "ok": true,
-        "gap": "平开"
-      },
-      {
-        "code": "603626",
-        "name": "科森科技",
-        "boards": 1,
-        "region": "江苏",
-        "concepts": [
-          "订单",
-          "电子烟",
-          "医疗器械概念"
-        ],
-        "src": "候选池",
-        "open": 18.65,
-        "prev": 18.14,
-        "pct": 2.81,
-        "vol_shou": 405268.0,
-        "amt_yi": 7.88,
-        "bid_line_yi": 3.94,
-        "bid_basis": "全天成交额×50%(回退)",
-        "ok": true,
-        "gap": "高开"
-      },
-      {
-        "code": "605168",
-        "name": "三人行",
-        "boards": 1,
-        "region": "陕西",
-        "concepts": [
-          "AI",
-          "大数据",
-          "体育产业"
-        ],
-        "src": "候选池",
-        "open": 45.0,
-        "prev": 45.55,
-        "pct": -1.21,
-        "vol_shou": 83931.0,
-        "amt_yi": 4.1,
-        "bid_line_yi": 2.05,
-        "bid_basis": "全天成交额×50%(回退)",
-        "ok": true,
-        "gap": "低开"
-      },
-      {
-        "code": "605580",
-        "name": "恒盛能源",
-        "boards": 1,
-        "region": "浙江",
-        "concepts": [
-          "培育钻石",
-          "氢能",
-          "绿色电力"
-        ],
-        "src": "候选池",
-        "open": 21.38,
-        "prev": 21.45,
-        "pct": -0.33,
-        "vol_shou": 157425.0,
-        "amt_yi": 3.56,
-        "bid_line_yi": 1.78,
-        "bid_basis": "全天成交额×50%(回退)",
-        "ok": true,
-        "gap": "低开"
-      },
-      {
-        "code": "603090",
-        "name": "宏盛股份",
-        "boards": 1,
-        "region": "江苏",
-        "concepts": [
-          "新能源车",
-          "贬值受益",
-          "液冷服务器"
-        ],
-        "src": "候选池",
-        "open": 32.05,
-        "prev": 33.23,
-        "pct": -3.55,
-        "vol_shou": 67074.0,
-        "amt_yi": 2.37,
-        "bid_line_yi": 1.19,
-        "bid_basis": "全天成交额×50%(回退)",
-        "ok": true,
-        "gap": "低开"
-      },
-      {
-        "code": "600876",
-        "name": "凯盛新能",
-        "boards": 3,
-        "region": "河南",
-        "concepts": [
-          "光伏",
-          "玻璃制造",
-          "反内卷概念"
-        ],
-        "src": "候选池",
-        "open": 9.24,
-        "prev": 8.7,
-        "pct": 6.21,
-        "vol_shou": 412060.0,
-        "amt_yi": 3.81,
-        "bid_line_yi": 1.91,
-        "bid_basis": "全天成交额×50%(回退)",
-        "ok": true,
-        "gap": "高开"
-      },
-      {
-        "code": "002912",
-        "name": "中新赛克",
-        "boards": 3,
-        "region": "广东",
-        "concepts": [
-          "网络安全",
-          "AI",
-          "国产软件"
-        ],
-        "src": "候选池",
-        "open": 25.86,
-        "prev": 23.51,
-        "pct": 10.0,
-        "vol_shou": 17196.0,
-        "amt_yi": 0.44,
-        "bid_line_yi": 0.22,
-        "bid_basis": "全天成交额×50%(回退)",
-        "ok": true,
-        "gap": "高开"
-      }
-    ],
-    "miss": []
-  },
-  "premarket_updated": "2026-09-14 17:25:10"
+  "premarket_updated": "2026-09-14 17:38:34",
+  "auction_updated": "2026-09-14 17:38:43",
+  "auction_is_live": false
 }

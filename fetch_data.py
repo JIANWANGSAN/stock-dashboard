@@ -1717,6 +1717,8 @@ def build_candidates(nodes_out, today_pool, hot_concepts, cache):
             'concepts': _c.get('concepts', []), 'industry': _c.get('industry', ''),
             'boards': cur['lbc'], 'status': '连板中',
             'concept_hit': hit, 'ferment': ferm,
+            'zbc': int(cur.get('zbc') or 0),          # 当日炸板次数（风险标记）
+            'first_seal': cur.get('first_seal'),
             'amount_yi': round(cur['amount'] / 1e8, 2),
             'total_cap_yi': round(cur['total_cap'] / 1e8, 2),
         })
@@ -1735,6 +1737,8 @@ def build_candidates(nodes_out, today_pool, hot_concepts, cache):
                 'concepts': s.get('concepts', []), 'industry': s.get('industry', ''),
                 'boards': s.get('boards', 0), 'status': s.get('status', ''),
                 'concept_hit': hit, 'ferment': ferm,
+                'zbc': int((today_map.get(s['code']) or {}).get('zbc') or 0),   # 当日炸板次数
+                'first_seal': (today_map.get(s['code']) or {}).get('first_seal'),
                 'amount_yi': round(s.get('amount', 0) / 1e8, 2),
                 'total_cap_yi': round(s.get('total_cap', 0) / 1e8, 2),
             })
