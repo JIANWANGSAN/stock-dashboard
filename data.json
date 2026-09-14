@@ -8985,10 +8985,10 @@
     },
     "industry": "水力发电",
     "amount_yi": 8.46,
-    "seal_amount_yi": null,
-    "bid_basis": "全天成交额(分时缺失回退)",
+    "seal_amount_yi": 0.82,
+    "bid_basis": "上板分时量",
     "total_cap_yi": 69.93,
-    "bid_required_yi": 4.23,
+    "bid_required_yi": 0.41,
     "seal_min_yi": 0.7,
     "seal_max_yi": 2.1
   },
@@ -9020,9 +9020,10 @@
       },
       "amount_yi": 8.46,
       "total_cap_yi": 69.93,
-      "seal_amount_yi": null,
-      "bid_required_yi": 4.23,
-      "bid_basis": "全天成交额(分时缺失回退)"
+      "seal_amount_yi": 0.82,
+      "bid_required_yi": 0.41,
+      "bid_basis": "上板分时量",
+      "day_amount_yi": 8.46
     },
     {
       "node_type": "穿越节点",
@@ -9051,9 +9052,10 @@
       },
       "amount_yi": 24.91,
       "total_cap_yi": 134.64,
-      "seal_amount_yi": null,
-      "bid_required_yi": 12.46,
-      "bid_basis": "全天成交额(分时缺失回退)"
+      "seal_amount_yi": 19.76,
+      "bid_required_yi": 9.88,
+      "bid_basis": "上板分时量",
+      "day_amount_yi": 24.91
     },
     {
       "node_type": "穿越节点",
@@ -10011,5 +10013,267 @@
       "turnover": "轮动：本池每日更新。触发剔除条件（均线死叉 / 跌破MA20 / 发散收敛）即离场信号，不恋战。",
       "disclaimer": "以上为客观技术信号整理与策略框架，不构成投资建议，亦不对收益作任何承诺。市场有风险，决策需自担。"
     }
-  }
+  },
+  "auction": {
+    "date": "2026-09-14",
+    "updated": "2026-09-14 17:08:49",
+    "src_date": "2026-09-14",
+    "is_auction": false,
+    "rows": [
+      {
+        "code": "000993",
+        "name": "闽东电力",
+        "boards": 4,
+        "region": "福建",
+        "concepts": [
+          "电力",
+          "新能源",
+          "光伏"
+        ],
+        "src": "次日首选",
+        "open": 14.51,
+        "prev": 13.88,
+        "pct": 4.54,
+        "vol_shou": 561062.0,
+        "amt_yi": 8.46,
+        "bid_line_yi": 0.41,
+        "bid_basis": "上板分时量×50%",
+        "ok": true,
+        "gap": "高开"
+      },
+      {
+        "code": "000823",
+        "name": "超声电子",
+        "boards": 3,
+        "region": "广东",
+        "concepts": [
+          "PCB",
+          "苹果概念",
+          "5G"
+        ],
+        "src": "候选池",
+        "open": 20.8,
+        "prev": 20.57,
+        "pct": 1.12,
+        "vol_shou": 1145345.0,
+        "amt_yi": 24.91,
+        "bid_line_yi": 9.88,
+        "bid_basis": "上板分时量×50%",
+        "ok": true,
+        "gap": "高开"
+      },
+      {
+        "code": "002579",
+        "name": "中京电子",
+        "boards": 1,
+        "region": "广东",
+        "concepts": [
+          "PCB",
+          "电子烟",
+          "OLED"
+        ],
+        "src": "候选池",
+        "open": 16.15,
+        "prev": 17.08,
+        "pct": -5.44,
+        "vol_shou": 1487234.0,
+        "amt_yi": 26.37,
+        "bid_line_yi": 11.08,
+        "bid_basis": "上板分时量×50%",
+        "ok": true,
+        "gap": "低开"
+      },
+      {
+        "code": "601086",
+        "name": "国芳集团",
+        "boards": 1,
+        "region": "甘肃",
+        "concepts": [
+          "红利股",
+          "新零售",
+          "西部大开发"
+        ],
+        "src": "候选池",
+        "open": 16.37,
+        "prev": 16.35,
+        "pct": 0.12,
+        "vol_shou": 1088432.0,
+        "amt_yi": 18.52,
+        "bid_line_yi": 8.78,
+        "bid_basis": "上板分时量×50%",
+        "ok": true,
+        "gap": "平开"
+      },
+      {
+        "code": "000978",
+        "name": "桂林旅游",
+        "boards": 1,
+        "region": "广西",
+        "concepts": [
+          "旅游",
+          "国企改革",
+          "西部大开发"
+        ],
+        "src": "候选池",
+        "open": 10.33,
+        "prev": 9.87,
+        "pct": 4.66,
+        "vol_shou": 1578457.0,
+        "amt_yi": 16.9,
+        "bid_line_yi": 0.99,
+        "bid_basis": "上板分时量×50%",
+        "ok": true,
+        "gap": "高开"
+      },
+      {
+        "code": "002172",
+        "name": "澳洋健康",
+        "boards": 1,
+        "region": "江苏",
+        "concepts": [
+          "精准医疗",
+          "AI",
+          "中药概念"
+        ],
+        "src": "候选池",
+        "open": 4.56,
+        "prev": 4.56,
+        "pct": 0.0,
+        "vol_shou": 2411130.0,
+        "amt_yi": 11.65,
+        "bid_line_yi": 5.83,
+        "bid_basis": "全天成交额×50%(回退)",
+        "ok": true,
+        "gap": "平开"
+      },
+      {
+        "code": "603626",
+        "name": "科森科技",
+        "boards": 1,
+        "region": "江苏",
+        "concepts": [
+          "订单",
+          "电子烟",
+          "医疗器械概念"
+        ],
+        "src": "候选池",
+        "open": 18.65,
+        "prev": 18.14,
+        "pct": 2.81,
+        "vol_shou": 405268.0,
+        "amt_yi": 7.88,
+        "bid_line_yi": 3.94,
+        "bid_basis": "全天成交额×50%(回退)",
+        "ok": true,
+        "gap": "高开"
+      },
+      {
+        "code": "605168",
+        "name": "三人行",
+        "boards": 1,
+        "region": "陕西",
+        "concepts": [
+          "AI",
+          "大数据",
+          "体育产业"
+        ],
+        "src": "候选池",
+        "open": 45.0,
+        "prev": 45.55,
+        "pct": -1.21,
+        "vol_shou": 83931.0,
+        "amt_yi": 4.1,
+        "bid_line_yi": 2.05,
+        "bid_basis": "全天成交额×50%(回退)",
+        "ok": true,
+        "gap": "低开"
+      },
+      {
+        "code": "605580",
+        "name": "恒盛能源",
+        "boards": 1,
+        "region": "浙江",
+        "concepts": [
+          "培育钻石",
+          "氢能",
+          "绿色电力"
+        ],
+        "src": "候选池",
+        "open": 21.38,
+        "prev": 21.45,
+        "pct": -0.33,
+        "vol_shou": 157425.0,
+        "amt_yi": 3.56,
+        "bid_line_yi": 1.78,
+        "bid_basis": "全天成交额×50%(回退)",
+        "ok": true,
+        "gap": "低开"
+      },
+      {
+        "code": "603090",
+        "name": "宏盛股份",
+        "boards": 1,
+        "region": "江苏",
+        "concepts": [
+          "新能源车",
+          "贬值受益",
+          "液冷服务器"
+        ],
+        "src": "候选池",
+        "open": 32.05,
+        "prev": 33.23,
+        "pct": -3.55,
+        "vol_shou": 67074.0,
+        "amt_yi": 2.37,
+        "bid_line_yi": 1.19,
+        "bid_basis": "全天成交额×50%(回退)",
+        "ok": true,
+        "gap": "低开"
+      },
+      {
+        "code": "600876",
+        "name": "凯盛新能",
+        "boards": 3,
+        "region": "河南",
+        "concepts": [
+          "光伏",
+          "玻璃制造",
+          "反内卷概念"
+        ],
+        "src": "候选池",
+        "open": 9.24,
+        "prev": 8.7,
+        "pct": 6.21,
+        "vol_shou": 412060.0,
+        "amt_yi": 3.81,
+        "bid_line_yi": 1.91,
+        "bid_basis": "全天成交额×50%(回退)",
+        "ok": true,
+        "gap": "高开"
+      },
+      {
+        "code": "002912",
+        "name": "中新赛克",
+        "boards": 3,
+        "region": "广东",
+        "concepts": [
+          "网络安全",
+          "AI",
+          "国产软件"
+        ],
+        "src": "候选池",
+        "open": 25.86,
+        "prev": 23.51,
+        "pct": 10.0,
+        "vol_shou": 17196.0,
+        "amt_yi": 0.44,
+        "bid_line_yi": 0.22,
+        "bid_basis": "全天成交额×50%(回退)",
+        "ok": true,
+        "gap": "高开"
+      }
+    ],
+    "miss": []
+  },
+  "premarket_updated": "2026-09-14 17:08:39"
 }

@@ -1718,6 +1718,55 @@ def build_candidates(nodes_out, today_pool, hot_concepts, cache):
     return dedup_candidates(cands)[:12]
 
 
+def build_reco(cands, today_map, today, verbose=True):
+    """给候选池补「上板分时量」（= 次日竞价硬线的基准），并生成次日首选推荐卡。
+
+    返回 (cands, reco)。上板分时量只对前 5 只请求（分时接口易限流）。
+    抽成独立函数是为了让「盘前竞价任务(premarket.py)」与盘后流程共用同一口径。
+    """
+    for c in cands[:5]:
+        cur = today_map.get(c['code'])
+        fbt = cur.get('first_seal') if cur else None
+        is_yizi = bool(cur.get('is_yizi')) if cur else False
+        seal, day_total = fetch_seal_amount(c['code'], c['market'], today, fbt, is_yizi)
+        if seal:
+            c['seal_amount_yi'] = round(seal / 1e8, 2)
+            c['bid_required_yi'] = round(seal / 1e8 * 0.5, 2)
+            c['bid_basis'] = '上板分时量'
+        else:
+            c['seal_amount_yi'] = None
+            c['bid_required_yi'] = round(c['amount_yi'] * 0.5, 2)
+            c['bid_basis'] = '全天成交额(分时缺失回退)'
+        if day_total:
+            c['day_amount_yi'] = round(day_total / 1e8, 2)
+        time.sleep(0.3)
+
+    reco = None
+    if cands:
+        c = cands[0]
+        bid = c.get('bid_required_yi') or round(c['amount_yi'] * 0.5, 2)
+        reco = {
+            'name': c['name'], 'code': c['code'], 'boards': c['boards'],
+            'region': c['region'], 'pinyin': c['pinyin'], 'concepts': c['concepts'],
+            'from_node': c['node_type'], 'node_date': c['node_date'],
+            'concept_hit': c['concept_hit'], 'ferment': c['ferment'],
+            'industry': c.get('industry', ''),
+            'amount_yi': c['amount_yi'],
+            'seal_amount_yi': c.get('seal_amount_yi'),
+            'bid_basis': c.get('bid_basis', ''),
+            'total_cap_yi': c['total_cap_yi'],
+            'bid_required_yi': bid,                              # 竞价额 >= 上板分时量*50%
+            'seal_min_yi': round(c['total_cap_yi'] * 0.01, 2),   # 封单 >= 总市值 1%
+            'seal_max_yi': round(c['total_cap_yi'] * 0.03, 2),   # 封单 <= 总市值 3%
+        }
+        if verbose:
+            print('  首位候选：%s(%s) %s板 · %s · 来自%s'
+                  % (reco['name'], reco['code'], reco['boards'], reco['region'], reco['from_node']))
+            print('  竞价量下限 %.2f 亿 | 封单区间 %.2f~%.2f 亿'
+                  % (reco['bid_required_yi'], reco['seal_min_yi'], reco['seal_max_yi']))
+    return cands, reco
+
+
 # ============ 8. 主流程 ============
 def main():
     ap = argparse.ArgumentParser()
@@ -2039,52 +2088,14 @@ def main():
         print('  已清理 %d 个失效节点（节点内已无连板票，本波未走出来）' % dropped2)
 
     # ---- 推荐：优先节点票 + 当日 trigger 票（连板中的最高标） ----
-    print('\n[7/7] 计算次日连板候选...')
-    # 热点源 = 单日板块榜 + 多日累计榜（覆盖「这几天」主线，不只看单日）
-    hot_concepts = [b['name'] for b in board[:30]] + [b['name'] for b in board_3d]
-    cands = build_candidates(nodes_out, today_pool, hot_concepts, cache)
-
-    # 上板分时量：次日竞价量的基准是「上板那一刻的分时量 × 50%」，
-    # 不是全天成交额（炸板/回封会把全天额撑大数倍）。只对前5只请求，分时接口易限流。
-    for c in cands[:5]:
-        cur = today_map.get(c['code'])
-        fbt = cur.get('first_seal') if cur else None
-        is_yizi = bool(cur.get('is_yizi')) if cur else False
-        seal, day_total = fetch_seal_amount(c['code'], c['market'], today, fbt, is_yizi)
-        if seal:
-            c['seal_amount_yi'] = round(seal / 1e8, 2)
-            c['bid_required_yi'] = round(seal / 1e8 * 0.5, 2)
-            c['bid_basis'] = '上板分时量'
-        else:
-            c['seal_amount_yi'] = None
-            c['bid_required_yi'] = round(c['amount_yi'] * 0.5, 2)
-            c['bid_basis'] = '全天成交额(分时缺失回退)'
-        if day_total:
-            c['day_amount_yi'] = round(day_total / 1e8, 2)
-        time.sleep(0.3)
-
-    reco = None
-    if cands:
-        c = cands[0]
-        bid = c.get('bid_required_yi') or round(c['amount_yi'] * 0.5, 2)
-        reco = {
-            'name': c['name'], 'code': c['code'], 'boards': c['boards'],
-            'region': c['region'], 'pinyin': c['pinyin'], 'concepts': c['concepts'],
-            'from_node': c['node_type'], 'node_date': c['node_date'],
-            'concept_hit': c['concept_hit'], 'ferment': c['ferment'],
-            'industry': c.get('industry', ''),
-            'amount_yi': c['amount_yi'],
-            'seal_amount_yi': c.get('seal_amount_yi'),
-            'bid_basis': c.get('bid_basis', ''),
-            'total_cap_yi': c['total_cap_yi'],
-            'bid_required_yi': bid,                              # 竞价量 >= 上板分时量*50%
-            'seal_min_yi': round(c['total_cap_yi'] * 0.01, 2),   # 封单 >= 总市值 1%
-            'seal_max_yi': round(c['total_cap_yi'] * 0.03, 2),   # 封单 <= 总市值 3%
-        }
-        print('  首位候选：%s(%s) %s板 · %s · 来自%s'
-              % (reco['name'], reco['code'], reco['boards'], reco['region'], reco['from_node']))
-        print('  竞价量下限 %.2f 亿 | 封单区间 %.2f~%.2f 亿'
-              % (reco['bid_required_yi'], reco['seal_min_yi'], reco['seal_max_yi']))
+    # [7/7] 候选池 / 次日推荐：已移交「盘前竞价任务(premarket.py, 每交易日 9:25 后)」刷新。
+    # 盘后只沿用上一版结果，避免盘后重算把当日实战口径覆盖掉。
+    print('\n[7/7] 候选池 / 次日推荐：已移交盘前竞价任务刷新，此处沿用上一版')
+    _prev = load_json(DATA_JSON, {}) or {}
+    cands = _prev.get('candidates') or []
+    reco = _prev.get('recommend')
+    print('  沿用上一版：候选 %d 只%s'
+          % (len(cands), ('，首选 ' + reco['name']) if reco else ''))
 
     # 厄尔尼诺当前阶段自动识别（基于当日连板梯队：≥4 连板龙头 → 激活该线）
     elnino_out = copy.deepcopy(EL_NINO_DATA)

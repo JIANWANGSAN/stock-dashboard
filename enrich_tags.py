@@ -158,25 +158,15 @@ def main():
         save_json(NODES_JSON, nodes_obj)
         print('✅ 标注完成：成功 %d / 失败 %d' % (ok, fail))
 
-    # 重算推荐并回写 data.json
+    # 候选池 / 次日推荐：已移交「盘前竞价任务(premarket.py, 每交易日 9:26)」刷新。
+    # 盘后不再重算，只回写节点标签结果，避免覆盖掉当日盘前生成的实战口径。
+    # （recalc_recommend 仍保留，供需要时手动调用。）
     if data:
-        reco, cands = recalc_recommend(nodes, data.get('board_daily', []),
-                                       data.get('zt_pool', []), data.get('date', ''),
-                                       data.get('board_3d', []))
-        data['recommend'] = reco
-        data['candidates'] = cands
         data['nodes'] = nodes[:12]
         data['tags_updated'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         save_json(DATA_JSON, data)
         save_js(os.path.join(BASE, 'data.js'), data)
-        if reco:
-            print('\n推荐同步更新 → %s(%s) %s板 · %s · %s · 概念%s'
-                  % (reco['name'], reco['code'], reco['boards'], reco['region'],
-                     reco['from_node'], '、'.join(reco['concepts'][:3]) or '—'))
-            print('  竞价量 ≥ %.2f 亿 | 封单 %.2f~%.2f 亿'
-                  % (reco['bid_required_yi'], reco['seal_min_yi'], reco['seal_max_yi']))
-        else:
-            print('\n（无有效候选：当前无节点票处于连板中）')
+        print('\n候选池/推荐：沿用盘前版本（本步不再重算）')
 
 
 if __name__ == '__main__':
