@@ -16,7 +16,7 @@ import sys, os, json, time, re, argparse, copy
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 
-from em_boards import build_em_board_map, match_em_code   # 板块名 → 东财板块代码(BKxxxx)
+from em_boards import em_get   # 东财板块接口（主场冗余）
 
 sys.stdout.reconfigure(encoding='utf-8')
 import urllib.request
@@ -973,74 +973,72 @@ BOARD_SKIP = ('昨日', '近期', '百日', '东方财富', '融资', '沪股通
 
 
 def fetch_board_rank(top=60):
-    """概念板块涨幅榜：腾讯源（东财 push2 常被限流）"""
-    # 注意：sort_type 只支持 price（zdf 会返回空），排序在下方本地完成
-    # 板块总数约 800+，单次最多 100 条，需分页抓全
-    rows = []
-    for offset in range(0, 810, 100):
-        url = ('https://proxy.finance.qq.com/cgi/cgi-bin/rank/pt/getRank?'
-               'board_type=gn&sort_type=price&direct=down&offset=%d&count=100' % offset)
-        txt = http_get(url, silent=True)
-        if not txt:
-            break
-        try:
-            d = json.loads(txt)
-            part = (d.get('data') or {}).get('rank_list') or []
-        except Exception:
-            part = []
-        if not part:
-            break
-        rows.extend(part)
-        if len(part) < 100:
-            break
-        time.sleep(0.22)
-    if not rows:
-        # 备胎：东财
-        url2 = ('https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=100&po=1&np=1&fltt=2&invt=2'
-                '&fid=f3&fs=m:90+t:3+f:!50&fields=f3,f12,f14,f104,f105')
-        txt2 = http_get(url2, silent=True)
-        if txt2:
-            try:
-                d2 = json.loads(txt2)
-                return [{'name': it['f14'], 'code': it['f12'], 'pct': it['f3'],
-                         'up': it.get('f104', 0), 'total': it.get('f104', 0) + it.get('f105', 0),
-                         'leader': '', 'leader_pct': 0, 'zdf_d5': 0, 'zljlr_wan': 0}
-                        for it in d2['data']['diff']][:top]
-            except Exception:
-                pass
-        return []
+    """板块涨幅榜：**只用东财**（概念 t:3 + 行业 t:2 合并）。
 
-    out = []
-    for it in rows:
-        name = it.get('name', '')
-        if not name or any(name.startswith(s) for s in BOARD_SKIP):
-            continue
+    改用东财的原因：① 板块名与「板块K线(secid=90.BKxxxx)」「板块成分股」「个股概念标签」同源，
+    无需再做「腾讯名 → 东财名」映射；② 东财分类是主流口径（腾讯板块过细、常出现生僻名）。
+
+    返回 [{name, code(BKxxxx), pct, up, down, total, leader, leader_pct, zdf_d5, zljlr_wan, em_code}]
+        up/down = 上涨/下跌家数；total = up + down；zdf_d5 = 东财 5 日涨跌幅
+    """
+    jobs = [(fs, pn) for fs in ('m:90+t:3+f:!50', 'm:90+t:2+f:!50') for pn in range(1, 7)]
+    F = 'f3,f12,f14,f62,f104,f105,f109,f128,f136'
+
+    def _page(job):
+        fs, pn = job
+        path = ('/api/qt/clist/get?pn=%d&pz=100&po=1&np=1&fltt=2&invt=2&fid=f3&fs=%s&fields=%s'
+                % (pn, fs, F))
+        t = em_get(path)
+        if not t:
+            return []
         try:
-            pct = float(it.get('zdf') or 0)
+            return (json.loads(t).get('data') or {}).get('diff') or []
         except Exception:
-            continue
-        zgb = str(it.get('zgb') or '0/0')
-        up_s, tot_s = (zgb.split('/') + ['0', '0'])[:2]
-        lzg = it.get('lzg') or {}
-        try:
-            lpct = float(lzg.get('zdf') or 0)
-        except Exception:
-            lpct = 0.0
-        try:
-            d5 = float(it.get('zdf_d5') or 0)
-        except Exception:
-            d5 = 0.0
-        try:
-            zljlr = float(it.get('zljlr') or 0)
-        except Exception:
-            zljlr = 0.0
-        out.append({
-            'name': name, 'code': it.get('code', ''), 'pct': pct,
-            'up': int(up_s) if up_s.isdigit() else 0,
-            'total': int(tot_s) if tot_s.isdigit() else 0,
-            'leader': lzg.get('name', ''), 'leader_pct': lpct,
-            'zdf_d5': d5, 'zljlr_wan': zljlr,
-        })
+            return []
+
+    with ThreadPoolExecutor(max_workers=6) as ex:
+        pages = list(ex.map(_page, jobs))
+
+    out, seen, seen_base = [], set(), set()
+
+    def _base(n):
+        # 东财行业含 Ⅱ/Ⅲ 分级（如「电子化学品Ⅱ/Ⅲ」内容相同）→ 按基名去重，只留首个
+        return re.sub(r'[ⅠⅡⅢⅣⅤⅥ]+$', '', n).strip()
+
+    for diff in pages:
+        for it in diff:
+            name = (it.get('f14') or '').strip()
+            code = it.get('f12') or ''
+            bn = _base(name)
+            if not name or not code or name in seen or (bn and bn in seen_base):
+                continue
+            if any(name.startswith(s) for s in BOARD_SKIP):
+                continue
+            try:
+                pct = float(it.get('f3') or 0)
+            except Exception:
+                continue
+            up = int(it.get('f104') or 0)
+            down = int(it.get('f105') or 0)
+            try:
+                d5 = float(it.get('f109') or 0)
+            except Exception:
+                d5 = 0.0
+            try:
+                zljlr = float(it.get('f62') or 0)
+            except Exception:
+                zljlr = 0.0
+            seen.add(name)
+            if bn:
+                seen_base.add(bn)
+            out.append({
+                'name': name, 'code': code, 'pct': pct,
+                'up': up, 'down': down, 'total': up + down,
+                'leader': it.get('f128') or '',
+                'leader_pct': float(it.get('f136') or 0),
+                'zdf_d5': d5, 'zljlr_wan': zljlr / 1e4,
+                'em_code': code,          # 板块K线弹层直接用它（secid=90.<code>）
+            })
     out.sort(key=lambda x: -x['pct'])
     # 全量板块热度留档：个股概念按「对应板块当日涨幅」排序，
     # 从而实现「同一个票每一波走不同概念 → 取当下正在炒的那个」。
@@ -1051,6 +1049,7 @@ def fetch_board_rank(top=60):
                 BOARD_HEAT[b['name']] = b['pct']
     except Exception:
         pass
+    print('[板块] 东财口径 %d 个（概念+行业合并，已过滤噪声）' % len(out))
     return out[:top]
 
 
@@ -2190,22 +2189,23 @@ def main():
         print('\n[厄尔尼诺] 自动收录新龙头：' + '，'.join(
             '%s(%s)%d板' % (e['name'], e['code'], e['boards']) for e in new_leaders))
 
-    # ---- 给板块榜附加「东财板块代码」：前端点击板块名即可看它的日K/周K（东财 secid=90.BKxxxx）
-    _bk_list = board[:15] + list(board_3d or [])
-    try:
-        _em_map = build_em_board_map()
-        for _b in _bk_list:
-            if _b.get('name') and not _b.get('em_code'):
-                _c = match_em_code(_b['name'], _em_map)
-                if _c:
-                    _b['em_code'] = _c
-        _hit = sum(1 for _b in _bk_list if _b.get('em_code'))
-        print('\n[板块] 东财板块代码匹配：%d/%d 个（未匹配的点击将无K线）' % (_hit, len(_bk_list)))
-        for _b in _bk_list:
-            if not _b.get('em_code'):
-                print('   [warn] 未匹配：%s' % _b.get('name'))
-    except Exception as _e:
-        print('\n[板块] 东财板块代码匹配失败：%s' % _e)
+    # ---- 板块K线可用性：板块榜本身已是东财口径（code 即 BK 代码）；
+    #      累计榜来自历史快照（只有名字），按今日板块名反查代码。
+    _code_map = {b['name']: (b.get('code') or b.get('em_code')) for b in board if b.get('name')}
+    _miss = 0
+    for _b in list(board_3d or []):
+        if not _b.get('em_code'):
+            _c = _code_map.get(_b.get('name'))
+            if _c:
+                _b['em_code'] = _c
+            else:
+                _miss += 1
+        _b.setdefault('code', _b.get('em_code') or '')
+    print('\n[板块] 板块K线可用：单日榜 %d/%d · 累计榜 %d/%d'
+          % (sum(1 for _b in board[:15] if _b.get('em_code')), len(board[:15]),
+             sum(1 for _b in (board_3d or []) if _b.get('em_code')), len(board_3d or [])))
+    if _miss:
+        print('   [warn] 累计榜 %d 个板块未匹配到代码（旧口径遗留，会随历史滚动消失）' % _miss)
 
     data = {
         'updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),

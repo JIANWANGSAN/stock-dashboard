@@ -1090,7 +1090,7 @@ function renderBoards(){
   const overlap=[...new Set(daily.filter(b=>d3names.has(b.name)).map(b=>b.name))];
   // 单日榜
   document.getElementById('board-daily-box').innerHTML = daily.length?`<table>
-    <thead><tr><th class="bp-rank">#</th><th class="bp-name">板块</th><th class="bp-pct">涨幅</th><th class="bp-up">涨停/总数</th><th class="bp-leader">领涨股</th><th class="bp-cap">主力净流入</th></tr></thead>
+    <thead><tr><th class="bp-rank">#</th><th class="bp-name">板块</th><th class="bp-pct">涨幅</th><th class="bp-up">涨/跌家数</th><th class="bp-leader">领涨股</th><th class="bp-cap">主力净流入</th></tr></thead>
     <tbody>${daily.map((b,i)=>`<tr>
       <td class="rank-no bp-rank">${i+1}</td>
       <td class="bp-name">${d3names.has(b.name)?'<span class="star">★</span> ':''}${bklink(b)}</td>
