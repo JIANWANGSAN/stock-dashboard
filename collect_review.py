@@ -146,8 +146,10 @@ def fetch_stock_flow(topn=15):
 
 # ---------------- 4. 跌幅榜 / 杀跌方向 ----------------
 def fetch_losers(topn=20):
+    """跌幅榜：fid=f3 + po=0（升序）→ 跌幅最大在前。
+    注意 po=1 是降序=涨幅榜，历史版本曾误用。"""
     fs = 'm:0+t:6+f:!2,m:0+t:13+f:!2,m:0+t:80+f:!2,m:1+t:2+f:!2,m:1+t:23+f:!2,m:0+t:7+f:!2,m:1+t:3+f:!2'
-    t = em_get('/api/qt/clist/get?pn=1&pz=%d&po=1&np=1&fltt=2&invt=2&fid=f3&fs=%s&'
+    t = em_get('/api/qt/clist/get?pn=1&pz=%d&po=0&np=1&fltt=2&invt=2&fid=f3&fs=%s&'
                'fields=f12,f14,f2,f3,f8,f6' % (topn, fs))
     d = js(t)
     out = []

@@ -18,6 +18,10 @@ venv/
 # 体积大且可重建的中间产物
 review_dump.json
 
+# 自动化跑复盘时落盘的临时中间文件（如 _t1_pool / _t1_perf / _t1_zb / _t1_break）与当次复盘草稿
+_t1_*.json
+_review_today.md
+
 # 系统
 .DS_Store
 Thumbs.db
