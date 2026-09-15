@@ -40,7 +40,9 @@ def main():
         return
 
     cache = load_json(STOCK_CACHE, {})
-    hot = ([b['name'] for b in (data.get('board_daily') or [])[:30]]
+    # 题材共振的热点池：以**概念榜**为主（候选题材本身就是概念名），再叠加行业榜/3日榜
+    hot = ([b['name'] for b in (data.get('board_concept') or [])[:30]]
+           + [b['name'] for b in (data.get('board_daily') or [])]
            + [b['name'] for b in (data.get('board_3d') or [])])
 
     print('[盘前] 基于 %s 收盘数据重算候选池...' % src_date)
