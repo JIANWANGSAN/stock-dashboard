@@ -488,7 +488,13 @@ def save_js(path, obj):
 # 规则：当日涨停池(zt_pool)中，某条线对应龙头股出现 ≥4 连板 → 该线"激活"；
 #       取连板最高的激活线作为当前高亮阶段。无激活线则回退 default_stage。
 # 依据：连板梯队是短线持续性的硬信号，4 连板是题材从脉冲走向主线的分水岭。
-def calc_elnino_stage(zt_pool, elnino, threshold=4):
+def calc_elnino_stage(zt_pool, elnino, threshold=4, dyn=None):
+    """判定当前激活的厄尔尼诺细分线。
+
+    dyn: {idx: [{'code','name'}, ...]} —— 「动态收录」的新崛起龙头。
+         必须与静态名单**合并**参与判定，否则名单外的新龙头即使升到 4 连板也无法激活该线
+         （例：闽东电力 000993 连板 4，但不在第2阶段静态名单里 → 曾导致该线被判为未激活）。
+    """
     # code -> 当日最高连板数
     code_lbc = {}
     for s in (zt_pool or []):
@@ -501,12 +507,19 @@ def calc_elnino_stage(zt_pool, elnino, threshold=4):
     for stg in elnino['stages']:
         mx = 0
         trig = None
+        leaders = []
         for sc in stg.get('sectors', []):
-            for l in sc.get('leaders', []):
-                v = code_lbc.get(l['code'], 0)
-                if v > mx:
-                    mx = v
-                    trig = {'code': l['code'], 'name': l['name'], 'lbc': v}
+            leaders.extend(sc.get('leaders', []) or [])
+        # 叠加「动态收录」的新龙头（JSON 键为字符串，兼容 str/int）
+        d = dyn or {}
+        for l in (d.get(str(stg['idx'])) or d.get(stg['idx']) or []):
+            if isinstance(l, dict) and l.get('code'):
+                leaders.append(l)
+        for l in leaders:
+            v = code_lbc.get(l.get('code'), 0)
+            if v > mx:
+                mx = v
+                trig = {'code': l.get('code'), 'name': l.get('name'), 'lbc': v}
         best[stg['idx']] = mx
         trigger[stg['idx']] = trig
     # 激活线：连板 >= 阈值
@@ -2129,7 +2142,14 @@ def main():
 
     # 厄尔尼诺当前阶段自动识别（基于当日连板梯队：≥4 连板龙头 → 激活该线）
     elnino_out = copy.deepcopy(EL_NINO_DATA)
-    auto_idx, auto_lbc, _best, _trig = calc_elnino_stage(today_pool, EL_NINO_DATA, threshold=4)
+    # 先收录「新崛起龙头」→ 再判定激活线：
+    # 这样当日刚晋级到阈值的新龙头（不在静态名单里）也能立刻激活对应线
+    dyn, new_leaders = discover_elnino_leaders(
+        today_pool, EL_NINO_DATA, EL_NINO_THEME_KW,
+        ELNINO_DYN, ELNINO_NEW_LEADER_MIN_LBC)
+
+    auto_idx, auto_lbc, _best, _trig = calc_elnino_stage(today_pool, EL_NINO_DATA,
+                                                         threshold=4, dyn=dyn)
     if auto_idx:
         elnino_out['current_stage'] = auto_idx
         elnino_out['stage_auto'] = True
@@ -2162,10 +2182,7 @@ def main():
     # 缓存当前激活线（无激活则保留上一次，避免误判为"切换"）
     save_elnino_cache(auto_idx if auto_idx is not None else prev_stage)
 
-    # 新龙头自动发现 + 收录：轮动发生时密切留意不在静态名单里 / 新崛起的情绪龙
-    dyn, new_leaders = discover_elnino_leaders(
-        today_pool, EL_NINO_DATA, EL_NINO_THEME_KW,
-        ELNINO_DYN, ELNINO_NEW_LEADER_MIN_LBC)
+    # 动态收录的新龙头合并进展示（收录已在「判定激活线」之前完成，避免二次写入）
     merge_elnino_dynamic(elnino_out, dyn)
     if new_leaders:
         print('\n[厄尔尼诺] 自动收录新龙头：' + '，'.join(
