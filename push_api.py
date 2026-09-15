@@ -96,19 +96,34 @@ c = req('/git/commits', 'POST', {
     'author': {'name': name, 'email': email, 'date': iso},
     'committer': {'name': name, 'email': email, 'date': iso}})
 
-# 3) 在本地重建该提交对象，使本地与远端 SHA 完全一致（消除分叉）
-obj = ('tree %s\nparent %s\nauthor %s <%s> %s\ncommitter %s <%s> %s\n\n%s'
-       % (c['tree']['sha'], c['parents'][0]['sha'],
-          c['author']['name'], c['author']['email'], to_git_date(c['author']['date']),
-          c['committer']['name'], c['committer']['email'], to_git_date(c['committer']['date']),
-          c['message']))
-local_sha = git('hash-object', '-t', 'commit', '-w', '--stdin',
-                input=obj.encode('utf-8')).strip()
-if local_sha != c['sha']:
-    print('  [warn] 本地重建 %s != 远端 %s，跳过本地对齐（远端已更新）'
-          % (local_sha[:9], c['sha'][:9]))
-else:
-    subprocess.check_call(['git', 'reset', '--soft', local_sha])
+# 3) 让本地 HEAD 与远端 SHA 完全一致（消除分叉）
+#    优先 git fetch（链路可用时最稳）；被阻断时用「重建提交对象」的方式兜底
+aligned = False
+try:
+    subprocess.check_call(['git', 'fetch', '--quiet', 'origin', BRANCH],
+                          stderr=subprocess.DEVNULL)
+    if git('rev-parse', 'origin/' + BRANCH).strip() == c['sha']:
+        subprocess.check_call(['git', 'reset', '--soft', c['sha']])
+        aligned = True
+except Exception:
+    pass
+
+if not aligned:
+    def build(msg):
+        return ('tree %s\nparent %s\nauthor %s <%s> %s\ncommitter %s <%s> %s\n\n%s'
+                % (c['tree']['sha'], c['parents'][0]['sha'],
+                   c['author']['name'], c['author']['email'], to_git_date(c['author']['date']),
+                   c['committer']['name'], c['committer']['email'], to_git_date(c['committer']['date']),
+                   msg))
+    # GitHub 会规范化 message 的尾部换行，故逐个变体试算，命中即对齐
+    for cand in dict.fromkeys([c['message'], c['message'].rstrip('\n'), c['message'] + '\n']):
+        if git('hash-object', '-t', 'commit', '--stdin', input=build(cand).encode('utf-8')).strip() == c['sha']:
+            git('hash-object', '-t', 'commit', '-w', '--stdin', input=build(cand).encode('utf-8'))
+            subprocess.check_call(['git', 'reset', '--soft', c['sha']])
+            aligned = True
+            break
+if not aligned:
+    print('  [warn] 未能让本地对齐远端（远端已更新，本地可用 git fetch + reset --soft 手动对齐）')
 
 # 4) 更新远端 ref
 req('/git/refs/heads/' + BRANCH, 'PATCH', {'sha': c['sha'], 'force': True})
