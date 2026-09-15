@@ -1085,6 +1085,53 @@ def fetch_board_zt_stats(boards, max_workers=8):
         list(ex.map(_one, boards))
 
 
+def fetch_board_klines(boards, day_n=120, week_n=60, max_workers=8):
+    """预生成榜单板块的日K/周K，随 data.js 下发。
+
+    为什么放在后端：浏览器直连东财 `push2his` 取板块K线**跨域不可靠**（无 CORS 头，JSONP 也时好时坏），
+    改为 Python 抓一次、落进 data.js，前端点击即可秒开、离线也能看。
+
+    返回 {code: {'name':.., 'day': ['日期,开,收,高,低', ...], 'week': [...]}}
+    """
+    out = {}
+
+    def _kline(code, klt, n):
+        # push2his 是唯一的板块历史K线源（push2delay 只给实时、klines 为空），
+        # 且它对高频访问会限流 → 多主机 + 多轮重试
+        hosts = ('push2his.eastmoney.com', '1.push2his.eastmoney.com',
+                 '7.push2his.eastmoney.com', 'push2his.eastmoney.com')
+        for rnd in range(3):
+            for host in hosts:
+                url = ('https://%s/api/qt/stock/kline/get?secid=90.%s'
+                       '&fields1=f1,f2,f3&fields2=f51,f52,f53,f54,f55,f56&klt=%d&fqt=1'
+                       '&end=20500101&lmt=%d' % (host, code, klt, n))
+                t = http_get(url, silent=True)
+                if t:
+                    try:
+                        ks = (json.loads(t).get('data') or {}).get('klines') or []
+                        if ks:
+                            # 精简为「日期,开,收,高,低」（前端只用这 5 列，省体积）
+                            return [','.join(k.split(',')[:5]) for k in ks]
+                    except Exception:
+                        pass
+                time.sleep(0.4)
+            time.sleep(1.0)
+        return []
+
+    def _one(b):
+        code = b.get('code') or b.get('em_code')
+        if not code:
+            return
+        day = _kline(code, 101, day_n)
+        week = _kline(code, 102, week_n)
+        if day or week:
+            out[code] = {'name': b.get('name', ''), 'day': day, 'week': week}
+
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        list(ex.map(_one, boards))
+    return out
+
+
 def fetch_board_rank(top=60):
     """板块榜：**只用东财**，口径与「东方财富 App → 行情 → 板块」完全对齐。
 
@@ -2003,6 +2050,19 @@ def main():
     print('  已统计 %d/%d 个板块' % (
         sum(1 for _b in _stat.values() if _b.get('stock_total')), len(_stat)))
 
+    # 板块K线预生成：随 data.js 下发，前端点击即开（避免浏览器跨域取东财失败）
+    print('\n[4c/7] 预生成榜单板块的日K/周K...')
+    _kl = {}
+    for _b in (board[:10] + board_3d):
+        if _b.get('code'):
+            _kl[_b['code']] = _b
+    board_kline = fetch_board_klines(list(_kl.values()))
+    if not board_kline:
+        # 取数失败（东财限流）→ 沿用上一次的结果，别把已有数据清空
+        board_kline = (load_json(DATA_JSON, {}) or {}).get('board_kline') or {}
+        print('  [warn] 本次未取到，沿用上次 %d 个板块的K线' % len(board_kline))
+    print('  已生成 %d/%d 个板块的日K/周K（日K120根·周K60根）' % (len(board_kline), len(_kl)))
+
     # ---- 梯队折线图数据 ----
     print('\n[5/7] 构建梯队折线数据...')
     series = []
@@ -2303,6 +2363,7 @@ def main():
         'board_concept': concept[:15],
         'board_3d': board_3d,
         'board_3d_note': board_3d_note,
+        'board_kline': board_kline,
         'board_3d_days': board_3d_days,
         'ladder': series,
         'zt_pool': today_pool,

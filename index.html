@@ -1380,6 +1380,11 @@ function jsonpGet(url, timeoutMs){
 function drawBoard(){
   const el=document.getElementById('bk-chart');
   if(bkChart){ try{ bkChart.dispose(); }catch(e){} bkChart=null; }
+  // ① 优先用「盘后预生成」的本地K线（随 data.js 下发，免跨域、秒开、可离线）
+  const local=(D.board_kline||{})[bkCode];
+  const ksLocal=local?((bkPeriod==='week')?local.week:local.day):null;
+  if(ksLocal && ksLocal.length){ el.innerHTML=''; renderBoardK(el, ksLocal); return; }
+  // ② 兜底：直接取网络（东财 push2his 跨域不稳，仅当本地没有该板块时才走）
   el.innerHTML='<div class="sk-loading">加载中…</div>';
   const klt=(bkPeriod==='week')?102:101;
   const base='https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=90.'+bkCode
@@ -1391,8 +1396,8 @@ function drawBoard(){
     if(!ks.length){ el.innerHTML='<div class="empty">该板块暂无K线数据</div>'; return; }
     renderBoardK(el, ks);
   };
-  const fail=()=>{ el.innerHTML='<div class="empty">板块K线加载失败，请稍后重试</div>'; };
-  // ① JSONP（避开跨域）→ ② 直连 fetch 兜底
+  const fail=()=>{ el.innerHTML='<div class="empty">板块K线暂时取不到（数据源限流）<br>'
+      +'<a href="https://quote.eastmoney.com/bk/90.'+bkCode+'.html" target="_blank" rel="noopener" style="color:#2563eb;">点此在东方财富查看该板块</a></div>'; };
   jsonpGet(base, 9000)
     .then(got)
     .catch(()=>fetch(base,{cache:'no-store'})
