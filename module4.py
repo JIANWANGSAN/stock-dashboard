@@ -22,6 +22,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from fetch_data import (BASE, DATA_JSON, http_get, load_json, save_json, save_js, theme_of,
                         is_excluded)
+from em_boards import (EM_HOSTS, em_get, norm_board, build_em_board_map, match_em_code, EM_ALIAS)
 
 MODULE4_POOL = os.path.join(BASE, 'module4_pool.json')
 KLINE_CACHE  = os.path.join(BASE, '.module4_kline_cache.json')
@@ -42,30 +43,7 @@ MX_NAME_MAP = {
     '猪肉': '猪肉概念', '猪肉概念': '猪肉概念',
 }
 
-# 腾讯板块名 -> 东财实际存在的板块名（东财列表里查不到原名时的兜底别名）
-# 已实测：东财无「白糖」「玉米」「燃料乙醇」「光芯片」「博通概念」，命中不了就跳过，不重试
-EM_ALIAS = {
-    '棉花': '棉纺', '棉花概念': '棉纺', '棉纺': '棉纺',
-    '玉米': '粮食种植', '玉米概念': '粮食种植',
-    '光芯片': 'CPO', '博通概念': 'CPO', '谷歌概念': 'CPO', '光通信': '光通信模块',
-    '覆铜板': 'PCB', 'PCB概念': 'PCB',
-    '猪肉': '猪肉概念',
-}
-
 TODAY = datetime.now().strftime('%Y-%m-%d')
-
-# 东财 push2 主机冗余：部分网络环境下 push2.eastmoney.com 会 RemoteDisconnected，
-# push2delay.eastmoney.com 可正常返回，逐个尝试直到成功。
-EM_HOSTS = ['push2.eastmoney.com', 'push2delay.eastmoney.com', '82.push2.eastmoney.com']
-
-
-def em_get(path, timeout=15):
-    """东财接口请求，带主机冗余。path 形如 /api/qt/clist/get?..."""
-    for host in EM_HOSTS:
-        t = http_get('https://%s%s' % (host, path), timeout=timeout, retry=1, silent=True)
-        if t:
-            return t
-    return None
 
 
 def load_mx_members(board_name, date_str=None):
@@ -95,62 +73,6 @@ def load_mx_members(board_name, date_str=None):
     return out
 
 
-# ---------------- 板块名归一化 / 东财映射 ----------------
-def norm_board(name):
-    if not name:
-        return ''
-    return re.sub(r'(概念|板块|行业|产业|指数|股)$', '', name.strip())
-
-
-def build_em_board_map():
-    """东方财富 概念(t:3) + 行业(t:2) 板块列表 → {归一名: code, 原名: code}（分页并发拉取）
-
-    并发不影响结果：先并发取各页，再按「原遍历顺序」合并，保持后者覆盖前者的语义。
-    """
-    jobs = [(fs, pn) for fs in ('m:90+t:3+f:!50', 'm:90+t:2+f:!50') for pn in range(1, 13)]
-
-    def _page(job):
-        fs, pn = job
-        path = ('/api/qt/clist/get?pn=%d&pz=100&po=1&np=1'
-                '&fltt=2&invt=2&fid=f3&fs=%s&fields=f12,f14' % (pn, fs))
-        t = em_get(path)
-        if not t:
-            return []
-        try:
-            diff = (json.loads(t).get('data') or {}).get('diff') or []
-        except Exception:
-            return []
-        return [(it.get('f12'), it.get('f14')) for it in diff]
-
-    with ThreadPoolExecutor(max_workers=6) as ex:
-        pages = list(ex.map(_page, jobs))
-
-    m = {}
-    for rows in pages:
-        for c, n in rows:
-            if c and n:
-                m[n] = c
-                m[norm_board(n)] = c
-    return m
-
-
-def match_em_code(name, em_map):
-    if name in em_map:
-        return em_map[name]
-    n = norm_board(name)
-    if n and n in em_map:
-        return em_map[n]
-    alias = EM_ALIAS.get(name) or EM_ALIAS.get(n)
-    if alias:
-        if alias in em_map:
-            return em_map[alias]
-        na = norm_board(alias)
-        if na and na in em_map:
-            return em_map[na]
-    for k, v in em_map.items():
-        if len(k) >= 2 and (k in name or name in k):
-            return v
-    return None
 
 
 def fetch_board_members_em(code):

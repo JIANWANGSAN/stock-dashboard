@@ -1,5 +1,5 @@
 {
-  "date": "2026-09-14",
+  "date": "2026-09-15",
   "overlap_boards": [
     "靶材",
     "CRO",
@@ -19,58 +19,58 @@
       ],
       "best_rank": 3,
       "multi_board": 1,
-      "ma5": 57.964,
-      "ma10": 54.838,
-      "ma20": 52.515,
-      "close": 60.0,
-      "bias20": 14.25,
-      "div_strength": 10.38,
-      "vol_ratio": 1.05,
-      "recent5_ret": 16.26,
+      "ma5": 58.798,
+      "ma10": 55.481,
+      "ma20": 52.822,
+      "close": 58.21,
+      "bias20": 10.2,
+      "div_strength": 11.31,
+      "vol_ratio": 0.47,
+      "recent5_ret": 7.72,
       "overbought": false,
-      "score": 49.5,
+      "score": 40.8,
       "rank": 1
     },
     {
-      "code": "300179",
-      "name": "四方达",
+      "code": "002669",
+      "name": "康达新材",
       "market": "0",
       "boards": [
-        "培育钻石"
+        "MLCC"
       ],
-      "best_rank": 3,
+      "best_rank": 10,
       "multi_board": 1,
-      "ma5": 41.098,
-      "ma10": 38.954,
-      "ma20": 37.545,
-      "close": 43.36,
-      "bias20": 15.49,
-      "div_strength": 9.46,
-      "vol_ratio": 1.06,
-      "recent5_ret": 12.36,
+      "ma5": 13.036,
+      "ma10": 12.556,
+      "ma20": 12.232,
+      "close": 14.17,
+      "bias20": 15.84,
+      "div_strength": 6.57,
+      "vol_ratio": 2.3,
+      "recent5_ret": 15.11,
       "overbought": false,
-      "score": 47.2,
+      "score": 40.2,
       "rank": 2
     },
     {
-      "code": "603336",
-      "name": "宏辉果蔬",
-      "market": "1",
+      "code": "300806",
+      "name": "斯迪克",
+      "market": "0",
       "boards": [
-        "CRO"
+        "MLCC"
       ],
-      "best_rank": 2,
+      "best_rank": 10,
       "multi_board": 1,
-      "ma5": 9.842,
-      "ma10": 9.591,
-      "ma20": 9.43,
-      "close": 10.39,
-      "bias20": 10.18,
-      "div_strength": 4.37,
-      "vol_ratio": 1.77,
-      "recent5_ret": 10.89,
+      "ma5": 52.724,
+      "ma10": 49.94,
+      "ma20": 49.611,
+      "close": 56.05,
+      "bias20": 12.98,
+      "div_strength": 6.27,
+      "vol_ratio": 0.83,
+      "recent5_ret": 20.3,
       "overbought": false,
-      "score": 41.3,
+      "score": 36.6,
       "rank": 3
     },
     {
@@ -82,59 +82,17 @@
       ],
       "best_rank": 2,
       "multi_board": 1,
-      "ma5": 54.198,
-      "ma10": 52.245,
-      "ma20": 52.188,
-      "close": 56.4,
-      "bias20": 8.07,
-      "div_strength": 3.85,
-      "vol_ratio": 1.16,
-      "recent5_ret": 14.49,
-      "overbought": false,
-      "score": 38.8,
-      "rank": 4
-    },
-    {
-      "code": "002171",
-      "name": "楚江新材",
-      "market": "0",
-      "boards": [
-        "培育钻石"
-      ],
-      "best_rank": 3,
-      "multi_board": 1,
-      "ma5": 10.964,
-      "ma10": 10.581,
-      "ma20": 10.222,
-      "close": 11.11,
-      "bias20": 8.69,
-      "div_strength": 7.26,
-      "vol_ratio": 0.85,
-      "recent5_ret": 8.92,
-      "overbought": false,
-      "score": 36.0,
-      "rank": 5
-    },
-    {
-      "code": "002669",
-      "name": "康达新材",
-      "market": "0",
-      "boards": [
-        "MLCC"
-      ],
-      "best_rank": 10,
-      "multi_board": 1,
-      "ma5": 12.664,
-      "ma10": 12.338,
-      "ma20": 12.165,
-      "close": 13.75,
-      "bias20": 13.03,
-      "div_strength": 4.11,
-      "vol_ratio": 1.9,
-      "recent5_ret": 11.7,
+      "ma5": 54.754,
+      "ma10": 52.713,
+      "ma20": 52.295,
+      "close": 56.08,
+      "bias20": 7.24,
+      "div_strength": 4.7,
+      "vol_ratio": 0.46,
+      "recent5_ret": 5.22,
       "overbought": false,
       "score": 32.6,
-      "rank": 6
+      "rank": 4
     },
     {
       "code": "301071",
@@ -145,23 +103,90 @@
       ],
       "best_rank": 3,
       "multi_board": 1,
-      "ma5": 63.014,
-      "ma10": 61.946,
-      "ma20": 60.898,
-      "close": 65.79,
-      "bias20": 8.03,
-      "div_strength": 3.48,
-      "vol_ratio": 1.36,
-      "recent5_ret": 7.18,
+      "ma5": 63.716,
+      "ma10": 62.486,
+      "ma20": 60.947,
+      "close": 65.58,
+      "bias20": 7.6,
+      "div_strength": 4.54,
+      "vol_ratio": 0.67,
+      "recent5_ret": 5.65,
       "overbought": false,
-      "score": 31.2,
+      "score": 29.5,
+      "rank": 5
+    },
+    {
+      "code": "002171",
+      "name": "楚江新材",
+      "market": "0",
+      "boards": [
+        "培育钻石"
+      ],
+      "best_rank": 3,
+      "multi_board": 1,
+      "ma5": 11.054,
+      "ma10": 10.654,
+      "ma20": 10.258,
+      "close": 10.75,
+      "bias20": 4.8,
+      "div_strength": 7.77,
+      "vol_ratio": 0.47,
+      "recent5_ret": 4.37,
+      "overbought": false,
+      "score": 29.5,
+      "rank": 6
+    },
+    {
+      "code": "300408",
+      "name": "三环集团",
+      "market": "0",
+      "boards": [
+        "MLCC"
+      ],
+      "best_rank": 10,
+      "multi_board": 1,
+      "ma5": 122.298,
+      "ma10": 116.876,
+      "ma20": 113.972,
+      "close": 125.83,
+      "bias20": 10.4,
+      "div_strength": 7.31,
+      "vol_ratio": 0.62,
+      "recent5_ret": 9.26,
+      "overbought": false,
+      "score": 29.4,
       "rank": 7
+    },
+    {
+      "code": "601208",
+      "name": "东材科技",
+      "market": "1",
+      "boards": [
+        "MLCC"
+      ],
+      "best_rank": 10,
+      "multi_board": 1,
+      "ma5": 48.372,
+      "ma10": 47.868,
+      "ma20": 47.435,
+      "close": 50.09,
+      "bias20": 5.6,
+      "div_strength": 1.98,
+      "vol_ratio": 0.91,
+      "recent5_ret": 5.65,
+      "overbought": false,
+      "score": 17.1,
+      "rank": 8
     }
   ],
-  "added_today": [],
+  "added_today": [
+    "斯迪克",
+    "三环集团",
+    "东材科技"
+  ],
   "removed_today": [
-    "沃尔德",
-    "奥浦迈"
+    "四方达",
+    "宏辉果蔬"
   ],
   "history": [
     {
@@ -483,6 +508,18 @@
       "removed": [
         "沃尔德",
         "奥浦迈"
+      ]
+    },
+    {
+      "date": "2026-09-15",
+      "added": [
+        "斯迪克",
+        "三环集团",
+        "东材科技"
+      ],
+      "removed": [
+        "四方达",
+        "宏辉果蔬"
       ]
     }
   ]

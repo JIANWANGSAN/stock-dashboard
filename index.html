@@ -470,6 +470,8 @@
   .news-item .tx{ flex: 1; line-height: 1.6; }
   /* 可点击的股票名 */
   .sk{ cursor: pointer; border-bottom: 1px dashed rgba(37,99,235,.5); }
+  .bklink{ cursor: pointer; border-bottom: 1px dashed #93c5fd; }
+  .bklink:active{ color: #2563eb; }
   .sk:active{ opacity: .55; }
   /* 个股行情弹层 */
   .sk-modal{ position: fixed; inset: 0; background: rgba(17,24,39,.55); z-index: 2000;
@@ -632,6 +634,23 @@
       </div>
       <div id="sk-chart" class="sk-chart"></div>
       <div class="sk-tip">数据来源：东方财富 · 点击空白处关闭</div>
+    </div>
+  </div>
+
+
+  <!-- 板块K线弹层：点击板块名 → 日K / 周K + MA5/10/20（东财板块指数 secid=90.BKxxxx） -->
+  <div id="bk-modal" class="sk-modal">
+    <div class="sk-panel">
+      <div class="sk-head">
+        <div class="sk-head-l"><b id="bk-name">—</b><span class="sk-code" id="bk-code">—</span><span class="sk-pct" id="bk-pct"></span></div>
+        <div class="sk-close" id="bk-close">✕</div>
+      </div>
+      <div class="sk-tabs">
+        <div class="sk-tab active" data-p="day">日K线</div>
+        <div class="sk-tab" data-p="week">周K线</div>
+      </div>
+      <div id="bk-chart" class="sk-chart"></div>
+      <div class="sub" style="margin-top:6px;color:#6b7280;font-size:11px;">MA5 → 橙 · MA10 → 蓝 · MA20 → 紫 ｜ 数据源：东方财富板块指数</div>
     </div>
   </div>
 
@@ -1054,6 +1073,13 @@ function renderElNino(){
 }
 
 /* ---- 模块3 板块 ---- */
+/* 板块名 → 可点击（点击打开「板块K线」弹层：日K/周K + MA5/10/20）
+   仅当该板块匹配到东财板块代码(em_code)时可点；未匹配的（东财无此板块）保持纯文本 */
+function bklink(b){
+  const nm=esc(b.name);
+  if(!b.em_code) return nm;
+  return `<b class="bklink" data-bkcode="${esc(b.em_code)}" data-bkname="${nm}" data-bkpct="${b.pct}">${nm}</b>`;
+}
 function renderBoards(){
   const daily=(D.board_daily||[]).slice(0,15);
   const d3=(D.board_3d||[]);
@@ -1067,7 +1093,7 @@ function renderBoards(){
     <thead><tr><th class="bp-rank">#</th><th class="bp-name">板块</th><th class="bp-pct">涨幅</th><th class="bp-up">涨停/总数</th><th class="bp-leader">领涨股</th><th class="bp-cap">主力净流入</th></tr></thead>
     <tbody>${daily.map((b,i)=>`<tr>
       <td class="rank-no bp-rank">${i+1}</td>
-      <td class="bp-name">${d3names.has(b.name)?'<span class="star">★</span> ':''}${esc(b.name)}</td>
+      <td class="bp-name">${d3names.has(b.name)?'<span class="star">★</span> ':''}${bklink(b)}</td>
       <td class="up bp-pct">+${b.pct.toFixed(2)}%</td>
       <td class="bp-up">${b.up||0}/${b.total||0}</td>
       <td class="bp-leader">${esc(b.leader||'-')}${b.leader_pct?` +${b.leader_pct.toFixed(2)}%`:''}</td>
@@ -1078,7 +1104,7 @@ function renderBoards(){
     <thead><tr><th>#</th><th>板块</th><th>累计涨幅</th><th>样本天数</th></tr></thead>
     <tbody>${d3.map((b,i)=>`<tr>
       <td class="rank-no">${i+1}</td>
-      <td>${overlap.includes(b.name)?'<span class="star">★</span> ':''}${esc(b.name)}</td>
+      <td>${overlap.includes(b.name)?'<span class="star">★</span> ':''}${bklink(b)}</td>
       <td class="up">+${b.pct.toFixed(2)}%</td>
       <td>${b.days||'-'}</td></tr>`).join('')}</tbody></table>`
     :'<div class="empty">无累计数据</div>';
@@ -1300,9 +1326,85 @@ document.querySelectorAll('#sk-modal .sk-tab').forEach(t=>t.addEventListener('cl
   document.querySelectorAll('#sk-modal .sk-tab').forEach(x=>x.classList.toggle('active',x===t));
   drawStock();
 }));
+/* ---- 板块K线弹层：日K / 周K + MA5/10/20（东财板块指数 secid=90.BKxxxx） ---- */
+let bkChart=null, bkCode='', bkPeriod='day';
+function openBoard(code, name, pct){
+  if(!code) return;
+  bkCode=code; bkPeriod='day';
+  document.getElementById('bk-name').textContent=name||code;
+  document.getElementById('bk-code').textContent=code;
+  const p=document.getElementById('bk-pct');
+  const v=(pct==null||pct===''||isNaN(+pct))?null:+pct;
+  p.textContent = (v==null)?'':((v>0?'+':'')+v.toFixed(2)+'%');
+  p.style.color = (v==null)?'#6b7280':(v>0?'#dc2626':(v<0?'#16a34a':'#6b7280'));
+  document.querySelectorAll('#bk-modal .sk-tab').forEach(t=>t.classList.toggle('active', t.dataset.p==='day'));
+  document.getElementById('bk-modal').classList.add('show');
+  drawBoard();
+}
+function closeBoard(){ document.getElementById('bk-modal').classList.remove('show'); }
+function drawBoard(){
+  const el=document.getElementById('bk-chart');
+  if(bkChart){ try{ bkChart.dispose(); }catch(e){} bkChart=null; }
+  el.innerHTML='<div class="sk-loading">加载中…</div>';
+  const klt=(bkPeriod==='week')?102:101;
+  const u='https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=90.'+bkCode
+        + '&fields1=f1,f2,f3&fields2=f51,f52,f53,f54,f55,f56&klt='+klt
+        + '&fqt=1&end=20500101&lmt=150';
+  let tries=0;
+  const once=()=>fetch(u,{cache:'no-store'})
+    .then(r=>{ if(!r.ok) throw new Error('http'); return r.json(); })
+    .catch(e=>{ if(++tries<3) return new Promise(res=>setTimeout(res,600)).then(once); throw e; });
+  once().then(j=>{
+    const ks=(((j||{}).data)||{}).klines||[];
+    el.innerHTML='';
+    if(!ks.length){ el.innerHTML='<div class="empty">该板块暂无K线数据</div>'; return; }
+    renderBoardK(el, ks);
+  }).catch(()=>{ el.innerHTML='<div class="empty">板块K线加载失败（网络或接口受限）</div>'; });
+}
+function maSeries(closes,n){
+  const out=[]; let sum=0;
+  for(let i=0;i<closes.length;i++){
+    sum+=closes[i];
+    if(i>=n) sum-=closes[i-n];
+    out.push(i>=n-1 ? +(sum/n).toFixed(2) : null);
+  }
+  return out;
+}
+function renderBoardK(el, ks){
+  const bars=ks.map(s=>{const a=s.split(',');return{d:a[0],o:+a[1],c:+a[2],h:+a[3],l:+a[4]};});
+  const dates=bars.map(b=>b.d), closes=bars.map(b=>b.c);
+  bkChart=echarts.init(el);
+  bkChart.setOption({
+    animation:false,
+    grid:{left:58,right:14,top:24,bottom:30},
+    legend:{show:true,top:0,right:0,itemWidth:16,itemHeight:8,textStyle:{fontSize:10}},
+    tooltip:{trigger:'axis',axisPointer:{type:'cross'}},
+    xAxis:{type:'category',data:dates,axisLabel:{fontSize:9,interval:Math.max(0,Math.floor(dates.length/8))}},
+    yAxis:{scale:true,axisLabel:{fontSize:10},splitLine:{lineStyle:{color:'#eef2f7'}}},
+    dataZoom:[{type:'inside'}],
+    series:[
+      {name:'K线',type:'candlestick',data:bars.map(b=>[b.o,b.c,b.l,b.h]),
+       itemStyle:{color:'#dc2626',color0:'#16a34a',borderColor:'#dc2626',borderColor0:'#16a34a'}},
+      {name:'MA5',type:'line',data:maSeries(closes,5),symbol:'none',smooth:true,lineStyle:{width:1.2,color:'#f59e0b'}},
+      {name:'MA10',type:'line',data:maSeries(closes,10),symbol:'none',smooth:true,lineStyle:{width:1.2,color:'#2563eb'}},
+      {name:'MA20',type:'line',data:maSeries(closes,20),symbol:'none',smooth:true,lineStyle:{width:1.2,color:'#7c3aed'}}
+    ]
+  });
+}
+document.getElementById('bk-close').addEventListener('click', closeBoard);
+document.getElementById('bk-modal').addEventListener('click', e=>{ if(e.target.id==='bk-modal') closeBoard(); });
+document.querySelectorAll('#bk-modal .sk-tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('#bk-modal .sk-tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active'); bkPeriod=t.dataset.p; drawBoard();
+  });
+});
+
 // 全局委托：点击任意带 data-scode 的股票名 → 打开行情弹层
 document.addEventListener('click', e=>{
   if(!(e.target instanceof Element)) return;
+  const bk=e.target.closest('[data-bkcode]');           // 板块名 → 板块K线弹层
+  if(bk){ e.preventDefault(); openBoard(bk.dataset.bkcode, bk.dataset.bkname, bk.dataset.bkpct); return; }
   const t=e.target.closest('[data-scode]');
   if(!t) return;
   e.preventDefault();
@@ -1314,6 +1416,7 @@ window.addEventListener('resize',()=>{
   if(ladderChart) ladderChart.resize();
   if(mvChart) mvChart.resize();
   if(skChart && document.getElementById('sk-modal').classList.contains('show')) skChart.resize();
+  if(bkChart && document.getElementById('bk-modal').classList.contains('show')) bkChart.resize();
 });
 </script>
 </body>

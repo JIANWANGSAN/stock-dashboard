@@ -16,6 +16,8 @@ import sys, os, json, time, re, argparse, copy
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 
+from em_boards import build_em_board_map, match_em_code   # 板块名 → 东财板块代码(BKxxxx)
+
 sys.stdout.reconfigure(encoding='utf-8')
 import urllib.request
 
@@ -2187,6 +2189,23 @@ def main():
     if new_leaders:
         print('\n[厄尔尼诺] 自动收录新龙头：' + '，'.join(
             '%s(%s)%d板' % (e['name'], e['code'], e['boards']) for e in new_leaders))
+
+    # ---- 给板块榜附加「东财板块代码」：前端点击板块名即可看它的日K/周K（东财 secid=90.BKxxxx）
+    _bk_list = board[:15] + list(board_3d or [])
+    try:
+        _em_map = build_em_board_map()
+        for _b in _bk_list:
+            if _b.get('name') and not _b.get('em_code'):
+                _c = match_em_code(_b['name'], _em_map)
+                if _c:
+                    _b['em_code'] = _c
+        _hit = sum(1 for _b in _bk_list if _b.get('em_code'))
+        print('\n[板块] 东财板块代码匹配：%d/%d 个（未匹配的点击将无K线）' % (_hit, len(_bk_list)))
+        for _b in _bk_list:
+            if not _b.get('em_code'):
+                print('   [warn] 未匹配：%s' % _b.get('name'))
+    except Exception as _e:
+        print('\n[板块] 东财板块代码匹配失败：%s' % _e)
 
     data = {
         'updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
