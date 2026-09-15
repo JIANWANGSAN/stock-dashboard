@@ -51,6 +51,7 @@
 | `collect_review.py` / `build_review.py` / `save_review.py` | 盘后复盘文本生成与归档 |
 | `setup.bat` | 新电脑首次初始化 |
 | `refresh.bat` | 刷新数据 |
+| `push_api.py` | `git push` 被网络阻断时的兜底推送（走 `api.github.com`，自动对齐本地与远端 SHA）|
 
 ---
 
@@ -144,3 +145,4 @@ CONCEPT_FIX = {
   2. 把「七」的话术丢给新 AI，并附上 GitHub 公开仓库地址（https://github.com/JIANWANGSAN/stock-dashboard）与该 token：让 AI 执行 `git clone` + 双击 `setup.bat`/`refresh.bat` + 按「六」重建 2 个自动任务（GitHub Pages 已永久在线，无需重新发布链接）
   - 全程由 AI 在 WorkBuddy 内完成，**你无需敲任何命令、无需懂 Git/Python**
 - **注意**：GitHub 只存代码与数据快照，不含自动化任务（在 WorkBuddy 自动化系统里，需新 AI 按「六」重建）；运行缓存在 `.gitignore` 已排除。本地 remote 的访问令牌写在 `.git/config`（不进库），换电脑后由新 AI 重新配置 remote（需你再给一次 token）才能继续自动 push。
+- **push 被网络阻断时的兜底**：若 `git push` 报 `502` / `Empty reply from server`（`github.com` 的 git 协议被拦，但 `api.github.com` 仍可达），执行 **`python push_api.py`** 即可完成等效推送（自动上传本地整棵树并让本地与远端 SHA 对齐，无变更时自动跳过）。
