@@ -1221,8 +1221,9 @@ function loadSeries(secid, isMin){
   const emUrl = isMin
     ? 'https://push2his.eastmoney.com/api/qt/stock/trends2/get?secid='+secid+'&fields1=f1,f2,f3,f4,f5,f6,f7,f8&fields2=f51,f52,f53,f54,f55,f56,f57,f58&iscr=0&ndays=1'
     : 'https://push2his.eastmoney.com/api/qt/stock/kline/get?secid='+secid+'&fields1=f1,f2,f3&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&end=20500101&lmt=120';
+  // 腾讯源支持 CORS(*)；东财 push2his 不返回跨域头 → 兜底必须用 JSONP，否则必然失败
   return jget(txUrl).then(d=>parseTx(d, tx, isMin))
-         .catch(()=>jget(emUrl).then(d=>parseEm(d, isMin)));
+         .catch(()=>jsonpGet(emUrl, 9000).then(d=>parseEm(d, isMin)));
 }
 function parseTx(d, tx, isMin){
   const node=((d||{}).data||{})[tx]; if(!node) return null;
