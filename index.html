@@ -1342,24 +1342,51 @@ function openBoard(code, name, pct){
   drawBoard();
 }
 function closeBoard(){ document.getElementById('bk-modal').classList.remove('show'); }
+/* 东财 push2his 不给跨域头（浏览器直连会被 CORS 拦）→ 用 JSONP(cb=) 绕过；
+   仍保留直连 fetch 作为兜底，两条都失败才提示。 */
+let _jsonpSeq=0;
+function jsonpGet(url, timeoutMs){
+  return new Promise((resolve,reject)=>{
+    const cb='__emcb'+(_jsonpSeq++);
+    const s=document.createElement('script');
+    let settled=false;
+    function finish(ok,val){
+      if(settled) return;
+      settled=true;
+      try{ delete window[cb]; }catch(e){ try{ window[cb]=undefined; }catch(e2){} }
+      if(s.parentNode) s.parentNode.removeChild(s);
+      clearTimeout(tm);
+      ok?resolve(val):reject(new Error('jsonp-fail'));
+    }
+    window[cb]=d=>finish(true,d);
+    const tm=setTimeout(()=>finish(false), timeoutMs||9000);
+    s.onerror=()=>finish(false);
+    s.src=url+(url.indexOf('?')>=0?'&':'?')+'cb='+cb;
+    document.head.appendChild(s);
+  });
+}
 function drawBoard(){
   const el=document.getElementById('bk-chart');
   if(bkChart){ try{ bkChart.dispose(); }catch(e){} bkChart=null; }
   el.innerHTML='<div class="sk-loading">加载中…</div>';
   const klt=(bkPeriod==='week')?102:101;
-  const u='https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=90.'+bkCode
+  const base='https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=90.'+bkCode
         + '&fields1=f1,f2,f3&fields2=f51,f52,f53,f54,f55,f56&klt='+klt
         + '&fqt=1&end=20500101&lmt=150';
-  let tries=0;
-  const once=()=>fetch(u,{cache:'no-store'})
-    .then(r=>{ if(!r.ok) throw new Error('http'); return r.json(); })
-    .catch(e=>{ if(++tries<3) return new Promise(res=>setTimeout(res,600)).then(once); throw e; });
-  once().then(j=>{
+  const got=j=>{
     const ks=(((j||{}).data)||{}).klines||[];
     el.innerHTML='';
     if(!ks.length){ el.innerHTML='<div class="empty">该板块暂无K线数据</div>'; return; }
     renderBoardK(el, ks);
-  }).catch(()=>{ el.innerHTML='<div class="empty">板块K线加载失败（网络或接口受限）</div>'; });
+  };
+  const fail=()=>{ el.innerHTML='<div class="empty">板块K线加载失败，请稍后重试</div>'; };
+  // ① JSONP（避开跨域）→ ② 直连 fetch 兜底
+  jsonpGet(base, 9000)
+    .then(got)
+    .catch(()=>fetch(base,{cache:'no-store'})
+      .then(r=>{ if(!r.ok) throw new Error('http'); return r.json(); })
+      .then(got)
+      .catch(fail));
 }
 function maSeries(closes,n){
   const out=[]; let sum=0;
