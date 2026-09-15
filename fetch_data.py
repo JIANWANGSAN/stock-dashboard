@@ -1996,7 +1996,7 @@ def main():
     # 板块「涨停 / 全部」统计：拉成分股逐只判涨停（行业榜+概念榜+3日榜，按板块代码去重）
     print('\n[4b/7] 统计板块涨停家数...')
     _stat = {}
-    for _b in (board[:15] + concept[:15] + board_3d):
+    for _b in (board[:10] + board_3d):
         if _b.get('code'):
             _stat[_b['code']] = _b
     fetch_board_zt_stats(list(_stat.values()))
@@ -2290,7 +2290,7 @@ def main():
 
     # ---- 板块K线可用性：行业榜/概念榜/3日榜全部是东财口径，code 即 BK 代码，均可点 ----
     print('\n[板块] 板块K线可用：行业 %d/%d · 概念 %d/%d · 3日 %d/%d'
-          % (sum(1 for _b in board[:15] if _b.get('em_code')), len(board[:15]),
+          % (sum(1 for _b in board[:10] if _b.get('em_code')), len(board[:10]),
              sum(1 for _b in concept[:15] if _b.get('em_code')), len(concept[:15]),
              sum(1 for _b in board_3d if _b.get('em_code')), len(board_3d)))
 
@@ -2299,7 +2299,7 @@ def main():
         'date': today,
         'index': index,
         'news': news,
-        'board_daily': board[:15],
+        'board_daily': board[:10],
         'board_concept': concept[:15],
         'board_3d': board_3d,
         'board_3d_note': board_3d_note,

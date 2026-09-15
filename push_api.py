@@ -109,18 +109,30 @@ except Exception:
     pass
 
 if not aligned:
-    def build(msg):
-        return ('tree %s\nparent %s\nauthor %s <%s> %s\ncommitter %s <%s> %s\n\n%s'
+    # GitHub 会规范化 message 的尾部换行；且提交对象里存的是本地时区（如 +0800）而 API 回 UTC，
+    # 所以按「时区变体 × 消息变体」逐个试算，命中即对齐。
+    _off = datetime.datetime.now().astimezone().utcoffset() or datetime.timedelta(0)
+    _secs = int(_off.total_seconds())
+    _tzs = ['%+03d%02d' % (_secs // 3600, abs(_secs % 3600) // 60), '+0000']
+    _ts = int(datetime.datetime.fromisoformat(
+        c['author']['date'].replace('Z', '+00:00')).timestamp())
+
+    def build(msg, tz):
+        return ('tree %s\nparent %s\nauthor %s <%s> %d %s\ncommitter %s <%s> %d %s\n\n%s'
                 % (c['tree']['sha'], c['parents'][0]['sha'],
-                   c['author']['name'], c['author']['email'], to_git_date(c['author']['date']),
-                   c['committer']['name'], c['committer']['email'], to_git_date(c['committer']['date']),
-                   msg))
-    # GitHub 会规范化 message 的尾部换行，故逐个变体试算，命中即对齐
-    for cand in dict.fromkeys([c['message'], c['message'].rstrip('\n'), c['message'] + '\n']):
-        if git('hash-object', '-t', 'commit', '--stdin', input=build(cand).encode('utf-8')).strip() == c['sha']:
-            git('hash-object', '-t', 'commit', '-w', '--stdin', input=build(cand).encode('utf-8'))
-            subprocess.check_call(['git', 'reset', '--soft', c['sha']])
-            aligned = True
+                   c['author']['name'], c['author']['email'], _ts, tz,
+                   c['committer']['name'], c['committer']['email'], _ts, tz, msg))
+
+    for tz in _tzs:
+        for cand in dict.fromkeys([c['message'], c['message'].rstrip('\n'), c['message'] + '\n']):
+            obj = build(cand, tz)
+            if git('hash-object', '-t', 'commit', '--stdin',
+                   input=obj.encode('utf-8')).strip() == c['sha']:
+                git('hash-object', '-t', 'commit', '-w', '--stdin', input=obj.encode('utf-8'))
+                subprocess.check_call(['git', 'reset', '--soft', c['sha']])
+                aligned = True
+                break
+        if aligned:
             break
 if not aligned:
     print('  [warn] 未能让本地对齐远端（远端已更新，本地可用 git fetch + reset --soft 手动对齐）')

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-15 16:19:01",
+  "updated": "2026-09-15 16:27:36",
   "date": "2026-09-15",
   "index": [
     {
@@ -102,6 +102,10 @@
     ],
     "good": [
       {
+        "time": "16:21",
+        "text": "英伟达旗下性能最强的游戏显卡RTX 5090，在过去数周持续涨价。而在上周，美国市场这款显卡的现货库存进一步枯竭。"
+      },
+      {
         "time": "16:06",
         "text": "美元兑日元突破155，日内涨0.44%。"
       },
@@ -140,10 +144,6 @@
       {
         "time": "11:52",
         "text": "车百会研究院理事长张永伟在智能电动汽车发展高层论坛（2027）媒体发布会上表示，未来几年汽车产业重组会越来越受到关注，有的企业要加紧收购，有的可能要出清或者退出，兼并重组将成为未来几年产业重点推动的方向。"
-      },
-      {
-        "time": "11:13",
-        "text": "沪深两市成交额突破1万亿，较上一日此时缩量超400亿。"
       }
     ],
     "bad": [
@@ -161,6 +161,10 @@
       }
     ],
     "overseas": [
+      {
+        "time": "16:15",
+        "text": "美股光通信股盘前普涨，Lumentum涨0.48%，康宁涨0.81%，Coherent涨0.91%，应用光电涨0.16%，Ciena涨0.86%，迈威尔科技涨0.17%。"
+      },
       {
         "time": "16:11",
         "text": "欧股持续走低，英国富时100指数跌0.99%，法国CAC40指数跌0.97%，德国DAX30指数跌1.03%，富时意大利MIB指数跌1.30%。"
@@ -395,86 +399,6 @@
       "em_code": "BK1241",
       "stock_total": 9,
       "zt_count": 0
-    },
-    {
-      "name": "金属新材料",
-      "code": "BK1288",
-      "pct": -0.29,
-      "d3": -1.18,
-      "d5": -2.94,
-      "up": 13,
-      "down": 23,
-      "total": 36,
-      "leader": "春光集团",
-      "leader_pct": 5.62,
-      "zljlr_wan": -3447.3184,
-      "em_code": "BK1288",
-      "stock_total": 33,
-      "zt_count": 0
-    },
-    {
-      "name": "航空机场",
-      "code": "BK0420",
-      "pct": -0.48,
-      "d3": -2.71,
-      "d5": -3.12,
-      "up": 3,
-      "down": 11,
-      "total": 14,
-      "leader": "吉祥航空",
-      "leader_pct": 1.01,
-      "zljlr_wan": -5523.9371,
-      "em_code": "BK0420",
-      "stock_total": 14,
-      "zt_count": 0
-    },
-    {
-      "name": "航天装备Ⅱ",
-      "code": "BK1232",
-      "pct": -0.59,
-      "d3": -3.14,
-      "d5": -2.93,
-      "up": 2,
-      "down": 7,
-      "total": 9,
-      "leader": "理工导航",
-      "leader_pct": 2.83,
-      "zljlr_wan": -10158.8421,
-      "em_code": "BK1232",
-      "stock_total": 9,
-      "zt_count": 0
-    },
-    {
-      "name": "数字媒体",
-      "code": "BK1221",
-      "pct": -0.6,
-      "d3": -0.94,
-      "d5": -6.38,
-      "up": 5,
-      "down": 10,
-      "total": 15,
-      "leader": "返利科技",
-      "leader_pct": 6.21,
-      "zljlr_wan": 24606.7568,
-      "em_code": "BK1221",
-      "stock_total": 15,
-      "zt_count": 0
-    },
-    {
-      "name": "光学光电子",
-      "code": "BK1038",
-      "pct": -0.66,
-      "d3": -1.27,
-      "d5": -3.71,
-      "up": 25,
-      "down": 72,
-      "total": 97,
-      "leader": "戈碧迦",
-      "leader_pct": 9.74,
-      "zljlr_wan": -62521.6368,
-      "em_code": "BK1038",
-      "stock_total": 97,
-      "zt_count": 0
     }
   ],
   "board_concept": [
@@ -490,9 +414,7 @@
       "leader": "华海清科",
       "leader_pct": 8.64,
       "zljlr_wan": 96537.6,
-      "em_code": "BK1152",
-      "stock_total": 27,
-      "zt_count": 0
+      "em_code": "BK1152"
     },
     {
       "name": "复合集流体",
@@ -506,9 +428,7 @@
       "leader": "双星新材",
       "leader_pct": 10.04,
       "zljlr_wan": 74638.1056,
-      "em_code": "BK1113",
-      "stock_total": 30,
-      "zt_count": 3
+      "em_code": "BK1113"
     },
     {
       "name": "中芯概念",
@@ -522,9 +442,7 @@
       "leader": "华海清科",
       "leader_pct": 8.64,
       "zljlr_wan": 227598.08,
-      "em_code": "BK0935",
-      "stock_total": 64,
-      "zt_count": 0
+      "em_code": "BK0935"
     },
     {
       "name": "先进封装",
@@ -538,9 +456,7 @@
       "leader": "和顺石油",
       "leader_pct": 10.01,
       "zljlr_wan": 118760.7296,
-      "em_code": "BK1101",
-      "stock_total": 79,
-      "zt_count": 1
+      "em_code": "BK1101"
     },
     {
       "name": "光刻胶",
@@ -554,9 +470,7 @@
       "leader": "西陇科学",
       "leader_pct": 10.01,
       "zljlr_wan": 132428.0624,
-      "em_code": "BK1753",
-      "stock_total": 58,
-      "zt_count": 1
+      "em_code": "BK1753"
     },
     {
       "name": "存储芯片",
@@ -570,9 +484,7 @@
       "leader": "大为股份",
       "leader_pct": 10.0,
       "zljlr_wan": 288100.0192,
-      "em_code": "BK1137",
-      "stock_total": 141,
-      "zt_count": 2
+      "em_code": "BK1137"
     },
     {
       "name": "MLCC",
@@ -586,9 +498,7 @@
       "leader": "双星新材",
       "leader_pct": 10.04,
       "zljlr_wan": -6018.048,
-      "em_code": "BK0890",
-      "stock_total": 38,
-      "zt_count": 1
+      "em_code": "BK0890"
     },
     {
       "name": "PCB",
@@ -602,9 +512,7 @@
       "leader": "华正新材",
       "leader_pct": 10.0,
       "zljlr_wan": 391824.7936,
-      "em_code": "BK0877",
-      "stock_total": 193,
-      "zt_count": 6
+      "em_code": "BK0877"
     },
     {
       "name": "工业气体",
@@ -618,9 +526,7 @@
       "leader": "三孚股份",
       "leader_pct": 6.43,
       "zljlr_wan": 62835.1264,
-      "em_code": "BK0981",
-      "stock_total": 32,
-      "zt_count": 0
+      "em_code": "BK0981"
     },
     {
       "name": "OLED",
@@ -634,9 +540,7 @@
       "leader": "臻宝科技",
       "leader_pct": 12.34,
       "zljlr_wan": 24886.7328,
-      "em_code": "BK0840",
-      "stock_total": 97,
-      "zt_count": 0
+      "em_code": "BK0840"
     },
     {
       "name": "碳基材料",
@@ -650,9 +554,7 @@
       "leader": "德尔未来",
       "leader_pct": 10.02,
       "zljlr_wan": 17499.1808,
-      "em_code": "BK1006",
-      "stock_total": 21,
-      "zt_count": 1
+      "em_code": "BK1006"
     },
     {
       "name": "IGBT概念",
@@ -666,9 +568,7 @@
       "leader": "天龙股份",
       "leader_pct": 9.99,
       "zljlr_wan": -19811.8736,
-      "em_code": "BK1048",
-      "stock_total": 40,
-      "zt_count": 2
+      "em_code": "BK1048"
     },
     {
       "name": "PVDF概念",
@@ -682,9 +582,7 @@
       "leader": "深圳新星",
       "leader_pct": 3.78,
       "zljlr_wan": 901.5424,
-      "em_code": "BK1012",
-      "stock_total": 15,
-      "zt_count": 0
+      "em_code": "BK1012"
     },
     {
       "name": "碳化硅",
@@ -698,9 +596,7 @@
       "leader": "气派科技",
       "leader_pct": 15.93,
       "zljlr_wan": 70540.1888,
-      "em_code": "BK0977",
-      "stock_total": 44,
-      "zt_count": 0
+      "em_code": "BK0977"
     },
     {
       "name": "半导体概念",
@@ -714,9 +610,7 @@
       "leader": "华正新材",
       "leader_pct": 10.0,
       "zljlr_wan": 407502.5152,
-      "em_code": "BK0917",
-      "stock_total": 505,
-      "zt_count": 5
+      "em_code": "BK0917"
     }
   ],
   "board_3d": [
@@ -762,7 +656,7 @@
       "down": 11,
       "total": 17,
       "leader": "宏和科技",
-      "leader_pct": 5.79,
+      "leader_pct": 5.61,
       "zljlr_wan": 158761.2416,
       "em_code": "BK0546",
       "stock_total": 17,
@@ -922,20 +816,20 @@
     },
     {
       "date": "2026-09-01",
-      "top": 7,
-      "second": 6,
-      "cyb": 2,
-      "top_names": "海鸥住工",
-      "second_names": "捷荣技术、万向德农",
-      "cyb_names": "芒果超媒"
+      "top": 6,
+      "second": 3,
+      "cyb": 1,
+      "top_names": "万向德农",
+      "second_names": "时代出版、国芳集团、我爱我家",
+      "cyb_names": "神农种业、江天化学"
     },
     {
       "date": "2026-09-02",
       "top": 4,
       "second": 3,
       "cyb": 0,
-      "top_names": "竞业达、国芳集团",
-      "second_names": "集泰股份、欢瑞世纪、大晟文化",
+      "top_names": "国芳集团、竞业达",
+      "second_names": "欢瑞世纪、集泰股份、大晟文化",
       "cyb_names": ""
     },
     {

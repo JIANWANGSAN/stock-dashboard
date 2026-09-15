@@ -186,13 +186,13 @@
   th { color: #6b7280; font-weight: 600; background: #f8fafc; font-size: 12px; }
   tr:hover td { background: #f8fafc; }
   /* 模块3 板块表：固定布局，列宽按比例分配，始终对齐 */
-  #board-daily-box table, #board-concept-box table, #board-3d-box table{ table-layout: fixed; }
-  #board-daily-box table .bp-rank, #board-concept-box table .bp-rank{ width: 7%; text-align: center; color:#9ca3af; }
-  #board-daily-box table .bp-name, #board-concept-box table .bp-name{ width: 21%; text-align: left; }
-  #board-daily-box table .bp-pct, #board-concept-box table .bp-pct{ width: 13%; text-align: right; font-weight: 600; }
-  #board-daily-box table .bp-up, #board-concept-box table .bp-up{ width: 12%; text-align: center; }
-  #board-daily-box table .bp-leader, #board-concept-box table .bp-leader{ width: 27%; text-align: left; }
-  #board-daily-box table .bp-cap, #board-concept-box table .bp-cap{ width: 20%; text-align: right; }
+  #board-daily-box table, #board-3d-box table{ table-layout: fixed; }
+  #board-daily-box table .bp-rank{ width: 7%; text-align: center; color:#9ca3af; }
+  #board-daily-box table .bp-name{ width: 21%; text-align: left; }
+  #board-daily-box table .bp-pct{ width: 13%; text-align: right; font-weight: 600; }
+  #board-daily-box table .bp-up{ width: 12%; text-align: center; }
+  #board-daily-box table .bp-leader{ width: 27%; text-align: left; }
+  #board-daily-box table .bp-cap{ width: 20%; text-align: right; }
   #board-3d-box table th:nth-child(1), #board-3d-box table td:nth-child(1){ width: 9%; text-align:center; color:#9ca3af; }
   #board-3d-box table th:nth-child(2), #board-3d-box table td:nth-child(2){ width: 50%; text-align: left; }
   #board-3d-box table th:nth-child(3), #board-3d-box table td:nth-child(3){ width: 26%; text-align: right; font-weight:600; }
@@ -450,9 +450,8 @@
     .tab{ padding: 5px 9px; font-size: 11.5px; }
     .news-item{ padding: 8px 10px; font-size: 12px; }
     /* 模块3板块表：手机端自适应铺满，不横滑，文字换行，列严格对齐 */
-    #board-daily-box table, #board-concept-box table, #board-3d-box table{ display: table; width: 100%; table-layout: fixed; overflow: visible; white-space: normal; }
+    #board-daily-box table, #board-3d-box table{ display: table; width: 100%; table-layout: fixed; overflow: visible; white-space: normal; }
     #board-daily-box table th, #board-daily-box table td,
-    #board-concept-box table th, #board-concept-box table td,
     #board-3d-box table th, #board-3d-box table td{ white-space: normal; word-break: break-word; padding: 5px 3px; font-size: 10.5px; }
     /* 模块2 连板候选池：手机端自适应铺满，不横滑，文字换行，列严格对齐 */
     #cand-box table{ display: table; width: 100%; table-layout: fixed; overflow: visible; white-space: normal; }
@@ -573,7 +572,7 @@
     <!-- 模块3 -->
     <div class="panel" id="panel-boards" data-page-node-id="U2xpMFmCTxJljlad4pfv9w">
       <div class="panel-head" data-page-node-id="I2MCCZtiUy8YyT9DBOofj7">
-        <div class="sub" data-page-node-id="X6qmChTtjLCN2k3fxnoa37">口径与<b>东方财富 App 完全一致</b>：行业＝申万二级行业（已剔除一级与三级细分）、概念已剔除「风格类」；<span class="star" data-page-node-id="bpMB6sd1pLOk8cF91Hcvyg">★</span> 为行业/概念两榜重合（轮动最强方向）</div>
+        <div class="sub" data-page-node-id="X6qmChTtjLCN2k3fxnoa37">行业口径与<b>东方财富 App 一致</b>（申万二级行业，已剔除一级与三级细分）；<span class="star" data-page-node-id="bpMB6sd1pLOk8cF91Hcvyg">★</span> 为「当日 TOP10」与「3日 TOP10」重合（持续性最强方向）</div>
       </div>
       <div class="card" id="elnino-card" style="background:linear-gradient(135deg,#fff7ed,#ffedd5);border-left:4px solid #ea580c;" data-page-node-id="eLnInOo1234567890abcdeFG">
         <div class="card-title" data-page-node-id="eLT1tleAaaaabbbbbbccccc">
@@ -592,15 +591,11 @@
         </div>
       </div>
       <div class="card" data-page-node-id="nAHDMA9XDV2B5gGeIxr8PU">
-        <div class="card-title" data-page-node-id="IlTgunoITa0aRTkTXT5Q7i">行业板块 · 当日 TOP15 <span class="tag" id="d-uptime" data-page-node-id="qISCVDN8THBO8cpUlEKgP4">—</span></div>
+        <div class="card-title" data-page-node-id="IlTgunoITa0aRTkTXT5Q7i">行业涨幅榜 · 当日 TOP10 <span class="tag" id="d-uptime" data-page-node-id="qISCVDN8THBO8cpUlEKgP4">—</span></div>
         <div id="board-daily-box" data-page-node-id="Jg0q7lcJ9dkSxnijuqtAHR"></div>
       </div>
-      <div class="card" data-page-node-id="nAHDMA9XDV2B5gGeIxr8PU2">
-        <div class="card-title" data-page-node-id="IlTgunoITa0aRTkTXT5Q7i2">概念板块 · 当日 TOP15 <span class="tag" data-page-node-id="qISCVDN8THBO8cpUlEKgP42">今日题材热度</span></div>
-        <div id="board-concept-box" data-page-node-id="Jg0q7lcJ9dkSxnijuqtAHR2"></div>
-      </div>
       <div class="card" data-page-node-id="FxZ2tpDkjoo6eaNXFMCBX4">
-        <div class="card-title" data-page-node-id="9vvy48VDKBkKYFPJNIPwiL">行业板块 · 3日 <span class="tag" id="d-3dnote" data-page-node-id="NKVHSzQP2OHOlw97y1ZI8i">—</span></div>
+        <div class="card-title" data-page-node-id="9vvy48VDKBkKYFPJNIPwiL">行业涨幅榜 · 3日 TOP10 <span class="tag" id="d-3dnote" data-page-node-id="NKVHSzQP2OHOlw97y1ZI8i">—</span></div>
         <div id="board-3d-box" data-page-node-id="6lv64vJewbFig4NuU0LPI7"></div>
       </div>
       <div class="card" data-page-node-id="HSpmeoCYmsMGfad19Ki3Au">
@@ -1091,21 +1086,19 @@ function pctCell(v, extra){
   return `<td class="${cls} ${extra||''}">${n>0?'+':''}${n.toFixed(2)}%</td>`;
 }
 function renderBoards(){
-  const daily=(D.board_daily||[]).slice(0,15);        // 行业（申万二级）·当日
-  const concept=(D.board_concept||[]).slice(0,15);    // 概念·当日
-  const d3=(D.board_3d||[]).slice(0,10);              // 行业·3日
+  const daily=(D.board_daily||[]).slice(0,10);        // 行业（申万二级）·当日 TOP10
+  const d3=(D.board_3d||[]).slice(0,10);              // 行业·3日 TOP10
   document.getElementById('d-uptime').textContent=D.date+' 收盘';
   document.getElementById('d-3dnote').textContent=D.board_3d_note||'3日涨幅';
-  // 「持续」= 当日榜与同类别3日榜重合
+  // ★ = 「当日 TOP10」与「3日 TOP10」重合
   const d3names=new Set(d3.map(b=>b.name));
-  const conTop3=new Set([...concept].sort((a,b)=>(b.d3||0)-(a.d3||0)).slice(0,10).map(b=>b.name));
   const leadCell=b=>`<td class="bp-leader">${esc(b.leader||'-')}${b.leader_pct?` ${b.leader_pct>0?'+':''}${b.leader_pct.toFixed(2)}%`:''}</td>`;
   const ztCell=b=>{
     const t=b.stock_total||0, z=b.zt_count||0;
     if(!t) return '<td class="bp-up">—</td>';
     return `<td class="bp-up">${z?`<b class="up">${z}</b>`:'0'}/${t}</td>`;
   };
-  // ① 行业 · 当日（对齐东财App「行业」）
+  // ① 行业 · 当日 TOP10
   document.getElementById('board-daily-box').innerHTML = daily.length?`<table>
     <thead><tr><th class="bp-rank">#</th><th class="bp-name">行业</th><th class="bp-pct">当日</th><th class="bp-up">涨停/全部</th><th class="bp-leader">领涨股</th><th class="bp-cap">主力净流入</th></tr></thead>
     <tbody>${daily.map((b,i)=>`<tr>
@@ -1116,35 +1109,23 @@ function renderBoards(){
       ${leadCell(b)}
       <td class="bp-cap">${((b.zljlr_wan||0)/1e4).toFixed(2)}亿</td></tr>`).join('')}</tbody></table>`
     :'<div class="empty">无板块数据</div>';
-  // ② 概念 · 当日（对齐东财App「概念」；已剔除风格类）
-  document.getElementById('board-concept-box').innerHTML = concept.length?`<table>
-    <thead><tr><th class="bp-rank">#</th><th class="bp-name">概念</th><th class="bp-pct">当日</th><th class="bp-up">涨停/全部</th><th class="bp-leader">领涨股</th><th class="bp-cap">主力净流入</th></tr></thead>
-    <tbody>${concept.map((b,i)=>`<tr>
-      <td class="rank-no bp-rank">${i+1}</td>
-      <td class="bp-name">${conTop3.has(b.name)?'<span class="star">★</span> ':''}${bklink(b)}</td>
-      ${pctCell(b.pct,'bp-pct')}
-      ${ztCell(b)}
-      ${leadCell(b)}
-      <td class="bp-cap">${((b.zljlr_wan||0)/1e4).toFixed(2)}亿</td></tr>`).join('')}</tbody></table>`
-    :'<div class="empty">无概念数据</div>';
-  // ③ 行业 · 3日（对齐东财App「3日」）
+  // ② 行业 · 3日 TOP10
+  const d1names=new Set(daily.map(b=>b.name));
   document.getElementById('board-3d-box').innerHTML = d3.length?`<table>
-    <thead><tr><th>#</th><th>行业</th><th>3日涨幅</th><th>当日涨幅</th></tr></thead>
+    <thead><tr><th>#</th><th>行业</th><th>3日涨幅</th><th>涨停/全部</th></tr></thead>
     <tbody>${d3.map((b,i)=>`<tr>
       <td class="rank-no">${i+1}</td>
-      <td>${bklink(b)}</td>
-      ${pctCell(b.d3)}
-      ${pctCell(b.pct)}</tr>`).join('')}</tbody></table>`
+      <td>${d1names.has(b.name)?'<span class="star">★</span> ':''}${bklink(b)}</td>
+      <td class="${(b.d3||0)>0?'up':((b.d3||0)<0?'down':'flat')}">${(b.d3||0)>0?'+':''}${(b.d3||0).toFixed(2)}%</td>
+      ${ztCell(b)}</tr>`).join('')}</tbody></table>`
     :'<div class="empty">无3日数据</div>';
-  // ④ 小结
-  const indOverlap=daily.filter(b=>d3names.has(b.name)).map(b=>b.name);
-  const conOverlap=concept.filter(b=>conTop3.has(b.name)).map(b=>b.name);
+  // ③ 小结
+  const overlap=[...new Set(daily.filter(b=>d3names.has(b.name)).map(b=>b.name))];
   const onlyDaily=daily.filter(b=>!d3names.has(b.name)).map(b=>b.name);
   const summary=document.getElementById('board-summary');
   if(summary){
     summary.innerHTML=
-      `<b>行业 · 当日与3日重合</b>（持续性方向）：${indOverlap.length?`<span class="hl">${indOverlap.map(esc).join('、')}</span>`:'—'}<br>`+
-      `<b>概念 · 当日与3日重合</b>（持续题材）：${conOverlap.length?`<span class="hl">${conOverlap.map(esc).join('、')}</span>`:'—'}<br>`+
+      `<span class="hl">★ 当日与3日重合（持续性最强方向）：${overlap.map(esc).join('、')||'暂无'}</span><br>`+
       `单日脉冲（仅当日榜、3日未进）：${onlyDaily.slice(0,8).map(esc).join('、')||'—'}`;
   }
 }
