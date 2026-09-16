@@ -24,6 +24,7 @@ review_dump.json
 _*.py
 !_tags_dump.py
 _*.json
+_*.html
 _review_today.md
 
 # 系统
