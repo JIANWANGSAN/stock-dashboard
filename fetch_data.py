@@ -413,6 +413,22 @@ VOL_RATIO_THRESHOLD = 1.5   # 断板倍量阈值：昨日量 / 启动首板量 >
 BREAKOUT_LOOKBACK   = 20    # 突破节点：回看多少个交易日的最高板高度
 NODE_KEEP_DAYS      = 10    # 节点票池只保留最近两周（约 10 个交易日）的节点
 DT_LADDER_DAYS      = 7     # 跌停板梯队：图表只展示近 7 个交易日
+
+# ============ 「产业板块」清单（用户指定，来自其行情软件的产业分类）============
+# 用途：模块3 展示的就是**用户真正关心的这 28 个板块**，而不是东财全部二级行业。
+# 左=(展示名, 东财板块代码)；代码已按当日涨幅与用户截图逐一核对（如 无人驾驶→智能驾驶 BK0802）。
+SECTOR_WATCH = [
+    ('CPO',       'BK1128'), ('PCB',       'BK0877'), ('半导体',    'BK1036'),
+    ('存储',      'BK1137'), ('数据中心',   'BK0922'), ('云计算',    'BK0579'),
+    ('AIGC',      'BK1111'), ('商业航天',   'BK0963'), ('机器人',    'BK1408'),
+    ('无人驾驶',   'BK0802'), ('电力',      'BK0428'), ('电网',      'BK0457'),
+    ('核聚变',     'BK1163'), ('光伏',      'BK1031'), ('锂电池',    'BK1303'),
+    ('军工',      'BK0490'), ('石油',      'BK0464'), ('天然气',    'BK0843'),
+    ('小金属',     'BK1027'), ('黄金',      'BK0547'), ('银行',      'BK1283'),
+    ('保险',      'BK0474'), ('证券',      'BK0473'), ('创新药',    'BK1106'),
+    ('CRO',       'BK0899'), ('消费',      'BK1652'), ('稀土',      'BK1626'),
+    ('消费电子',   'BK1037'),
+]
 NEWS_PAGE_SIZE      = 200   # 每日抓取的快讯条数
 
 # 省级行政区（用于从所属板块中识别地域）
@@ -1337,7 +1353,8 @@ def fetch_board_rank(top=60):
         except Exception:
             return d
 
-    industry, concept = [], []
+    industry, concept, watch = [], [], []
+    _watch_codes = {c for _, c in SECTOR_WATCH}    # 用户「产业板块」清单（无条件保留，不受名称过滤影响）
     for fs, diff in pages:
         is_ind = fs.startswith('m:90+t:2')
         for it in diff:
@@ -1345,13 +1362,15 @@ def fetch_board_rank(top=60):
             code = it.get('f12') or ''
             if not name or not code:
                 continue
-            if any(name.startswith(k) for k in BOARD_SKIP):
-                continue
-            if is_ind:
-                if not is_l2_industry(code):
+            in_watch = code in _watch_codes
+            if not in_watch:
+                if any(name.startswith(k) for k in BOARD_SKIP):
                     continue
-            elif any(k in name for k in STYLE_BOARD_KW):
-                continue
+                if is_ind:
+                    if not is_l2_industry(code):
+                        continue
+                elif any(k in name for k in STYLE_BOARD_KW):
+                    continue
             up = int(_num(it.get('f104')))
             down = int(_num(it.get('f105')))
             row = {
@@ -1365,23 +1384,31 @@ def fetch_board_rank(top=60):
                 'zljlr_wan': _num(it.get('f62')) / 1e4,
                 'em_code': code,                 # 板块K线弹层用（secid=90.<code>）
             }
-            (industry if is_ind else concept).append(row)
+            if in_watch:
+                watch.append(row)              # 产业板块清单：单独收集（可能本就属于行业/概念）
+            else:
+                (industry if is_ind else concept).append(row)
 
     industry.sort(key=lambda x: -x['pct'])
     concept.sort(key=lambda x: -x['pct'])
+    watch.sort(key=lambda x: -x['pct'])
 
     # 全量板块热度留档（行业+概念）：个股概念按「对应板块当日涨幅」排序，
     # 实现「同一个票每一波走不同概念 → 取当下正在炒的那个」。
     try:
         BOARD_HEAT.clear()
-        for b in industry + concept:
+        for b in industry + concept + watch:
             if b['name']:
                 BOARD_HEAT[b['name']] = b['pct']
     except Exception:
         pass
-    print('[板块] 东财口径：二级行业 %d 个 · 概念 %d 个（已剔一级/三级/风格）'
-          % (len(industry), len(concept)))
-    return {'industry': industry[:top], 'concept': concept[:top]}
+    print('[板块] 东财口径：二级行业 %d 个 · 概念 %d 个（已剔一级/三级/风格）· 产业清单 %d 个'
+          % (len(industry), len(concept), len(watch)))
+    _allmap = {b['code']: b for b in industry + concept}
+    for b in watch:
+        _allmap[b['code']] = b             # 产业清单优先
+    return {'industry': industry[:top], 'concept': concept[:top],
+            'all': list(_allmap.values()), 'watch': watch}
 # ============ 4. 指数行情 ============
 def fetch_index():
     codes = ['sh000001', 'sz399001', 'sz399006', 'sh000688', 'bj899050', 'sh000300']
@@ -2232,6 +2259,20 @@ def main():
         mv = f_mv.result()
     board = brd['industry']      # 二级行业（对齐东财 App「行业」）
     concept = brd['concept']     # 概念（对齐东财 App「概念」）
+
+    # ---- 产业板块榜：按用户指定清单（SECTOR_WATCH），从东财全量里按代码取数 ----
+    _allmap = {b['code']: b for b in (brd.get('watch') or [])}
+    sector = []
+    for _disp, _code in SECTOR_WATCH:
+        _b = _allmap.get(_code)
+        if not _b:
+            continue
+        _x = dict(_b)
+        _x['name'] = _disp         # 用用户清单里的显示名（如「存储」而非东财「存储芯片」）
+        _x['em_code'] = _code
+        sector.append(_x)
+    sector.sort(key=lambda x: -x['pct'])
+    print('  产业板块 %d/%d 个匹配到东财（按当日涨幅降序）' % (len(sector), len(SECTOR_WATCH)))
     print('  指数 %d 条 | 二级行业 %d 条 | 概念 %d 条 | 新闻 宏观%d 利好%d 利空%d 外围%d'
           % (len(index), len(board), len(concept), len(news['macro']),
              len(news['good']), len(news['bad']), len(news['overseas'])))
@@ -2250,13 +2291,15 @@ def main():
     today = days[-1]
     board_3d = sorted(board, key=lambda x: -(x.get('d3') or 0))[:10]
     board_3d_note = '3日涨幅（东财口径）'
+    # 产业板块 3 日榜（同一份清单，按 3 日涨幅降序）
+    sector_3d = sorted(sector, key=lambda x: -(x.get('d3') or 0))
     board_3d_days = 3
     print('  3日榜：%d 条 · %s' % (len(board_3d), board_3d_note))
 
     # 板块「涨停 / 全部」统计：拉成分股逐只判涨停（行业榜+概念榜+3日榜，按板块代码去重）
     print('\n[4b/7] 统计板块涨停家数...')
     _stat = {}
-    for _b in (board[:10] + board_3d):
+    for _b in (board[:10] + board_3d + sector):   # 含产业板块清单（给「涨停/全部」列取数）
         if _b.get('code'):
             _stat[_b['code']] = _b
     fetch_board_zt_stats(list(_stat.values()))
@@ -2266,7 +2309,7 @@ def main():
     # 板块K线预生成：随 data.js 下发，前端点击即开（避免浏览器跨域取东财失败）
     print('\n[4c/7] 预生成榜单板块的日K/周K...')
     _kl = {}
-    for _b in (board[:10] + board_3d):
+    for _b in (board[:10] + board_3d + sector):
         if _b.get('code'):
             _kl[_b['code']] = _b
     board_kline = fetch_board_klines(list(_kl.values()))
@@ -2575,6 +2618,8 @@ def main():
         'news': news,
         'board_daily': board[:10],
         'board_concept': concept[:15],
+        'sector_daily': sector,          # 「产业板块」当日榜（用户指定清单，按涨幅降序）
+        'sector_3d': sector_3d,          # 「产业板块」3 日榜
         'board_3d': board_3d,
         'board_3d_note': board_3d_note,
         'board_kline': board_kline,

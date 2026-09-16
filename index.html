@@ -195,6 +195,11 @@
   #board-daily-box table .bp-up{ width: 12%; text-align: center; }
   #board-daily-box table .bp-leader{ width: 27%; text-align: left; }
   #board-daily-box table .bp-cap{ width: 20%; text-align: right; }
+  /* 产业板块 · 3日表列宽 */
+  #board-3d-box table{ table-layout: fixed; }
+  #board-3d-box table .bp-rank{ width: 8%; text-align: center; color: #9ca3af; }
+  #board-3d-box table .bp-name2{ width: 30%; text-align: left; }
+  #board-3d-box table .bp-up{ width: 22%; text-align: center; }
   #board-3d-box table th:nth-child(1), #board-3d-box table td:nth-child(1){ width: 9%; text-align:center; color:#9ca3af; }
   #board-3d-box table th:nth-child(2), #board-3d-box table td:nth-child(2){ width: 50%; text-align: left; }
   #board-3d-box table th:nth-child(3), #board-3d-box table td:nth-child(3){ width: 26%; text-align: right; font-weight:600; }
@@ -600,11 +605,11 @@
         </div>
       </div>
       <div class="card" data-page-node-id="nAHDMA9XDV2B5gGeIxr8PU">
-        <div class="card-title" data-page-node-id="IlTgunoITa0aRTkTXT5Q7i">行业涨幅榜 · 当日 TOP10 <span class="tag" id="d-uptime" data-page-node-id="qISCVDN8THBO8cpUlEKgP4">—</span></div>
+        <div class="card-title" data-page-node-id="IlTgunoITa0aRTkTXT5Q7i">产业板块 · 当日涨幅 <span class="tag" id="d-uptime" data-page-node-id="qISCVDN8THBO8cpUlEKgP4">—</span></div>
         <div id="board-daily-box" data-page-node-id="Jg0q7lcJ9dkSxnijuqtAHR"></div>
       </div>
       <div class="card" data-page-node-id="FxZ2tpDkjoo6eaNXFMCBX4">
-        <div class="card-title" data-page-node-id="9vvy48VDKBkKYFPJNIPwiL">行业涨幅榜 · 3日 TOP10 <span class="tag" id="d-3dnote" data-page-node-id="NKVHSzQP2OHOlw97y1ZI8i">—</span></div>
+        <div class="card-title" data-page-node-id="9vvy48VDKBkKYFPJNIPwiL">产业板块 · 3日涨幅 <span class="tag" id="d-3dnote" data-page-node-id="NKVHSzQP2OHOlw97y1ZI8i">—</span></div>
         <div id="board-3d-box" data-page-node-id="6lv64vJewbFig4NuU0LPI7"></div>
       </div>
       <div class="card" data-page-node-id="HSpmeoCYmsMGfad19Ki3Au">
@@ -838,10 +843,15 @@ function drawLadderChart(el, prevChart, L, cfg){
       }}
   });
   // 名单**完整展示**（不截断）：chip 式自动换行，内容多时弹层可滚动
+  // 名字显示：cfg.shortName 开启时，≥4 字只保留前 2 字（3 字及以内正常显示），节省位置
+  const dispName = s=>{
+    const n = clean(s.name);
+    return (cfg.shortName && n.length>=4) ? n.slice(0,2) : n;
+  };
   const fmtList = (list)=>{
     if(!list||!list.length) return '\u2014';
     return list.map(s=>
-      `<span style="display:inline-block;margin:0 7px 3px 0;">${esc(clean(s.name))}`+
+      `<span style="display:inline-block;margin:0 7px 3px 0;">${esc(dispName(s))}`+
       `<span style="color:#9ca3af;font-size:11px;">(${s.boards}${cfg.unit}${s.industry?'\u00b7'+esc(s.industry):''})</span></span>`
     ).join('');
   };
@@ -892,7 +902,7 @@ function renderDtLadder(){
   if(!L.length){ el.innerHTML='<div class="empty">暂无跌停数据</div>'; return; }
   dtChart = drawLadderChart(el, dtChart, L, {
     labels:['最高连跌','次高连跌','创业板'], colors:['#15803d','#2563eb','#ea580c'],
-    unit:'连跌', yName:'连跌天',
+    unit:'连跌', yName:'连跌天', shortName:true,
     extra:d=>`<div style="margin-top:3px;color:#6b7280;">当日跌停 <b style="color:#15803d;">${d.count||0}</b> 家</div>`
   });
 }
@@ -1152,47 +1162,47 @@ function pctCell(v, extra){
   return `<td class="${cls} ${extra||''}">${n>0?'+':''}${n.toFixed(2)}%</td>`;
 }
 function renderBoards(){
-  const daily=(D.board_daily||[]).slice(0,10);        // 行业（申万二级）·当日 TOP10
-  const d3=(D.board_3d||[]).slice(0,10);              // 行业·3日 TOP10
-  document.getElementById('d-uptime').textContent=D.date+' 收盘';
-  document.getElementById('d-3dnote').textContent=D.board_3d_note||'3日涨幅';
-  // ★ = 「当日 TOP10」与「3日 TOP10」重合
-  const d3names=new Set(d3.map(b=>b.name));
+  // 「产业板块」= 用户指定的 28 个板块清单（后端 SECTOR_WATCH 映射到东财板块代码取数）
+  const daily=(D.sector_daily||[]);                   // 产业板块 · 当日（全量，按当日涨幅降序）
+  const d3=(D.sector_3d||[]);                         // 产业板块 · 3日（同一清单，按3日涨幅降序）
+  document.getElementById('d-uptime').textContent=D.date+' 收盘 · 共'+(daily.length||0)+'个';
+  document.getElementById('d-3dnote').textContent='按3日涨幅降序';
   const leadCell=b=>`<td class="bp-leader">${esc(b.leader||'-')}${b.leader_pct?` ${b.leader_pct>0?'+':''}${b.leader_pct.toFixed(2)}%`:''}</td>`;
   const ztCell=b=>{
     const t=b.stock_total||0, z=b.zt_count||0;
     if(!t) return '<td class="bp-up">—</td>';
     return `<td class="bp-up">${z?`<b class="up">${z}</b>`:'0'}/${t}</td>`;
   };
-  // ① 行业 · 当日 TOP10
+  // ① 产业板块 · 当日
   document.getElementById('board-daily-box').innerHTML = daily.length?`<table>
-    <thead><tr><th class="bp-rank">#</th><th class="bp-name">行业</th><th class="bp-pct">当日</th><th class="bp-up">涨停/全部</th><th class="bp-leader">领涨股</th><th class="bp-cap">主力净流入</th></tr></thead>
+    <thead><tr><th class="bp-rank">#</th><th class="bp-name">板块</th><th class="bp-pct">当日</th><th class="bp-up">涨停/全部</th><th class="bp-leader">领涨股</th><th class="bp-cap">主力净流入</th></tr></thead>
     <tbody>${daily.map((b,i)=>`<tr>
       <td class="rank-no bp-rank">${i+1}</td>
-      <td class="bp-name">${d3names.has(b.name)?'<span class="star">★</span> ':''}${bklink(b)}</td>
+      <td class="bp-name">${bklink(b)}</td>
       ${pctCell(b.pct,'bp-pct')}
       ${ztCell(b)}
       ${leadCell(b)}
       <td class="bp-cap">${((b.zljlr_wan||0)/1e4).toFixed(2)}亿</td></tr>`).join('')}</tbody></table>`
     :'<div class="empty">无板块数据</div>';
-  // ② 行业 · 3日 TOP10
-  const d1names=new Set(daily.map(b=>b.name));
+  // ② 产业板块 · 3日
   document.getElementById('board-3d-box').innerHTML = d3.length?`<table>
-    <thead><tr><th>#</th><th>行业</th><th>3日涨幅</th><th>涨停/全部</th></tr></thead>
+    <thead><tr><th class="bp-rank">#</th><th class="bp-name2">板块</th><th>3日涨幅</th><th>当日</th><th class="bp-up">涨停/全部</th></tr></thead>
     <tbody>${d3.map((b,i)=>`<tr>
-      <td class="rank-no">${i+1}</td>
-      <td>${d1names.has(b.name)?'<span class="star">★</span> ':''}${bklink(b)}</td>
+      <td class="rank-no bp-rank">${i+1}</td>
+      <td class="bp-name2">${bklink(b)}</td>
       <td class="${(b.d3||0)>0?'up':((b.d3||0)<0?'down':'flat')}">${(b.d3||0)>0?'+':''}${(b.d3||0).toFixed(2)}%</td>
+      ${pctCell(b.pct)}
       ${ztCell(b)}</tr>`).join('')}</tbody></table>`
     :'<div class="empty">无3日数据</div>';
-  // ③ 小结
-  const overlap=[...new Set(daily.filter(b=>d3names.has(b.name)).map(b=>b.name))];
-  const onlyDaily=daily.filter(b=>!d3names.has(b.name)).map(b=>b.name);
+  // ③ 小结：两种视角的最强方向（客观罗列）
   const summary=document.getElementById('board-summary');
   if(summary){
+    const fmt=(arr,k)=>arr.slice(0,5).map(b=>
+      `${esc(b.name)} <b class="${(b[k]||0)>0?'up':((b[k]||0)<0?'down':'flat')}">${(b[k]||0)>0?'+':''}${(b[k]||0).toFixed(2)}%</b>`
+    ).join('　')||'—';
     summary.innerHTML=
-      `<span class="hl">★ 当日与3日重合（持续性最强方向）：${overlap.map(esc).join('、')||'暂无'}</span><br>`+
-      `单日脉冲（仅当日榜、3日未进）：${onlyDaily.slice(0,8).map(esc).join('、')||'—'}`;
+      `<span class="hl">当日最强：</span>${fmt(daily,'pct')}<br>`+
+      `<span class="hl">3日累计最强：</span>${fmt(d3,'d3')}`;
   }
 }
 
