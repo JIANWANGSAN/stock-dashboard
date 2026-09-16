@@ -111,6 +111,19 @@
   .news-item .t { font-size: 11px; color: #9ca3af; font-family: ui-monospace, monospace; margin-right: 8px; }
   /* 图表 */
   #echart-ladder { width: 100%; height: 380px; }
+  /* ===== 跌停板梯队 ===== */
+  #echart-dt { width: 100%; height: 300px; }
+  .dt-group { margin-bottom: 10px; }
+  .dt-head { display: flex; align-items: center; gap: 7px; font-size: 12px; color: #374151; margin: 10px 0 6px; }
+  .dt-badge { background: #dcfce7; color: #15803d; font-weight: 700; font-size: 11.5px; padding: 1px 9px; border-radius: 5px; }
+  .dt-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12.5px;
+            padding: 6px 10px; border-radius: 7px; background: #f9fafb; margin-bottom: 5px;
+            border-left: 3px solid #16a34a; }
+  .dt-name { font-weight: 700; }
+  .dt-row .cs { display: flex; gap: 4px; flex-wrap: wrap; }
+  .dt-ind { background: #fee2e2; color: #b91c1c; }
+  .dt-oc { font-size: 11px; color: #b45309; background: #fef3c7; padding: 1px 6px; border-radius: 4px; }
+  .dt-met { font-size: 11px; color: #6b7280; margin-left: auto; }
   /* 节点卡片 */
   .node { border: 1px solid #e5e7eb; border-radius: 10px; margin-bottom: 14px; overflow: hidden; }
   .node-head { padding: 12px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -368,6 +381,10 @@
     .news-item .t{ font-size: 10.5px; }
     /* 图表 */
     #echart-ladder{ height: 240px; }
+    #echart-dt{ height: 230px; }
+    .dt-row{ font-size: 11.5px; padding: 5px 8px; gap: 5px; }
+    .dt-row .cs{ gap: 3px; }
+    .dt-met{ margin-left: 0; width: 100%; }
     /* 表格 */
     table{ font-size: 11.5px; }
     th, td{ padding: 6px 6px; }
@@ -556,6 +573,13 @@
       <div class="card" data-page-node-id="4LDXHmInSblrqZKmH2SbLk">
         <div class="card-title" data-page-node-id="1JCFVjOuTeZMucS3Se0hZz">连板高度梯队 <span class="tag" data-page-node-id="SOrFifQLO9pb3LwuCUnCJ5">蓝=最高板 绿=次高板 橙=创业板</span></div>
         <div id="echart-ladder" data-page-node-id="UhbxgyC6bJyE7N4TacYG6c"></div>
+        <div class="note" data-page-node-id="ladderNote">图上数字＝当日该梯队板数（避免名字重叠）· <b>点/悬浮任意日期</b>看当天各梯队股票与题材</div>
+      </div>
+      <div class="card" data-page-node-id="dtLadderCard">
+        <div class="card-title" data-page-node-id="dtLadderTitle">跌停板梯队 <span class="tag" id="dt-note" data-page-node-id="dtNote">—</span></div>
+        <div id="echart-dt" data-page-node-id="dtChart"></div>
+        <div class="note" data-page-node-id="dtNote2">柱＝当日跌停家数 · 线＝最高连续跌停天数（杀跌侧情绪）· 点/悬浮看当天谁在跌</div>
+        <div id="dt-box" data-page-node-id="dtBox"></div>
       </div>
       <div class="card" data-page-node-id="oTXKTTEOc0EtXXA3XQo9YO">
         <div class="card-title" data-page-node-id="D6KJKGssdhhFWyXAN8LYWc">节点票池 <span class="tag" data-page-node-id="eNuxATkfgc4vpJyjPDc6RH">最高板诞生的关键点位</span></div>
@@ -682,6 +706,7 @@ function init(){
   renderElNino();
   renderBoards();
   renderModule4();
+  renderDtLadder();
 }
 
 /* ---- 菜单切换 ---- */
@@ -691,7 +716,7 @@ document.querySelectorAll('.menu-item').forEach(el=>{
     document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
     el.classList.add('active');
     document.getElementById('panel-'+el.dataset.panel).classList.add('active');
-    if(el.dataset.panel==='ladder') renderChart();
+    if(el.dataset.panel==='ladder'){ renderChart(); renderDtLadder(); }
   });
 });
 document.querySelectorAll('#news-tabs .tab').forEach(t=>{
@@ -811,14 +836,32 @@ function renderChart(){
   const L=D.ladder.slice(-7);   // 仅保留近 7 个交易日，避免 X 轴标签重叠
   const chart=ladderChart=ladderChart||echarts.init(document.getElementById('echart-ladder'));
   const dates=L.map(s=>s.date.slice(5));  // MM-DD
+  // 图上只标板数（名字移到 tooltip，彻底解决手机端名字重叠）
   const mk=(key,color,name)=>({
     name,type:'line',smooth:true,data:L.map(s=>s[key]),
-    symbol:'circle',symbolSize:7,lineStyle:{width:2.5,color},itemStyle:{color},
-    label:{show:true,position:'top',fontSize:10,color:'#374151',
-      formatter:p=>clean(L[p.dataIndex][key+'_names']||'')}
+    symbol:'circle',symbolSize:8,lineStyle:{width:2.5,color},itemStyle:{color},
+    label:{show:true,position:'top',fontSize:11,fontWeight:'bold',color:'#374151',
+      formatter:p=>p.value||''}
   });
+  // tooltip：点/悬浮某天 → 该日各梯队「股票名(板数·题材)」
+  const fmtList=(list,max)=>{
+    if(!list||!list.length) return '—';
+    const t=list.slice(0,max).map(s=>`${esc(s.name)}<span style="color:#9ca3af;font-size:11px;">(${s.boards}板${s.industry?'·'+esc(s.industry):''})</span>`).join('　');
+    return t+(list.length>max?`<span style="color:#9ca3af;"> 等${list.length}只</span>`:'');
+  };
   chart.setOption({
-    tooltip:{trigger:'axis'},
+    tooltip:{trigger:'axis', confine:true,
+      backgroundColor:'rgba(255,255,255,.97)', borderColor:'#e5e7eb',
+      textStyle:{color:'#111827',fontSize:12},
+      formatter:ps=>{
+        if(!ps||!ps.length) return '';
+        const d=L[ps[0].dataIndex]; if(!d) return '';
+        return `<div style="min-width:200px;max-width:300px;white-space:normal;line-height:1.7;"><b>${d.date}</b>`
+          + `<div style="margin-top:4px;"><b style="color:#2563eb;">最高板</b> ${fmtList(d.top_list,5)}</div>`
+          + `<div><b style="color:#059669;">次高板</b> ${fmtList(d.second_list,5)}</div>`
+          + (d.cyb_list&&d.cyb_list.length?`<div><b style="color:#ea580c;">创业板</b> ${fmtList(d.cyb_list,3)}</div>`:'')
+          + `</div>`;
+      }},
     legend:{data:['最高板','次高板','创业板'],top:0},
     grid:{left:40,right:24,top:40,bottom:30},
     xAxis:{type:'category',data:dates,axisLabel:{fontSize:11}},
@@ -829,6 +872,77 @@ function renderChart(){
       mk('cyb','#ea580c','创业板')
     ]
   });
+}
+
+/* ---- 模块2 跌停板梯队（置于连板高度梯队下方）---- */
+let dtChart=null;
+function renderDtLadder(){
+  const series=(D.dt_ladder||[]);
+  const box=document.getElementById('dt-box');
+  const note=document.getElementById('dt-note');
+  const last=series.length?series[series.length-1]:null;
+  if(note) note.textContent = last ? (D.date+' 跌停 '+last.count+' 家') : '—';
+  // ① 趋势图：跌停家数（柱）+ 最高连续跌停（线）
+  const el=document.getElementById('echart-dt');
+  if(el){
+    if(series.length){
+      dtChart=dtChart||echarts.init(el);
+      const dates=series.map(s=>s.date.slice(5));
+      const maxd=Math.max(3,...series.map(s=>s.max_days||0));
+      dtChart.setOption({
+        tooltip:{trigger:'axis', confine:true,
+          backgroundColor:'rgba(255,255,255,.97)', borderColor:'#e5e7eb',
+          textStyle:{color:'#111827',fontSize:12},
+          formatter:ps=>{
+            if(!ps||!ps.length) return '';
+            const d=series[ps[0].dataIndex]; if(!d) return '';
+            return `<div style="min-width:150px;white-space:normal;line-height:1.7;"><b>${d.date}</b>`
+              + `<div style="margin-top:3px;">跌停 <b style="color:#15803d;">${d.count}</b> 家</div>`
+              + (d.max_days?`<div>最高连跌 <b style="color:#dc2626;">${d.max_days}</b> 天${d.max_names?' '+esc(d.max_names):''}</div>`:'')
+              + `</div>`;
+          }},
+        legend:{data:['跌停家数','最高连跌'],top:0},
+        grid:{left:40,right:40,top:40,bottom:30},
+        xAxis:{type:'category',data:dates,axisLabel:{fontSize:11}},
+        yAxis:[
+          {type:'value',name:'家数',min:0,axisLabel:{fontSize:11}},
+          {type:'value',name:'连跌天',min:0,max:maxd,axisLabel:{fontSize:11},splitLine:{show:false}}
+        ],
+        series:[
+          {name:'跌停家数',type:'bar',barWidth:'42%',data:series.map(s=>s.count),
+           itemStyle:{color:'#16a34a',borderRadius:[3,3,0,0]},
+           label:{show:true,position:'top',fontSize:10,color:'#374151'}},
+          {name:'最高连跌',type:'line',yAxisIndex:1,smooth:true,symbol:'circle',symbolSize:7,
+           data:series.map(s=>s.max_days||0),lineStyle:{width:2.5,color:'#dc2626'},itemStyle:{color:'#dc2626'},
+           label:{show:true,position:'bottom',fontSize:10,color:'#dc2626'}}
+        ]
+      });
+    }else{
+      el.innerHTML='<div class="empty">暂无跌停数据</div>';
+    }
+  }
+  // ② 明细：按连续跌停天数分组（名字与题材 flex 自适应换行，不会重叠）
+  const pool=(D.dt_pool||[]).slice();
+  if(!pool.length){ box.innerHTML='<div class="empty">今日无跌停（已剔除科创/北交/ST）</div>'; return; }
+  const groups={};
+  pool.forEach(s=>{ const k=s.dt_days||1; (groups[k]=groups[k]||[]).push(s); });
+  box.innerHTML = Object.keys(groups).map(Number).sort((a,b)=>b-a).map(k=>{
+    const arr=groups[k];
+    const rows=arr.map(s=>{
+      const cpts=(s.concepts||[]).filter(c=>c&&c!==s.industry).slice(0,3)
+        .map(c=>`<span class="cpt">${esc(c)}</span>`).join('');
+      return `<div class="dt-row">
+        <span class="dt-name sk" data-scode="${esc(s.code)}" data-smkt="${s.market}" data-sname="${esc(s.name)}">${esc(s.name)}</span>
+        ${s.industry?`<span class="cpt dt-ind">${esc(s.industry)}</span>`:''}
+        ${cpts?`<span class="cs">${cpts}</span>`:''}
+        ${s.open_cnt?`<span class="dt-oc">开板${s.open_cnt}次</span>`:''}
+        <span class="dt-met">${((s.amount||0)/1e8).toFixed(2)}亿 · 换手${s.turnover}%${s.seal_fund?(' · 封单'+(s.seal_fund/1e8).toFixed(2)+'亿'):''}</span>
+      </div>`;
+    }).join('');
+    return `<div class="dt-group">
+      <div class="dt-head"><span class="dt-badge">${k===1?'首跌':k+'连跌'}</span> ${arr.length} 只</div>
+      ${rows}</div>`;
+  }).join('');
 }
 
 /* ---- 模块2 节点 ---- */
@@ -1458,6 +1572,7 @@ document.addEventListener('click', e=>{
 
 window.addEventListener('resize',()=>{
   if(ladderChart) ladderChart.resize();
+  if(dtChart && document.getElementById('panel-ladder').classList.contains('active')) dtChart.resize();
   if(mvChart) mvChart.resize();
   if(skChart && document.getElementById('sk-modal').classList.contains('show')) skChart.resize();
   if(bkChart && document.getElementById('bk-modal').classList.contains('show')) bkChart.resize();

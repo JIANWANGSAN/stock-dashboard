@@ -36,7 +36,7 @@ BOARD_HIST     = os.path.join(BASE, 'board_history.json')
 STOCK_CACHE    = os.path.join(BASE, '.stock_cache.json')
 SEAL_CACHE     = os.path.join(BASE, '.seal_cache.json')
 EVENT_CACHE    = os.path.join(BASE, '.event_cache.json')
-
+TRADE_DAYS_CACHE = os.path.join(BASE, '.trade_days_cache.json')
 # 用户核对后的总市值修正（元），按 (code, yyyymmdd) 锁定日期，避免污染未来交易日
 CAP_OVERRIDE = {
     ('605577', '20260904'): 7604000000,  # 龙版传媒 2026-09-04 核对总市值 76.04 亿（原 69.11 亿）
@@ -412,6 +412,7 @@ UA = {
 VOL_RATIO_THRESHOLD = 1.5   # 断板倍量阈值：昨日量 / 启动首板量 >= 1.5
 BREAKOUT_LOOKBACK   = 20    # 突破节点：回看多少个交易日的最高板高度
 NODE_KEEP_DAYS      = 10    # 节点票池只保留最近两周（约 10 个交易日）的节点
+DT_LADDER_DAYS      = 7     # 跌停板梯队：图表只展示近 7 个交易日
 NEWS_PAGE_SIZE      = 200   # 每日抓取的快讯条数
 
 # 省级行政区（用于从所属板块中识别地域）
@@ -635,7 +636,9 @@ def merge_elnino_dynamic(elnino_out, dyn):
 
 # ============ 1. 交易日列表 ============
 def fetch_trade_days(limit=90):
-    """交易日列表：优先腾讯K线，东财为备胎（push2his 常被限流）"""
+    """交易日列表：优先腾讯K线，东财为备胎（push2his 常被限流），
+    两源都失败时**回退本地缓存**（否则网络一抖整条管线直接终止）。"""
+    got = None
     # 主源：腾讯
     url = ('https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?'
            'param=sh000001,day,,,%d,qfq' % limit)
@@ -647,19 +650,36 @@ def fetch_trade_days(limit=90):
             arr = node.get('qfqday') or node.get('day') or []
             days = [row[0] for row in arr if row and row[0]]
             if days:
-                return days
+                got = days
         except Exception:
             pass
     # 备胎：东财
-    url2 = ('https://push2his.eastmoney.com/api/qt/stock/kline/get?'
-            'secid=1.000001&fields1=f1,f2,f3&fields2=f51&klt=101&fqt=0&end=20500101&lmt=%d' % limit)
-    txt2 = http_get(url2, silent=True)
-    if txt2:
+    if not got:
+        url2 = ('https://push2his.eastmoney.com/api/qt/stock/kline/get?'
+                'secid=1.000001&fields1=f1,f2,f3&fields2=f51&klt=101&fqt=0&end=20500101&lmt=%d' % limit)
+        txt2 = http_get(url2, silent=True)
+        if txt2:
+            try:
+                d2 = json.loads(txt2)
+                got = [k.split(',')[0] for k in d2['data']['klines']]
+            except Exception:
+                pass
+    if got:
         try:
-            d2 = json.loads(txt2)
-            return [k.split(',')[0] for k in d2['data']['klines']]
+            save_json(TRADE_DAYS_CACHE, {'days': got,
+                                         'ts': datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
         except Exception:
             pass
+        return got
+    # 兜底：本地缓存（交易日序列变化极慢，网络抖动时用它保住管线）
+    cache = (load_json(TRADE_DAYS_CACHE, {}) or {}).get('days') or []
+    if cache:
+        print('  [warn] 交易日两源均失败，沿用本地缓存（最后交易日 %s，缓存于 %s）'
+              % (cache[-1], (load_json(TRADE_DAYS_CACHE, {}) or {}).get('ts', '?')))
+        today = datetime.now().strftime('%Y-%m-%d')
+        if today > cache[-1] and datetime.now().weekday() < 5:
+            cache = cache + [today]      # 今天已收盘且为工作日 → 补上今天
+        return cache
     print('  [err] 交易日接口全部失败')
     return []
 
@@ -831,6 +851,49 @@ def fetch_zt_pool(date_yyyymmdd):
         k = (s['code'], date_yyyymmdd)
         if k in CAP_OVERRIDE:
             s['total_cap'] = CAP_OVERRIDE[k]
+    return out
+
+
+def fetch_dt_pool(date_yyyymmdd):
+    """返回当日跌停股列表。
+
+    接口踩坑：跌停池用 `getTopicDTPool`，但 **dpt 仍是 `wz.ztzt`**（写成 wz.dtzt 会返回 0 条）。
+    字段：days = 连续跌停天数；oc = 当日开板次数；fund = 封单额（跌停为卖单封单）。
+    """
+    url = ('https://push2ex.eastmoney.com/getTopicDTPool?ut=%s&dpt=wz.ztzt&'
+           'Pageindex=0&pagesize=500&sort=fund%%3Aasc&date=%s' % (UT, date_yyyymmdd))
+    txt = http_get(url, silent=True)
+    if not txt:
+        return []
+    try:
+        d = json.loads(txt)
+        pool = (d.get('data') or {}).get('pool') or []
+    except Exception:
+        return []
+    out = []
+    for s in pool:
+        try:
+            if is_excluded(s.get('c', ''), s.get('n', '')):
+                continue
+            out.append({
+                'code':   s.get('c', ''),
+                'market': s.get('m', 1),
+                'name':   s.get('n', ''),
+                'price':  round((s.get('p') or 0) / 1000.0, 2),
+                'chg':    round(s.get('zdp') or 0, 2),
+                'amount': s.get('amount') or 0,          # 成交额（元）
+                'float_cap': s.get('ltsz') or 0,         # 流通市值
+                'total_cap': s.get('tshare') or 0,       # 总市值
+                'turnover': round(s.get('hs') or 0, 2),  # 换手率
+                'dt_days':  s.get('days') or 1,          # 连续跌停天数
+                'open_cnt': s.get('oc') or 0,            # 当日开板次数
+                'seal_fund': s.get('fund') or 0,         # 跌停封单额
+                'last_seal': s.get('lbt') or 0,          # 最后封板时间
+                'industry': s.get('hybk') or '',         # 行业板块
+            })
+        except Exception:
+            continue
+    out.sort(key=lambda x: (-x['dt_days'], -x['amount']))
     return out
 
 
@@ -2007,6 +2070,13 @@ def main():
             time.sleep(0.15)
     print('  有效交易日涨停数据：%d 天' % len(zt_hist))
 
+    # 跌停池：与涨停池同步抓（用于「跌停板梯队」——家数趋势 + 连续跌停明细）
+    dt_days = days[-DT_LADDER_DAYS:] if len(days) > DT_LADDER_DAYS else days
+    with ThreadPoolExecutor(max_workers=4) as ex:
+        dt_pairs = list(ex.map(lambda d: (d, fetch_dt_pool(d.replace('-', ''))), dt_days))
+    dt_hist = {d: p for d, p in dt_pairs if p}
+    print('  跌停池：近 %d 个交易日，有跌停的 %d 天' % (len(dt_days), len(dt_hist)))
+
     print('\n[3/7] 抓取指数 / 板块 / 新闻 / 量能...')
     # 四项互不依赖 → 并行抓取（原先串行，网络抖动时最耗时）
     with ThreadPoolExecutor(max_workers=4) as ex:
@@ -2076,18 +2146,64 @@ def main():
         second = lbcs[1] if len(lbcs) > 1 else 0
         # 创业板高度：300/301 开头
         cyb = [s['lbc'] for s in pool if s['code'].startswith(('300', '301'))]
+        cyb_max = max(cyb) if cyb else 0
+
+        def _rows(lbc):
+            """该高度上的个股（结构化，供前端 tooltip 展示「名字 + 板数 + 题材」）"""
+            rs = [s for s in pool if s['lbc'] == lbc]
+            rs.sort(key=lambda x: -(x.get('amount') or 0))
+            return [{'name': s['name'], 'code': s['code'], 'market': s['market'],
+                     'boards': s['lbc'], 'industry': s.get('industry', ''),
+                     'zbc': s.get('zbc', 0), 'is_yizi': bool(s.get('is_yizi'))}
+                    for s in rs[:8]]
+
         series.append({
             'date': d,
             'top': top,
             'second': second,
-            'cyb': max(cyb) if cyb else 0,
+            'cyb': cyb_max,
             'top_names': '、'.join([s['name'] for s in pool if s['lbc'] == top][:3]),
             'second_names': '、'.join([s['name'] for s in pool if s['lbc'] == second][:3]),
             'cyb_names': '、'.join([s['name'] for s in pool
                                    if s['code'].startswith(('300', '301'))
-                                   and s['lbc'] == (max(cyb) if cyb else 0)][:2]),
+                                   and s['lbc'] == cyb_max][:2]),
+            'top_list': _rows(top),
+            'second_list': _rows(second),
+            'cyb_list': [r for r in _rows(cyb_max)
+                         if str(r['code']).startswith(('300', '301'))] if cyb_max else [],
         })
     print('  梯队数据点 %d 个' % len(series))
+
+    # ---- 跌停板梯队：近 N 日家数 + 连续跌停高度（判断市场情绪的杀跌侧）----
+    print('\n[5b/7] 构建跌停板梯队...')
+    dt_series = []
+    for d in dt_days:
+        pool = dt_hist.get(d, [])
+        max_days = max((s['dt_days'] for s in pool), default=0)
+        dt_series.append({
+            'date': d,
+            'count': len(pool),                                   # 跌停家数
+            'max_days': max_days,                                 # 最高连续跌停天数
+            'max_names': '、'.join(
+                [s['name'] for s in pool if s['dt_days'] == max_days][:3]) if max_days else '',
+        })
+    print('  跌停梯队数据点 %d 个' % len(dt_series))
+
+    # 今日跌停明细 + 题材标签（用于跌停梯队列表、判断杀跌方向）
+    dt_today = dt_hist.get(today, [])
+    if dt_today:
+        _fcache = load_json(STOCK_CACHE, {})
+        for s in dt_today[:25]:
+            try:
+                tg = fetch_stock_tags(s['code'], s['market'], s['name'], _fcache)
+                s['region'] = tg.get('region', '—')
+                s['concepts'] = (tg.get('concepts') or [])[:5]
+                if not s.get('industry'):
+                    s['industry'] = tg.get('industry', '')
+            except Exception:
+                s['region'], s['concepts'] = '—', []
+        save_json(STOCK_CACHE, _fcache)
+    print('  今日跌停 %d 只（已标注题材）' % len(dt_today))
 
     # ---- 节点判定 ----
     print('\n[6/7] 节点判定...')
@@ -2368,6 +2484,8 @@ def main():
         'board_3d_days': board_3d_days,
         'ladder': series,
         'zt_pool': today_pool,
+        'dt_pool': dt_today,        # 跌停板梯队：今日明细（含题材）
+        'dt_ladder': dt_series,     # 跌停板梯队：近 7 日家数/最高连跌趋势
         'nodes': nodes_out[:12],
         'board_perf': build_board_perf(today_pool),  # 连板晋级 + 昨日涨停表现
         'market_volume': {                           # 沪深京量能（近15个已收盘交易日）
