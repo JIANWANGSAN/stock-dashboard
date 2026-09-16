@@ -18,8 +18,12 @@ venv/
 # 体积大且可重建的中间产物
 review_dump.json
 
-# 自动化跑复盘时落盘的临时中间文件（如 _t1_pool / _t1_perf / _t1_zb / _t1_break）与当次复盘草稿
-_t1_*.json
+# 自动化跑复盘时落盘的临时中间文件与当次复盘草稿
+#   —— 规则：下划线开头的 .py/.json 一律视为当次临时产物，不入库
+#   —— 例外：_tags_dump.py 是盘后复盘 B 段的**正式工具**（给涨停/炸板/跌停池补概念标签），必须入库
+_*.py
+!_tags_dump.py
+_*.json
 _review_today.md
 
 # 系统
