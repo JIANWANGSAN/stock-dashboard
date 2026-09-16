@@ -13541,5 +13541,560 @@
   "params": {
     "vol_ratio_threshold": 1.5,
     "breakout_lookback": 20
+  },
+  "module4": {
+    "date": "2026-09-16",
+    "overlap_boards": [
+      "林业Ⅱ",
+      "半导体",
+      "电子化学品Ⅱ",
+      "其他电子Ⅱ",
+      "光学光电子",
+      "元件"
+    ],
+    "pool_count": 37,
+    "added_today": [],
+    "removed_today": [],
+    "em_used": false,
+    "mx_used": 6,
+    "stocks": [
+      {
+        "code": "301176",
+        "name": "逸豪新材",
+        "market": "0",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 58.418,
+        "ma10": 52.136,
+        "ma20": 49.054,
+        "close": 57.62,
+        "bias20": 17.46,
+        "div_strength": 19.09,
+        "vol_ratio": 0.82,
+        "recent5_ret": 17.59,
+        "overbought": false,
+        "score": 52.8,
+        "rank": 1
+      },
+      {
+        "code": "603002",
+        "name": "宏昌电子",
+        "market": "1",
+        "boards": [
+          "电子化学品Ⅱ"
+        ],
+        "best_rank": 3,
+        "multi_board": 1,
+        "ma5": 18.254,
+        "ma10": 17.142,
+        "ma20": 16.81,
+        "close": 19.38,
+        "bias20": 15.29,
+        "div_strength": 8.59,
+        "vol_ratio": 0.91,
+        "recent5_ret": 18.1,
+        "overbought": false,
+        "score": 48.6,
+        "rank": 2
+      },
+      {
+        "code": "603936",
+        "name": "博敏电子",
+        "market": "1",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 21.34,
+        "ma10": 19.281,
+        "ma20": 18.438,
+        "close": 22.39,
+        "bias20": 21.44,
+        "div_strength": 15.74,
+        "vol_ratio": 0.72,
+        "recent5_ret": 23.29,
+        "overbought": true,
+        "score": 48.2,
+        "rank": 3
+      },
+      {
+        "code": "002636",
+        "name": "金安国纪",
+        "market": "0",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 81.564,
+        "ma10": 74.719,
+        "ma20": 71.096,
+        "close": 82.42,
+        "bias20": 15.93,
+        "div_strength": 14.72,
+        "vol_ratio": 0.88,
+        "recent5_ret": 18.59,
+        "overbought": false,
+        "score": 48.2,
+        "rank": 4
+      },
+      {
+        "code": "603186",
+        "name": "华正新材",
+        "market": "1",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 235.998,
+        "ma10": 212.045,
+        "ma20": 193.698,
+        "close": 253.99,
+        "bias20": 31.13,
+        "div_strength": 21.84,
+        "vol_ratio": 1.24,
+        "recent5_ret": 19.77,
+        "overbought": true,
+        "score": 47.1,
+        "rank": 5
+      },
+      {
+        "code": "300739",
+        "name": "明阳电路",
+        "market": "0",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 27.98,
+        "ma10": 25.874,
+        "ma20": 24.287,
+        "close": 28.46,
+        "bias20": 17.18,
+        "div_strength": 15.21,
+        "vol_ratio": 0.81,
+        "recent5_ret": 14.85,
+        "overbought": false,
+        "score": 46.7,
+        "rank": 6
+      },
+      {
+        "code": "001232",
+        "name": "嘉立创",
+        "market": "0",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 187.166,
+        "ma10": 175.66,
+        "ma20": 167.071,
+        "close": 193.99,
+        "bias20": 16.11,
+        "div_strength": 12.03,
+        "vol_ratio": 0.6,
+        "recent5_ret": 19.45,
+        "overbought": false,
+        "score": 44.7,
+        "rank": 7
+      },
+      {
+        "code": "603386",
+        "name": "骏亚科技",
+        "market": "1",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 17.23,
+        "ma10": 15.793,
+        "ma20": 14.884,
+        "close": 18.83,
+        "bias20": 26.52,
+        "div_strength": 15.77,
+        "vol_ratio": 1.24,
+        "recent5_ret": 27.14,
+        "overbought": true,
+        "score": 44.5,
+        "rank": 8
+      },
+      {
+        "code": "603328",
+        "name": "依顿电子",
+        "market": "1",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 13.114,
+        "ma10": 12.092,
+        "ma20": 11.514,
+        "close": 14.31,
+        "bias20": 24.28,
+        "div_strength": 13.89,
+        "vol_ratio": 0.95,
+        "recent5_ret": 18.26,
+        "overbought": true,
+        "score": 42.9,
+        "rank": 9
+      },
+      {
+        "code": "301041",
+        "name": "金百泽",
+        "market": "0",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 33.044,
+        "ma10": 31.582,
+        "ma20": 29.413,
+        "close": 35.86,
+        "bias20": 21.92,
+        "div_strength": 12.34,
+        "vol_ratio": 1.5,
+        "recent5_ret": 14.2,
+        "overbought": true,
+        "score": 42.7,
+        "rank": 10
+      },
+      {
+        "code": "300903",
+        "name": "科翔股份",
+        "market": "0",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 101.616,
+        "ma10": 94.911,
+        "ma20": 89.836,
+        "close": 111.95,
+        "bias20": 24.62,
+        "div_strength": 13.11,
+        "vol_ratio": 0.95,
+        "recent5_ret": 29.23,
+        "overbought": true,
+        "score": 42.5,
+        "rank": 11
+      },
+      {
+        "code": "605258",
+        "name": "协和电子",
+        "market": "1",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 35.358,
+        "ma10": 32.857,
+        "ma20": 31.119,
+        "close": 39.3,
+        "bias20": 26.29,
+        "div_strength": 13.62,
+        "vol_ratio": 1.34,
+        "recent5_ret": 24.49,
+        "overbought": true,
+        "score": 42.4,
+        "rank": 12
+      },
+      {
+        "code": "301366",
+        "name": "一博科技",
+        "market": "0",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 63.69,
+        "ma10": 60.405,
+        "ma20": 58.038,
+        "close": 69.99,
+        "bias20": 20.59,
+        "div_strength": 9.74,
+        "vol_ratio": 1.18,
+        "recent5_ret": 18.67,
+        "overbought": true,
+        "score": 42.4,
+        "rank": 13
+      },
+      {
+        "code": "002913",
+        "name": "奥士康",
+        "market": "0",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 75.736,
+        "ma10": 70.419,
+        "ma20": 65.006,
+        "close": 83.11,
+        "bias20": 27.85,
+        "div_strength": 16.51,
+        "vol_ratio": 0.74,
+        "recent5_ret": 16.73,
+        "overbought": true,
+        "score": 41.2,
+        "rank": 14
+      },
+      {
+        "code": "300939",
+        "name": "秋田微",
+        "market": "0",
+        "boards": [
+          "光学光电子"
+        ],
+        "best_rank": 6,
+        "multi_board": 1,
+        "ma5": 73.636,
+        "ma10": 71.351,
+        "ma20": 67.321,
+        "close": 81.1,
+        "bias20": 20.47,
+        "div_strength": 9.38,
+        "vol_ratio": 1.47,
+        "recent5_ret": 14.06,
+        "overbought": true,
+        "score": 40.5,
+        "rank": 15
+      },
+      {
+        "code": "300537",
+        "name": "广信材料",
+        "market": "0",
+        "boards": [
+          "电子化学品Ⅱ"
+        ],
+        "best_rank": 3,
+        "multi_board": 1,
+        "ma5": 20.682,
+        "ma10": 20.224,
+        "ma20": 20.065,
+        "close": 22.36,
+        "bias20": 11.44,
+        "div_strength": 3.08,
+        "vol_ratio": 2.05,
+        "recent5_ret": 12.59,
+        "overbought": false,
+        "score": 38.6,
+        "rank": 16
+      },
+      {
+        "code": "600237",
+        "name": "铜峰电子",
+        "market": "1",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 9.358,
+        "ma10": 8.812,
+        "ma20": 8.601,
+        "close": 9.74,
+        "bias20": 13.24,
+        "div_strength": 8.79,
+        "vol_ratio": 0.76,
+        "recent5_ret": 17.92,
+        "overbought": false,
+        "score": 38.6,
+        "rank": 17
+      },
+      {
+        "code": "301132",
+        "name": "满坤科技",
+        "market": "0",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 55.768,
+        "ma10": 48.765,
+        "ma20": 43.017,
+        "close": 61.99,
+        "bias20": 44.11,
+        "div_strength": 29.64,
+        "vol_ratio": 1.16,
+        "recent5_ret": 32.32,
+        "overbought": true,
+        "score": 37.8,
+        "rank": 18
+      },
+      {
+        "code": "603115",
+        "name": "海星股份",
+        "market": "1",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 89.366,
+        "ma10": 84.801,
+        "ma20": 80.707,
+        "close": 91.66,
+        "bias20": 13.57,
+        "div_strength": 10.73,
+        "vol_ratio": 0.88,
+        "recent5_ret": 9.76,
+        "overbought": false,
+        "score": 37.5,
+        "rank": 19
+      },
+      {
+        "code": "002815",
+        "name": "崇达技术",
+        "market": "0",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 20.898,
+        "ma10": 18.488,
+        "ma20": 16.242,
+        "close": 23.38,
+        "bias20": 43.95,
+        "div_strength": 28.67,
+        "vol_ratio": 0.96,
+        "recent5_ret": 29.46,
+        "overbought": true,
+        "score": 37.4,
+        "rank": 20
+      },
+      {
+        "code": "301183",
+        "name": "东田微",
+        "market": "0",
+        "boards": [
+          "光学光电子"
+        ],
+        "best_rank": 6,
+        "multi_board": 1,
+        "ma5": 261.366,
+        "ma10": 244.997,
+        "ma20": 237.699,
+        "close": 302.41,
+        "bias20": 27.22,
+        "div_strength": 9.96,
+        "vol_ratio": 1.37,
+        "recent5_ret": 29.24,
+        "overbought": true,
+        "score": 37.2,
+        "rank": 21
+      },
+      {
+        "code": "300319",
+        "name": "麦捷科技",
+        "market": "0",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 21.412,
+        "ma10": 20.382,
+        "ma20": 19.703,
+        "close": 22.24,
+        "bias20": 12.87,
+        "div_strength": 8.67,
+        "vol_ratio": 1.05,
+        "recent5_ret": 10.92,
+        "overbought": false,
+        "score": 35.4,
+        "rank": 22
+      },
+      {
+        "code": "300991",
+        "name": "创益通",
+        "market": "0",
+        "boards": [
+          "其他电子Ⅱ"
+        ],
+        "best_rank": 4,
+        "multi_board": 1,
+        "ma5": 30.392,
+        "ma10": 28.94,
+        "ma20": 28.462,
+        "close": 31.53,
+        "bias20": 10.78,
+        "div_strength": 6.78,
+        "vol_ratio": 0.98,
+        "recent5_ret": 10.59,
+        "overbought": false,
+        "score": 34.7,
+        "rank": 23
+      },
+      {
+        "code": "000823",
+        "name": "超声电子",
+        "market": "0",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 22.184,
+        "ma10": 18.986,
+        "ma20": 17.064,
+        "close": 25.12,
+        "bias20": 47.21,
+        "div_strength": 30.0,
+        "vol_ratio": 1.14,
+        "recent5_ret": 47.76,
+        "overbought": true,
+        "score": 34.6,
+        "rank": 24
+      },
+      {
+        "code": "300408",
+        "name": "三环集团",
+        "market": "0",
+        "boards": [
+          "元件"
+        ],
+        "best_rank": 8,
+        "multi_board": 1,
+        "ma5": 124.796,
+        "ma10": 119.115,
+        "ma20": 115.005,
+        "close": 129.88,
+        "bias20": 12.93,
+        "div_strength": 8.51,
+        "vol_ratio": 0.85,
+        "recent5_ret": 10.28,
+        "overbought": false,
+        "score": 34.4,
+        "rank": 25
+      }
+    ],
+    "strategy": {
+      "criteria": [
+        "入选条件：MA5>MA10>MA20（多头排列）且三线斜率向上、差值扩大（向上发散），收盘价站上MA20",
+        "选股范围：仅限模块3「两榜重合板块」（当日领涨且连续走强的持续性主线）成分股"
+      ],
+      "entry": "介入时机：缩量回踩 MA5 / MA10 不破为第一买点；放量突破近5日新高为追涨买点。优先选回踩不破者，风险收益比更优。",
+      "overbought": "超买提示：乖离率（收盘价/MA20-1）> 20% 视为短期超买，追高风险大，仅适合激进打板；稳健者等回踩 MA5/MA10 缩量不破再介入。",
+      "position": "仓位：单票不超过总仓 15%~20%，分 2~3 批建仓（首仓 1/2，回踩确认加 1/3，突破加 1/6）。",
+      "stop": "止损：收盘价跌破 MA20，或买入价回撤 -5%~-7%，二者先到为准，严格离场。",
+      "turnover": "轮动：本池每日更新。触发剔除条件（均线死叉 / 跌破MA20 / 发散收敛）即离场信号，不恋战。",
+      "disclaimer": "以上为客观技术信号整理与策略框架，不构成投资建议，亦不对收益作任何承诺。市场有风险，决策需自担。"
+    }
   }
 }
