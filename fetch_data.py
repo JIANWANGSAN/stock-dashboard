@@ -897,6 +897,52 @@ def fetch_dt_pool(date_yyyymmdd):
     return out
 
 
+def build_dt_ladder(dt_hist, dt_days):
+    """跌停板梯队：与「连板高度梯队」(`ladder`) **完全同构**，只把「连板数」换成「连续跌停天数」。
+
+    返回 [{date, top, second, cyb, count, top_names, second_names, cyb_names,
+            top_list, second_list, cyb_list}]
+      · top / second / cyb = 当日 最高 / 次高 / 创业板 连续跌停天数（对应连板梯队的 最高板/次高板/创业板）
+      · *_list  = 结构化名单（name/code/market/boards=连跌天数/industry/open_cnt），供前端 tooltip
+      · count   = 当日跌停家数（额外汇总，tooltip 附注用）
+    """
+    def _is_cyb(s):
+        return str(s['code']).startswith(('300', '301'))
+
+    out = []
+    for d in dt_days:
+        pool = dt_hist.get(d, [])
+        lvls = sorted({s.get('dt_days') or 0 for s in pool if s.get('dt_days')}, reverse=True)
+        top = lvls[0] if lvls else 0
+        second = lvls[1] if len(lvls) > 1 else 0
+        cyb = [s.get('dt_days') or 0 for s in pool if _is_cyb(s)]
+        cyb_max = max(cyb) if cyb else 0
+
+        def _rows(lvl, only_cyb=False):
+            rs = [s for s in pool
+                  if (s.get('dt_days') or 0) == lvl and (not only_cyb or _is_cyb(s))]
+            rs.sort(key=lambda x: -(x.get('amount') or 0))
+            return [{'name': s['name'], 'code': s['code'], 'market': s['market'],
+                     'boards': s['dt_days'], 'industry': s.get('industry', ''),
+                     'open_cnt': s.get('open_cnt', 0)} for s in rs[:8]]
+
+        out.append({
+            'date': d,
+            'top': top,
+            'second': second,
+            'cyb': cyb_max,
+            'count': len(pool),
+            'top_names': '、'.join([s['name'] for s in pool if (s.get('dt_days') or 0) == top][:3]),
+            'second_names': '、'.join([s['name'] for s in pool if (s.get('dt_days') or 0) == second][:3]),
+            'cyb_names': '、'.join([s['name'] for s in pool if _is_cyb(s)
+                                    and (s.get('dt_days') or 0) == cyb_max][:2]),
+            'top_list': _rows(top),
+            'second_list': _rows(second),
+            'cyb_list': _rows(cyb_max, only_cyb=True) if cyb_max else [],
+        })
+    return out
+
+
 def _node_type_priority(nt):
     """节点类型优先级（穿越 > 突破 > 断板）：同一只票同时出现在多节点时优先穿越场景"""
     return {'穿越节点': 3, '突破节点': 2, '最高标断板节点': 1}.get(nt, 0)
@@ -2174,19 +2220,9 @@ def main():
         })
     print('  梯队数据点 %d 个' % len(series))
 
-    # ---- 跌停板梯队：近 N 日家数 + 连续跌停高度（判断市场情绪的杀跌侧）----
+    # ---- 跌停板梯队：与连板高度梯队**完全同构**（最高连跌 / 次高连跌 / 创业板，近 7 日）----
     print('\n[5b/7] 构建跌停板梯队...')
-    dt_series = []
-    for d in dt_days:
-        pool = dt_hist.get(d, [])
-        max_days = max((s['dt_days'] for s in pool), default=0)
-        dt_series.append({
-            'date': d,
-            'count': len(pool),                                   # 跌停家数
-            'max_days': max_days,                                 # 最高连续跌停天数
-            'max_names': '、'.join(
-                [s['name'] for s in pool if s['dt_days'] == max_days][:3]) if max_days else '',
-        })
+    dt_series = build_dt_ladder(dt_hist, dt_days)
     print('  跌停梯队数据点 %d 个' % len(dt_series))
 
     # 今日跌停明细 + 题材标签（用于跌停梯队列表、判断杀跌方向）

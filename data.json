@@ -5048,45 +5048,457 @@
   "dt_ladder": [
     {
       "date": "2026-09-08",
+      "top": 0,
+      "second": 0,
+      "cyb": 0,
       "count": 0,
-      "max_days": 0,
-      "max_names": ""
+      "top_names": "",
+      "second_names": "",
+      "cyb_names": "",
+      "top_list": [],
+      "second_list": [],
+      "cyb_list": []
     },
     {
       "date": "2026-09-09",
+      "top": 1,
+      "second": 0,
+      "cyb": 0,
       "count": 7,
-      "max_days": 1,
-      "max_names": "翠微股份、海鸥住工、竞业达"
+      "top_names": "翠微股份、海鸥住工、竞业达",
+      "second_names": "",
+      "cyb_names": "",
+      "top_list": [
+        {
+          "name": "翠微股份",
+          "code": "603123",
+          "market": 1,
+          "boards": 1,
+          "industry": "多元金融",
+          "open_cnt": 0
+        },
+        {
+          "name": "海鸥住工",
+          "code": "002084",
+          "market": 0,
+          "boards": 1,
+          "industry": "家居用品",
+          "open_cnt": 8
+        },
+        {
+          "name": "竞业达",
+          "code": "003005",
+          "market": 0,
+          "boards": 1,
+          "industry": "IT服务Ⅱ",
+          "open_cnt": 5
+        },
+        {
+          "name": "播恩集团",
+          "code": "001366",
+          "market": 0,
+          "boards": 1,
+          "industry": "饲料",
+          "open_cnt": 4
+        },
+        {
+          "name": "三人行",
+          "code": "605168",
+          "market": 1,
+          "boards": 1,
+          "industry": "广告营销",
+          "open_cnt": 1
+        },
+        {
+          "name": "出版传媒",
+          "code": "601999",
+          "market": 1,
+          "boards": 1,
+          "industry": "出版",
+          "open_cnt": 14
+        },
+        {
+          "name": "捷荣技术",
+          "code": "002855",
+          "market": 0,
+          "boards": 1,
+          "industry": "消费电子",
+          "open_cnt": 3
+        }
+      ],
+      "second_list": [],
+      "cyb_list": []
     },
     {
       "date": "2026-09-10",
+      "top": 2,
+      "second": 1,
+      "cyb": 0,
       "count": 11,
-      "max_days": 2,
-      "max_names": "捷荣技术"
+      "top_names": "捷荣技术",
+      "second_names": "中粮糖业、海南橡胶、楚天龙",
+      "cyb_names": "",
+      "top_list": [
+        {
+          "name": "捷荣技术",
+          "code": "002855",
+          "market": 0,
+          "boards": 2,
+          "industry": "消费电子",
+          "open_cnt": 8
+        }
+      ],
+      "second_list": [
+        {
+          "name": "中粮糖业",
+          "code": "600737",
+          "market": 1,
+          "boards": 1,
+          "industry": "农产品加",
+          "open_cnt": 1
+        },
+        {
+          "name": "海南橡胶",
+          "code": "601118",
+          "market": 1,
+          "boards": 1,
+          "industry": "种植业",
+          "open_cnt": 0
+        },
+        {
+          "name": "楚天龙",
+          "code": "003040",
+          "market": 0,
+          "boards": 1,
+          "industry": "通信设备",
+          "open_cnt": 14
+        },
+        {
+          "name": "千金药业",
+          "code": "600479",
+          "market": 1,
+          "boards": 1,
+          "industry": "中药Ⅱ",
+          "open_cnt": 1
+        },
+        {
+          "name": "华脉科技",
+          "code": "603042",
+          "market": 1,
+          "boards": 1,
+          "industry": "通信设备",
+          "open_cnt": 27
+        },
+        {
+          "name": "泸天化",
+          "code": "000912",
+          "market": 0,
+          "boards": 1,
+          "industry": "农化制品",
+          "open_cnt": 4
+        },
+        {
+          "name": "永安药业",
+          "code": "002365",
+          "market": 0,
+          "boards": 1,
+          "industry": "化学制药",
+          "open_cnt": 12
+        },
+        {
+          "name": "深中华A",
+          "code": "000017",
+          "market": 0,
+          "boards": 1,
+          "industry": "饰品",
+          "open_cnt": 0
+        }
+      ],
+      "cyb_list": []
     },
     {
       "date": "2026-09-11",
+      "top": 3,
+      "second": 2,
+      "cyb": 0,
       "count": 21,
-      "max_days": 3,
-      "max_names": "捷荣技术"
+      "top_names": "捷荣技术",
+      "second_names": "千金药业、深中华A",
+      "cyb_names": "",
+      "top_list": [
+        {
+          "name": "捷荣技术",
+          "code": "002855",
+          "market": 0,
+          "boards": 3,
+          "industry": "消费电子",
+          "open_cnt": 21
+        }
+      ],
+      "second_list": [
+        {
+          "name": "千金药业",
+          "code": "600479",
+          "market": 1,
+          "boards": 2,
+          "industry": "中药Ⅱ",
+          "open_cnt": 0
+        },
+        {
+          "name": "深中华A",
+          "code": "000017",
+          "market": 0,
+          "boards": 2,
+          "industry": "饰品",
+          "open_cnt": 17
+        }
+      ],
+      "cyb_list": []
     },
     {
       "date": "2026-09-14",
+      "top": 2,
+      "second": 1,
+      "cyb": 0,
       "count": 16,
-      "max_days": 2,
-      "max_names": "亚盛集团、红棉股份、集泰股份"
+      "top_names": "亚盛集团、红棉股份、集泰股份",
+      "second_names": "敦煌种业、中粮科技、远 望 谷",
+      "cyb_names": "",
+      "top_list": [
+        {
+          "name": "亚盛集团",
+          "code": "600108",
+          "market": 1,
+          "boards": 2,
+          "industry": "种植业",
+          "open_cnt": 9
+        },
+        {
+          "name": "红棉股份",
+          "code": "000523",
+          "market": 0,
+          "boards": 2,
+          "industry": "综合Ⅱ",
+          "open_cnt": 11
+        },
+        {
+          "name": "集泰股份",
+          "code": "002909",
+          "market": 0,
+          "boards": 2,
+          "industry": "化学制品",
+          "open_cnt": 18
+        },
+        {
+          "name": "云南旅游",
+          "code": "002059",
+          "market": 0,
+          "boards": 2,
+          "industry": "旅游及景",
+          "open_cnt": 1
+        },
+        {
+          "name": "精艺股份",
+          "code": "002295",
+          "market": 0,
+          "boards": 2,
+          "industry": "工业金属",
+          "open_cnt": 0
+        }
+      ],
+      "second_list": [
+        {
+          "name": "敦煌种业",
+          "code": "600354",
+          "market": 1,
+          "boards": 1,
+          "industry": "种植业",
+          "open_cnt": 7
+        },
+        {
+          "name": "中粮科技",
+          "code": "000930",
+          "market": 0,
+          "boards": 1,
+          "industry": "农产品加",
+          "open_cnt": 10
+        },
+        {
+          "name": "远 望 谷",
+          "code": "002161",
+          "market": 0,
+          "boards": 1,
+          "industry": "其他电子",
+          "open_cnt": 11
+        },
+        {
+          "name": "瑞尔特",
+          "code": "002790",
+          "market": 0,
+          "boards": 1,
+          "industry": "家居用品",
+          "open_cnt": 0
+        },
+        {
+          "name": "南宁百货",
+          "code": "600712",
+          "market": 1,
+          "boards": 1,
+          "industry": "一般零售",
+          "open_cnt": 5
+        },
+        {
+          "name": "曲江文旅",
+          "code": "600706",
+          "market": 1,
+          "boards": 1,
+          "industry": "旅游及景",
+          "open_cnt": 0
+        },
+        {
+          "name": "声迅股份",
+          "code": "003004",
+          "market": 0,
+          "boards": 1,
+          "industry": "计算机设",
+          "open_cnt": 6
+        },
+        {
+          "name": "新农开发",
+          "code": "600359",
+          "market": 1,
+          "boards": 1,
+          "industry": "种植业",
+          "open_cnt": 1
+        }
+      ],
+      "cyb_list": []
     },
     {
       "date": "2026-09-15",
+      "top": 3,
+      "second": 2,
+      "cyb": 0,
       "count": 27,
-      "max_days": 3,
-      "max_names": "红棉股份、云南旅游"
+      "top_names": "红棉股份、云南旅游",
+      "second_names": "敦煌种业、龙版传媒、瑞尔特",
+      "cyb_names": "",
+      "top_list": [
+        {
+          "name": "红棉股份",
+          "code": "000523",
+          "market": 0,
+          "boards": 3,
+          "industry": "综合Ⅱ",
+          "open_cnt": 1
+        },
+        {
+          "name": "云南旅游",
+          "code": "002059",
+          "market": 0,
+          "boards": 3,
+          "industry": "旅游及景",
+          "open_cnt": 19
+        }
+      ],
+      "second_list": [
+        {
+          "name": "敦煌种业",
+          "code": "600354",
+          "market": 1,
+          "boards": 2,
+          "industry": "种植业",
+          "open_cnt": 8
+        },
+        {
+          "name": "龙版传媒",
+          "code": "605577",
+          "market": 1,
+          "boards": 2,
+          "industry": "出版",
+          "open_cnt": 0
+        },
+        {
+          "name": "瑞尔特",
+          "code": "002790",
+          "market": 0,
+          "boards": 2,
+          "industry": "家居用品",
+          "open_cnt": 2
+        },
+        {
+          "name": "新农开发",
+          "code": "600359",
+          "market": 1,
+          "boards": 2,
+          "industry": "种植业",
+          "open_cnt": 2
+        },
+        {
+          "name": "南宁百货",
+          "code": "600712",
+          "market": 1,
+          "boards": 2,
+          "industry": "一般零售",
+          "open_cnt": 4
+        },
+        {
+          "name": "远 望 谷",
+          "code": "002161",
+          "market": 0,
+          "boards": 2,
+          "industry": "其他电子",
+          "open_cnt": 0
+        }
+      ],
+      "cyb_list": []
     },
     {
       "date": "2026-09-16",
+      "top": 2,
+      "second": 1,
+      "cyb": 0,
       "count": 4,
-      "max_days": 2,
-      "max_names": "国芳集团、桂林旅游"
+      "top_names": "国芳集团、桂林旅游",
+      "second_names": "中新赛克、天融信",
+      "cyb_names": "",
+      "top_list": [
+        {
+          "name": "国芳集团",
+          "code": "601086",
+          "market": 1,
+          "boards": 2,
+          "industry": "一般零售",
+          "open_cnt": 4
+        },
+        {
+          "name": "桂林旅游",
+          "code": "000978",
+          "market": 0,
+          "boards": 2,
+          "industry": "旅游及景",
+          "open_cnt": 0
+        }
+      ],
+      "second_list": [
+        {
+          "name": "中新赛克",
+          "code": "002912",
+          "market": 0,
+          "boards": 1,
+          "industry": "计算机设",
+          "open_cnt": 2
+        },
+        {
+          "name": "天融信",
+          "code": "002212",
+          "market": 0,
+          "boards": 1,
+          "industry": "软件开发",
+          "open_cnt": 0
+        }
+      ],
+      "cyb_list": []
     }
   ],
   "nodes": [
