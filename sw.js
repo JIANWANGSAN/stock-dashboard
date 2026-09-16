@@ -3,7 +3,7 @@
  *   - 静态资源（echarts.min.js / 图标 / manifest）→ 缓存优先（秒开，且离线可用）
  *   - 页面与数据（index.html / data.js / data.json）→ 网络优先（保证最新），失败回退缓存
  */
-const CACHE = 'a-stock-dashboard-v3';
+const CACHE = 'a-stock-dashboard-v4';
 const PRECACHE = ['./', './index.html', './echarts.min.js', './manifest.json', './dashboard_icon.png'];
 const STATIC_RE = /(echarts\.min\.js|dashboard_icon\.png|manifest\.json)$/;
 
@@ -44,8 +44,10 @@ self.addEventListener('fetch', e => {
   }
 
   // 页面 / 数据：网络优先，失败回退缓存
+  // ⚠️ 必须带 cache:'no-store'：否则 fetch 会命中浏览器 HTTP 缓存，
+  //    即使站点已更新，用户仍会看到旧版 index.html / data.js（踩过）。
   e.respondWith(
-    fetch(req)
+    fetch(req, { cache: 'no-store' })
       .then(res => {
         if (res && res.status === 200) {
           const cp = res.clone();
