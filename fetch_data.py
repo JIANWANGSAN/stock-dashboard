@@ -2308,8 +2308,11 @@ def main():
 
     # 板块K线预生成：随 data.js 下发，前端点击即开（避免浏览器跨域取东财失败）
     print('\n[4c/7] 预生成榜单板块的日K/周K...')
+    # 只给「页面实际展示的板块」生成K线（= 产业板块清单 28 个）。
+    # 注：board_daily/board_3d 已不在页面展示（仅供盘后 module4 补成分股用），故不再预生成其K线，
+    #     否则请求数翻倍会触发东财限流（实测 82 个请求时日K大面积失败）。
     _kl = {}
-    for _b in (board[:10] + board_3d + sector):
+    for _b in sector:
         if _b.get('code'):
             _kl[_b['code']] = _b
     board_kline = fetch_board_klines(list(_kl.values()))
