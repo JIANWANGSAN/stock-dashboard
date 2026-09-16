@@ -8,8 +8,13 @@
 
 数据源：东财 push2 快照为主（f46今开 / f47量 / f48额 / f60昨收），腾讯 qt.gtimg.cn 兜底。
 
-⚠️ 只有 9:15~9:30 抓到的量额才是**真竞价额**；其他时段拿到的是全天成交额，不可与硬线比较
-   （故写 data['auction_is_live'] 标记）。
+⚠️ 只有 9:15~9:30 抓到的量额才是**真竞价额**；其他时段拿到的是开盘后的**累计**成交额，
+   不可与硬线比较（故写 data['auction_is_live'] 标记）。
+
+【2026-09-16 补取】任务实际常晚于 9:30 触发（如 9:34），此时快照已是累计口径。
+   补救：用东财分时 trends2 **当日首根（09:30 = 集合竞价）**的成交额还原真竞价额
+   —— 与 fetch_data.fetch_seal_amount 同一口径（首根即集合竞价）。取到则按竞价口径判定，
+   写 data['auction_source']='minute_0930' 且 auction_is_live=True；取不到才退回累计口径并标记 false。
 """
 import sys, os, json, time
 from datetime import datetime
@@ -55,6 +60,34 @@ def tx_quote(code, market):
         return None
 
 
+def trends_first_bar(code, market, date_str):
+    """当日分时首根（09:30=集合竞价）→ (竞价成交价, 竞价额[元])；失败返回 (None, None)。
+
+    错过 9:15~9:30 窗口时用它还原真竞价额（东财分时首根即集合竞价，见 fetch_data 口径注释）。
+    """
+    secid = '%s.%s' % (market, code)
+    path = ('/api/qt/stock/trends2/get?secid=%s&fields1=f1,f2,f3,f4,f5,f6,f7,f8'
+            '&fields2=f51,f52,f53,f54,f55,f56,f57,f58&iscr=0&ndays=5' % secid)
+    for host in ('push2his.eastmoney.com', '1.push2his.eastmoney.com',
+                 'push2delay.eastmoney.com'):
+        t = http_get('https://%s%s' % (host, path), timeout=10, retry=1, silent=True)
+        if t:
+            try:
+                tr = (json.loads(t).get('data') or {}).get('trends') or []
+            except Exception:
+                tr = []
+            for x in tr:
+                if x.startswith(date_str):
+                    p = x.split(',')
+                    try:
+                        return float(p[2] or 0), float(p[6] or 0)
+                    except Exception:
+                        return None, None
+            return None, None        # 接口正常但无当日数据（未开盘/非交易日）
+        time.sleep(0.6)
+    return None, None
+
+
 def _mkt(c):
     """市场：0=深 1=沪。recommend 无 market 字段时按代码前缀推导。"""
     m = c.get('market')
@@ -64,6 +97,11 @@ def _mkt(c):
 
 
 def run():
+    now = datetime.now()
+    mins = now.hour * 60 + now.minute
+    today = now.strftime('%Y-%m-%d')
+    is_auction = (9 * 60 + 15) <= mins <= (9 * 60 + 30)
+
     data = load_json(DATA_JSON, {})
     cands = data.get('candidates') or []
     reco = data.get('recommend') or {}
@@ -109,6 +147,37 @@ def run():
                          'pct': round((op - prev) / prev * 100, 2) if prev else None,
                          'line': line}
 
+    # 补取：错过 9:15~9:30 窗口（快照已是累计口径）→ 用分时首根还原真竞价额
+    source = 'live'
+    if not is_auction and today > (data.get('date') or ''):
+        bars = []                        # 串行 + 慢节奏：分时接口并发易被限流
+        for c in picks:
+            bars.append(trends_first_bar(c['code'], _mkt(c), today))
+            time.sleep(0.25)
+        got = 0
+        for c, (bop, bamt) in zip(picks, bars):
+            if bamt is None:
+                continue
+            r = by.get(c['code'])
+            if r is None:                    # 快照也失败 → 仅用分时首根补一条（无昨收，不算涨幅）
+                ln = c.get('bid_required_yi')
+                if ln is None:
+                    ln = round((c.get('amount_yi') or 0) * 0.5, 2)
+                r = by[c['code']] = {'amt_yi': None, 'ok': False, 'open': bop or 0,
+                                     'prev': 0, 'pct': None, 'line': ln}
+                if c.get('name') in miss:
+                    miss.remove(c['name'])
+            got += 1
+            r['amt_yi'] = round(bamt / 1e8, 2)
+            r['ok'] = bool(r['line'] and r['amt_yi'] >= r['line'])
+            if bop:
+                r['open'] = bop
+                r['pct'] = round((bop - r['prev']) / r['prev'] * 100, 2) if r['prev'] else None
+        if got:
+            source = 'minute_0930'
+            print('[竞价] 非竞价时段启动 → 已用「当日分时首根(09:30=集合竞价)」还原真竞价额 %d/%d 只'
+                  % (got, len(picks)))
+
     # 写回候选池每条票（前端「竞价结论」列直接读这几个字段）
     n_ok = 0
     for c in cands:
@@ -128,20 +197,21 @@ def run():
         reco['auction_open'] = r['open']
         reco['auction_pct'] = r['pct']
 
-    now = datetime.now()
-    mins = now.hour * 60 + now.minute
-    is_auction = (9 * 60 + 15) <= mins <= (9 * 60 + 30)
+    ## `auction_is_live` 语义 = 「这批量额是否真竞价口径、可与硬线比较」（见模块 docstring）
+    live = is_auction or source == 'minute_0930'
     data['candidates'] = cands
     data['recommend'] = reco
     data.pop('auction', None)          # 旧版独立竞价块已废弃（并入候选池），清掉残留
     data['auction_updated'] = now.strftime('%Y-%m-%d %H:%M:%S')
-    data['auction_is_live'] = is_auction
+    data['auction_is_live'] = live
+    data['auction_source'] = source    # live=盘内快照 / minute_0930=分时首根还原
     save_json(DATA_JSON, data)
     save_js(os.path.join(BASE, 'data.js'), data)
 
+    tail = ('（' + ('集合竞价口径·分时首根还原' if source == 'minute_0930' else '集合竞价框内快照')
+            + '）') if live else '  ⚠ 非竞价时段，量额为开盘后累计口径，不可与硬线比较'
     print('[竞价] 核对 %d 只 · 合格 %d · 对象日=%s%s'
-          % (len(by), n_ok, data.get('date') or '',
-             '' if is_auction else '  ⚠ 非竞价时段，量额为全日口径不可比'))
+          % (len(by), n_ok, data.get('date') or '', tail))
     for c in cands:
         r = by.get(c.get('code'))
         if not r:

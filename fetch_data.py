@@ -1104,7 +1104,8 @@ def fetch_board_klines(boards, day_n=120, week_n=60, max_workers=8):
             for host in hosts:
                 url = ('https://%s/api/qt/stock/kline/get?secid=90.%s'
                        '&fields1=f1,f2,f3&fields2=f51,f52,f53,f54,f55,f56&klt=%d&fqt=1'
-                       '&end=20500101&lmt=%d' % (host, code, klt, n))
+                       '&end=20500101&lmt=%d&_=%d'
+                       % (host, code, klt, n, int(time.time() * 1000)))
                 t = http_get(url, silent=True)
                 if t:
                     try:
