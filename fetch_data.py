@@ -921,13 +921,15 @@ def build_ladder(zt_hist, days):
             return str(s['code']).startswith(('300', '301'))
 
         def _rows(lbc):
-            """该高度上的个股（结构化，供前端 tooltip 展示「名字 + 板数 + 题材」）"""
+            """该高度上的**全部**个股（不截断，供前端 tooltip 完整展示「名字 + 板数 + 题材」）
+
+            字段只留 tooltip 用得到的 4 个（market 前端可由 code 推导），避免 data.js 体积膨胀。
+            """
             rs = [s for s in pool if s['lbc'] == lbc]
             rs.sort(key=lambda x: -(x.get('amount') or 0))
-            return [{'name': s['name'], 'code': s['code'], 'market': s['market'],
-                     'boards': s['lbc'], 'industry': s.get('industry', ''),
-                     'zbc': s.get('zbc', 0), 'is_yizi': bool(s.get('is_yizi'))}
-                    for s in rs[:8]]
+            return [{'name': s['name'], 'code': s['code'],
+                     'boards': s['lbc'], 'industry': s.get('industry', '')}
+                    for s in rs]
 
         out.append({
             'date': d,
@@ -971,12 +973,13 @@ def build_dt_ladder(dt_hist, dt_days):
         cyb_max = max(cyb) if cyb else 0
 
         def _rows(lvl, only_cyb=False):
+            """该连跌高度上的**全部**个股（不截断）"""
             rs = [s for s in pool
                   if (s.get('dt_days') or 0) == lvl and (not only_cyb or _is_cyb(s))]
             rs.sort(key=lambda x: -(x.get('amount') or 0))
-            return [{'name': s['name'], 'code': s['code'], 'market': s['market'],
-                     'boards': s['dt_days'], 'industry': s.get('industry', ''),
-                     'open_cnt': s.get('open_cnt', 0)} for s in rs[:8]]
+            return [{'name': s['name'], 'code': s['code'],
+                     'boards': s['dt_days'], 'industry': s.get('industry', '')}
+                    for s in rs]
 
         out.append({
             'date': d,

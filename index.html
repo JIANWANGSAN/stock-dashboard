@@ -837,32 +837,34 @@ function drawLadderChart(el, prevChart, L, cfg){
         return (!p.value && p.value!==0) || n==null || !n ? '' : n;
       }}
   });
-  const fmtList = (list,max)=>{
+  // 名单**完整展示**（不截断）：chip 式自动换行，内容多时弹层可滚动
+  const fmtList = (list)=>{
     if(!list||!list.length) return '\u2014';
-    const t = list.slice(0,max).map(s=>
-      `${esc(s.name)}<span style="color:#9ca3af;font-size:11px;">(${s.boards}${cfg.unit}${s.industry?'\u00b7'+esc(s.industry):''})</span>`
-    ).join('\u3000');
-    return t + (list.length>max?`<span style="color:#9ca3af;"> \u7b49${list.length}\u53ea</span>`:'');
+    return list.map(s=>
+      `<span style="display:inline-block;margin:0 7px 3px 0;">${esc(clean(s.name))}`+
+      `<span style="color:#9ca3af;font-size:11px;">(${s.boards}${cfg.unit}${s.industry?'\u00b7'+esc(s.industry):''})</span></span>`
+    ).join('');
   };
   chart.setOption({
-    tooltip:{trigger:'axis', confine:true,
+    tooltip:{trigger:'axis', confine:true, enterable:true,      // enterable：内容多时可滚动查看
       backgroundColor:'rgba(255,255,255,.97)', borderColor:'#e5e7eb',
       textStyle:{color:'#111827',fontSize:12},
+      extraCssText:'max-width:330px;max-height:68vh;overflow:auto;white-space:normal;-webkit-overflow-scrolling:touch;',
       formatter:ps=>{
         if(!ps||!ps.length) return '';
         const d=L[ps[0].dataIndex]; if(!d) return '';
-        return `<div style="min-width:200px;max-width:300px;white-space:normal;line-height:1.7;"><b>${d.date}</b>`
+        return `<div style="min-width:200px;white-space:normal;line-height:1.7;"><b>${d.date}</b>`
           + (cfg.extra?cfg.extra(d):'')
-          + `<div style="margin-top:4px;"><b style="color:${cfg.colors[0]};">${cfg.labels[0]}</b> ${fmtList(d.top_list,5)}</div>`
-          + `<div><b style="color:${cfg.colors[1]};">${cfg.labels[1]}</b> ${fmtList(d.second_list,5)}</div>`
-          + (d.cyb_list&&d.cyb_list.length?`<div><b style="color:${cfg.colors[2]};">${cfg.labels[2]}</b> ${fmtList(d.cyb_list,3)}</div>`:'')
+          + `<div style="margin-top:4px;"><b style="color:${cfg.colors[0]};">${cfg.labels[0]}</b> ${fmtList(d.top_list)}</div>`
+          + `<div><b style="color:${cfg.colors[1]};">${cfg.labels[1]}</b> ${fmtList(d.second_list)}</div>`
+          + (d.cyb_list&&d.cyb_list.length?`<div><b style="color:${cfg.colors[2]};">${cfg.labels[2]}</b> ${fmtList(d.cyb_list)}</div>`:'')
           + `</div>`;
       }},
     legend:{data:cfg.labels, top:0, right:0, itemWidth:14, itemHeight:8, textStyle:{fontSize:11}},
     grid:{left:40, right:24, top:44, bottom:30},
     xAxis:{type:'category', data:dates, axisLabel:{fontSize:11}},
-    yAxis:{type:'value', name:cfg.yName, min:0, axisLabel:{fontSize:11},
-      minInterval: (cfg.yMinInterval!=null?cfg.yMinInterval:1)},
+    // 纵轴**只保留整数**刻度（板数/连跌天数都是离散整数，不要小数）
+    yAxis:{type:'value', name:cfg.yName, min:0, axisLabel:{fontSize:11}, minInterval:1},
     series:[ mk('top',cfg.colors[0],cfg.labels[0]),
              mk('second',cfg.colors[1],cfg.labels[1]),
              mk('cyb',cfg.colors[2],cfg.labels[2]) ]
@@ -890,7 +892,7 @@ function renderDtLadder(){
   if(!L.length){ el.innerHTML='<div class="empty">暂无跌停数据</div>'; return; }
   dtChart = drawLadderChart(el, dtChart, L, {
     labels:['最高连跌','次高连跌','创业板'], colors:['#15803d','#2563eb','#ea580c'],
-    unit:'连跌', yName:'连跌天', yMinInterval:0.5,
+    unit:'连跌', yName:'连跌天',
     extra:d=>`<div style="margin-top:3px;color:#6b7280;">当日跌停 <b style="color:#15803d;">${d.count||0}</b> 家</div>`
   });
 }
