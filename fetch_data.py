@@ -897,6 +897,58 @@ def fetch_dt_pool(date_yyyymmdd):
     return out
 
 
+def build_ladder(zt_hist, days):
+    """连板高度梯队：近 N 日「最高板 / 次高板 / 创业板」折线。
+
+    返回 [{date, top, second, cyb, top_n, second_n, cyb_n, *_names, *_list}]
+      · top/second/cyb = 当日 最高板 / 次高板 / 创业板最高板（线的 Y 值）
+      · *_n   = 该梯队**股票家数**（图上数字显示这个）
+      · *_list = 结构化名单（name/code/market/boards/industry/zbc/is_yizi），供前端 tooltip
+    """
+    out = []
+    for d in days:
+        pool = zt_hist.get(d, [])
+        if not pool:
+            continue
+        lbcs = sorted({s['lbc'] for s in pool}, reverse=True)
+        top = lbcs[0] if lbcs else 0
+        second = lbcs[1] if len(lbcs) > 1 else 0
+        # 创业板高度：300/301 开头
+        cyb = [s['lbc'] for s in pool if str(s['code']).startswith(('300', '301'))]
+        cyb_max = max(cyb) if cyb else 0
+
+        def _is_cyb(s):
+            return str(s['code']).startswith(('300', '301'))
+
+        def _rows(lbc):
+            """该高度上的个股（结构化，供前端 tooltip 展示「名字 + 板数 + 题材」）"""
+            rs = [s for s in pool if s['lbc'] == lbc]
+            rs.sort(key=lambda x: -(x.get('amount') or 0))
+            return [{'name': s['name'], 'code': s['code'], 'market': s['market'],
+                     'boards': s['lbc'], 'industry': s.get('industry', ''),
+                     'zbc': s.get('zbc', 0), 'is_yizi': bool(s.get('is_yizi'))}
+                    for s in rs[:8]]
+
+        out.append({
+            'date': d,
+            'top': top,
+            'second': second,
+            'cyb': cyb_max,
+            # *_n = 该梯队**股票家数**（图上数字显示这个，而不是板数）
+            'top_n': len([s for s in pool if s['lbc'] == top]) if top else 0,
+            'second_n': len([s for s in pool if s['lbc'] == second]) if second else 0,
+            'cyb_n': len([s for s in pool if _is_cyb(s) and s['lbc'] == cyb_max]) if cyb_max else 0,
+            'top_names': '、'.join([s['name'] for s in pool if s['lbc'] == top][:3]),
+            'second_names': '、'.join([s['name'] for s in pool if s['lbc'] == second][:3]),
+            'cyb_names': '、'.join([s['name'] for s in pool if _is_cyb(s) and s['lbc'] == cyb_max][:2]),
+            'top_list': _rows(top),
+            'second_list': _rows(second),
+            'cyb_list': [r for r in _rows(cyb_max)
+                         if str(r['code']).startswith(('300', '301'))] if cyb_max else [],
+        })
+    return out
+
+
 def build_dt_ladder(dt_hist, dt_days):
     """跌停板梯队：与「连板高度梯队」(`ladder`) **完全同构**，只把「连板数」换成「连续跌停天数」。
 
@@ -932,6 +984,10 @@ def build_dt_ladder(dt_hist, dt_days):
             'second': second,
             'cyb': cyb_max,
             'count': len(pool),
+            # *_n = 该梯队**股票家数**（图上数字显示这个，而不是连跌天数）
+            'top_n': len([s for s in pool if (s.get('dt_days') or 0) == top]) if top else 0,
+            'second_n': len([s for s in pool if (s.get('dt_days') or 0) == second]) if second else 0,
+            'cyb_n': len([s for s in pool if _is_cyb(s) and (s.get('dt_days') or 0) == cyb_max]) if cyb_max else 0,
             'top_names': '、'.join([s['name'] for s in pool if (s.get('dt_days') or 0) == top][:3]),
             'second_names': '、'.join([s['name'] for s in pool if (s.get('dt_days') or 0) == second][:3]),
             'cyb_names': '、'.join([s['name'] for s in pool if _is_cyb(s)
@@ -1351,6 +1407,34 @@ def fetch_index():
 
 
 # ============ 4b. 沪深京量能 ============
+def fetch_tx_turnover_today():
+    """腾讯快照兜底：上证综指 + 深证综指「当日」成交额（腾讯字段 37 = 成交额/万元）。
+
+    仅在当日 **15:00 之后**可用（盘中成交额不完整，用了会得出偏小的假量能）。
+    两个指数都取到才返回，返回 (date, 亿元)；否则 None。
+    """
+    now = datetime.now()
+    if now.hour < 15:
+        return None
+    txt = http_get('https://qt.gtimg.cn/q=sh000001,sz399106',
+                   timeout=8, retry=2, silent=True)
+    if not txt:
+        return None
+    vals = []
+    for line in txt.strip().split(';'):
+        if '=' not in line:
+            continue
+        f = line.split('=', 1)[1].strip().strip('"').split('~')
+        if len(f) > 37 and f[37]:
+            try:
+                vals.append(float(f[37]) / 1e4)       # 万元 → 亿元
+            except Exception:
+                pass
+    if len(vals) < 2 or sum(vals) <= 0:
+        return None
+    return (now.strftime('%Y-%m-%d'), round(sum(vals), 1))
+
+
 def fetch_market_volume(days=15):
     """沪深两市量能（亿元）：上证综指 + 深证综指 的日成交额之和（不含北交所）。
 
@@ -1383,8 +1467,17 @@ def fetch_market_volume(days=15):
         for sid, m in zip(secids, ex.map(_amt, secids)):
             if m:
                 res[sid] = m
-    # 沪深为量能主体，任一缺失则放弃（宁缺勿假，避免出现严重偏小的假量能）
+    # 沪深为量能主体，任一缺失则走兜底（宁缺勿假，避免出现严重偏小的假量能）
     if '1.000001' not in res or '0.399106' not in res:
+        tx = fetch_tx_turnover_today()
+        if tx:
+            prev = ((load_json(DATA_JSON, {}) or {}).get('market_volume') or {}).get('list') or []
+            merged = {x['date']: x['amount_yi'] for x in prev if x.get('date')}
+            merged[tx[0]] = tx[1]                     # 只补「当日」，历史沿用上次结果
+            out = [{'date': d, 'amount_yi': merged[d]} for d in sorted(merged)]
+            print('  [warn] push2his 不通 → 用腾讯快照补当日量能 %s = %.0f亿（历史沿用上次 %d 天）'
+                  % (tx[0], tx[1], len(prev)))
+            return out[-days:]
         print('  [warn] 沪深量能主体缺失，跳过')
         return []
     base = res['1.000001']
@@ -2182,42 +2275,7 @@ def main():
 
     # ---- 梯队折线图数据 ----
     print('\n[5/7] 构建梯队折线数据...')
-    series = []
-    for d in days:
-        pool = zt_hist.get(d, [])
-        if not pool:
-            continue
-        lbcs = sorted({s['lbc'] for s in pool}, reverse=True)
-        top = lbcs[0] if lbcs else 0
-        second = lbcs[1] if len(lbcs) > 1 else 0
-        # 创业板高度：300/301 开头
-        cyb = [s['lbc'] for s in pool if s['code'].startswith(('300', '301'))]
-        cyb_max = max(cyb) if cyb else 0
-
-        def _rows(lbc):
-            """该高度上的个股（结构化，供前端 tooltip 展示「名字 + 板数 + 题材」）"""
-            rs = [s for s in pool if s['lbc'] == lbc]
-            rs.sort(key=lambda x: -(x.get('amount') or 0))
-            return [{'name': s['name'], 'code': s['code'], 'market': s['market'],
-                     'boards': s['lbc'], 'industry': s.get('industry', ''),
-                     'zbc': s.get('zbc', 0), 'is_yizi': bool(s.get('is_yizi'))}
-                    for s in rs[:8]]
-
-        series.append({
-            'date': d,
-            'top': top,
-            'second': second,
-            'cyb': cyb_max,
-            'top_names': '、'.join([s['name'] for s in pool if s['lbc'] == top][:3]),
-            'second_names': '、'.join([s['name'] for s in pool if s['lbc'] == second][:3]),
-            'cyb_names': '、'.join([s['name'] for s in pool
-                                   if s['code'].startswith(('300', '301'))
-                                   and s['lbc'] == cyb_max][:2]),
-            'top_list': _rows(top),
-            'second_list': _rows(second),
-            'cyb_list': [r for r in _rows(cyb_max)
-                         if str(r['code']).startswith(('300', '301'))] if cyb_max else [],
-        })
+    series = build_ladder(zt_hist, days)
     print('  梯队数据点 %d 个' % len(series))
 
     # ---- 跌停板梯队：与连板高度梯队**完全同构**（最高连跌 / 次高连跌 / 创业板，近 7 日）----

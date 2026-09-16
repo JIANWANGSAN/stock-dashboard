@@ -829,7 +829,13 @@ function drawLadderChart(el, prevChart, L, cfg){
     name, type:'line', smooth:true, data:L.map(s=>s[key]),
     symbol:'circle', symbolSize:8, lineStyle:{width:2.5,color}, itemStyle:{color},
     label:{show:true, position:'top', fontSize:11, fontWeight:'bold', color:'#374151',
-      formatter:p=>p.value||''}                 // 只标数字；股票名放 tooltip，避免手机端重叠
+      // 数字 = 该梯队**股票家数**（如 6 板有 1 只 → 显示 1；2 连跌有 2 只 → 显示 2）
+      // 该梯队不存在（值为 0 / 无家数）时不显示。股票名放 tooltip，避免手机端重叠。
+      formatter:p=>{
+        const row=L[p.dataIndex]||{};
+        const n=row[key+'_n'];
+        return (!p.value && p.value!==0) || n==null || !n ? '' : n;
+      }}
   });
   const fmtList = (list,max)=>{
     if(!list||!list.length) return '\u2014';
@@ -855,7 +861,8 @@ function drawLadderChart(el, prevChart, L, cfg){
     legend:{data:cfg.labels, top:0, right:0, itemWidth:14, itemHeight:8, textStyle:{fontSize:11}},
     grid:{left:40, right:24, top:44, bottom:30},
     xAxis:{type:'category', data:dates, axisLabel:{fontSize:11}},
-    yAxis:{type:'value', name:cfg.yName, min:0, axisLabel:{fontSize:11}},
+    yAxis:{type:'value', name:cfg.yName, min:0, axisLabel:{fontSize:11},
+      minInterval: (cfg.yMinInterval!=null?cfg.yMinInterval:1)},
     series:[ mk('top',cfg.colors[0],cfg.labels[0]),
              mk('second',cfg.colors[1],cfg.labels[1]),
              mk('cyb',cfg.colors[2],cfg.labels[2]) ]
@@ -883,7 +890,7 @@ function renderDtLadder(){
   if(!L.length){ el.innerHTML='<div class="empty">暂无跌停数据</div>'; return; }
   dtChart = drawLadderChart(el, dtChart, L, {
     labels:['最高连跌','次高连跌','创业板'], colors:['#15803d','#2563eb','#ea580c'],
-    unit:'连跌', yName:'连跌天',
+    unit:'连跌', yName:'连跌天', yMinInterval:0.5,
     extra:d=>`<div style="margin-top:3px;color:#6b7280;">当日跌停 <b style="color:#15803d;">${d.count||0}</b> 家</div>`
   });
 }
