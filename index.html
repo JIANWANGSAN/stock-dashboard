@@ -843,10 +843,10 @@ function drawLadderChart(el, prevChart, L, cfg){
       }}
   });
   // 名单**完整展示**（不截断）：chip 式自动换行，内容多时弹层可滚动
-  // 名字显示：cfg.shortName 开启时，≥4 字只保留前 2 字（3 字及以内正常显示），节省位置
+  // 名字显示：cfg.shortName 开启时，**最多只显示 3 个字**（超出取前 3 字；3 字及以内正常），节省位置
   const dispName = s=>{
     const n = clean(s.name);
-    return (cfg.shortName && n.length>=4) ? n.slice(0,2) : n;
+    return (cfg.shortName && n.length>3) ? n.slice(0,3) : n;
   };
   const fmtList = (list)=>{
     if(!list||!list.length) return '\u2014';

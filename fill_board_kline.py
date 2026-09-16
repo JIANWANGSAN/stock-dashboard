@@ -9,7 +9,8 @@ data = F.load_json(F.DATA_JSON, {})
 have = data.get('board_kline') or {}
 
 codes = {}
-for b in (data.get('board_daily') or []) + (data.get('board_3d') or []):
+for b in ((data.get('board_daily') or []) + (data.get('board_3d') or [])
+          + (data.get('sector_daily') or []) + (data.get('sector_3d') or [])):
     if b.get('code'):
         codes[b['code']] = b.get('name', '')
 
