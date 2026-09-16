@@ -716,7 +716,11 @@ document.querySelectorAll('.menu-item').forEach(el=>{
     document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
     el.classList.add('active');
     document.getElementById('panel-'+el.dataset.panel).classList.add('active');
-    if(el.dataset.panel==='ladder'){ renderChart(); renderDtLadder(); }
+    if(el.dataset.panel==='ladder'){
+      // 等一帧再画：面板刚从 display:none 切出时容器宽度尚未生效，直接画会被压扁
+      const _draw=()=>{ renderChart(); renderDtLadder(); };
+      (typeof requestAnimationFrame==='function') ? requestAnimationFrame(_draw) : setTimeout(_draw,0);
+    }
   });
 });
 document.querySelectorAll('#news-tabs .tab').forEach(t=>{
@@ -835,6 +839,7 @@ function renderChart(){
   if(!D.ladder||!D.ladder.length) return;
   const L=D.ladder.slice(-7);   // 仅保留近 7 个交易日，避免 X 轴标签重叠
   const chart=ladderChart=ladderChart||echarts.init(document.getElementById('echart-ladder'));
+  chart.resize();   // 面板刚从隐藏切出时容器宽度为 0，必须先重新量尺寸，否则图被压扁
   const dates=L.map(s=>s.date.slice(5));  // MM-DD
   // 图上只标板数（名字移到 tooltip，彻底解决手机端名字重叠）
   const mk=(key,color,name)=>({
@@ -862,8 +867,8 @@ function renderChart(){
           + (d.cyb_list&&d.cyb_list.length?`<div><b style="color:#ea580c;">创业板</b> ${fmtList(d.cyb_list,3)}</div>`:'')
           + `</div>`;
       }},
-    legend:{data:['最高板','次高板','创业板'],top:0},
-    grid:{left:40,right:24,top:40,bottom:30},
+    legend:{data:['最高板','次高板','创业板'],top:0,right:0,itemWidth:14,itemHeight:8,textStyle:{fontSize:11}},
+    grid:{left:40,right:24,top:44,bottom:30},
     xAxis:{type:'category',data:dates,axisLabel:{fontSize:11}},
     yAxis:{type:'value',name:'连板数',min:0,axisLabel:{fontSize:11}},
     series:[
@@ -887,6 +892,7 @@ function renderDtLadder(){
   if(el){
     if(series.length){
       dtChart=dtChart||echarts.init(el);
+      dtChart.resize();   // 同上：init() 阶段面板隐藏，容器宽度为 0
       const dates=series.map(s=>s.date.slice(5));
       const maxd=Math.max(3,...series.map(s=>s.max_days||0));
       dtChart.setOption({
@@ -901,8 +907,8 @@ function renderDtLadder(){
               + (d.max_days?`<div>最高连跌 <b style="color:#dc2626;">${d.max_days}</b> 天${d.max_names?' '+esc(d.max_names):''}</div>`:'')
               + `</div>`;
           }},
-        legend:{data:['跌停家数','最高连跌'],top:0},
-        grid:{left:40,right:40,top:40,bottom:30},
+        legend:{data:['跌停家数','最高连跌'],top:0,right:0,itemWidth:14,itemHeight:8,textStyle:{fontSize:11}},
+        grid:{left:40,right:40,top:46,bottom:30},
         xAxis:{type:'category',data:dates,axisLabel:{fontSize:11}},
         yAxis:[
           {type:'value',name:'家数',min:0,axisLabel:{fontSize:11}},
