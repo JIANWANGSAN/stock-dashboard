@@ -16,12 +16,15 @@ import sys, os, json, time, re, argparse, copy, threading
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 
-from em_boards import em_get   # 东财板块接口（主场冗余）
 # 板块/指数 K线取数（东财优先、被封时自动切同花顺）；勿从本模块 import 以免循环依赖
 from board_kline_src import (fetch_board_klines as _bk_fetch_board_klines,
                              fetch_ths_amount as _bk_fetch_ths_amount,
                              THS_INDEX as _BK_THS_INDEX,
                              SOURCE_PREF as _BK_SOURCE_PREF)
+# 产业板块清单（东财BK代码）→ 同花顺板块指数码/名
+from ths_board_map import THS_MAP
+# 同花顺统一取数层（2026-09-17 起：东财停用，全站数据源收敛到这里）
+import ths_source as THS
 
 sys.stdout.reconfigure(encoding='utf-8')
 import urllib.request
@@ -658,7 +661,7 @@ def merge_elnino_dynamic(elnino_out, dyn):
 
 # ============ 1. 交易日列表 ============
 def fetch_trade_days(limit=90):
-    """交易日列表：优先腾讯K线，东财为备胎（push2his 常被限流），
+    """交易日列表：主源腾讯日K，备源同花顺上证指数日K，
     两源都失败时**回退本地缓存**（否则网络一抖整条管线直接终止）。"""
     got = None
     # 主源：腾讯
@@ -675,17 +678,9 @@ def fetch_trade_days(limit=90):
                 got = days
         except Exception:
             pass
-    # 备胎：东财
+    # 备源：同花顺（原东财 push2his 已停用）
     if not got:
-        url2 = ('https://push2his.eastmoney.com/api/qt/stock/kline/get?'
-                'secid=1.000001&fields1=f1,f2,f3&fields2=f51&klt=101&fqt=0&end=20500101&lmt=%d' % limit)
-        txt2 = http_get(url2, silent=True)
-        if txt2:
-            try:
-                d2 = json.loads(txt2)
-                got = [k.split(',')[0] for k in d2['data']['klines']]
-            except Exception:
-                pass
+        got = THS.fetch_trade_days(limit) or None
     if got:
         try:
             save_json(TRADE_DAYS_CACHE, {'days': got,
@@ -708,35 +703,38 @@ def fetch_trade_days(limit=90):
 
 # ============ 市场情绪（全市场涨跌/涨跌停家数）============
 def fetch_dt_count():
-    """跌停家数：东方财富 push2ex 跌停池（与涨停池同域，稳定）。"""
-    d = datetime.now().strftime('%Y%m%d')
-    url = ('https://push2ex.eastmoney.com/getTopicDTPool?ut=%s&dpt=wz.ztzt&'
-           'Pageindex=0&pagesize=500&sort=fbt%%3Aasc&date=%s' % (UT, d))
+    """跌停家数：**同花顺涨停池响应里的 limit_down_count**（一次请求拿全，无额外调用）。
+
+    东财 push2ex 跌停池（原实现）已废弃 —— 该口径仅剩「跌停个股明细」在用（见 fetch_dt_pool）。
+    """
+    if ZT_STAT.get('dt') is not None:
+        return ZT_STAT.get('dt')
+    # 兜底：单独拉一次当日涨停池（顺带带回情绪字段）
     try:
-        raw = http_get(url, timeout=15, retry=1, silent=True)
-        if raw:
-            obj = json.loads(raw)
-            pool = (obj.get('data') or {}).get('pool')
-            if pool is None:
-                pool = obj.get('data') or []
-            if isinstance(pool, dict):
-                pool = pool.get('pool', [])
-            return len(pool)
+        THS.fetch_zt_pool(datetime.now().strftime('%Y%m%d'))
     except Exception:
         pass
-    return None
+    return ZT_STAT.get('dt')
 
 
 def build_mood(today_pool):
     """市场情绪：涨停/跌停/连板家数（今日涨停池口径，含 20% 涨停）。
-    注：已按用户要求删除全市场涨跌家数（环境对东财 clist 断连，且用户不需要）。"""
+
+    全部取自同花顺涨停池响应：
+      ZT_STAT['zt'|'dt'|'zt_open'|'zt_rate'|'y_zt' …] —— 已按用户要求不带全市场涨跌家数。
+    """
     pool = today_pool or []
     return {
-        'zt_pool': len(pool),
+        'zt_pool': ZT_STAT.get('zt') if ZT_STAT.get('zt') is not None else len(pool),
         'dt': fetch_dt_count(),
         'lbc': len([s for s in pool if s.get('lbc', 0) >= 2]),
         'max_board': max((s.get('lbc', 0) for s in pool), default=0),
+        'zt_open': ZT_STAT.get('zt_open'),      # 炸板家数
+        'zt_rate': ZT_STAT.get('zt_rate'),      # 封板率
+        'y_zt': ZT_STAT.get('y_zt'),            # 昨日涨停家数
+        'y_dt': ZT_STAT.get('y_dt'),            # 昨日跌停家数
         'ok': True,
+        'src': 'ths',
     }
 
 
@@ -758,44 +756,49 @@ def em_get(path, timeout=15):
     return None
 
 
-def fetch_ytd_board_pct():
-    """拉取「昨日涨停/连板/首板/打二板以上/炸板」板块指数当日涨幅。"""
-    ids = ','.join('90.' + c for c in YTD_BOARD_CODES)
-    t = em_get('/api/qt/ulist.np/get?fltt=2&secids=%s&fields=f2,f3,f12,f14' % ids)
+# 昨日涨停表现：「昨日XX」这一类板块指数东财才有（BK0816/BK1645…），同花顺没有对应指数。
+# 故改为**自算**：用同花顺涨停池取「昨日」的 涨停/连板/首板/高度板/炸板 名单，
+# 再用同花顺 realhead 批量取这些票「今日」涨跌幅，算等权平均 —— 口径更直白且全程同花顺。
+YTD_BOARD_DEF = {
+    '昨日涨停':       lambda p, z: [s['code'] for s in p],
+    '昨日连板':       lambda p, z: [s['code'] for s in p if s.get('lbc', 0) >= 2],
+    '昨日首板':       lambda p, z: [s['code'] for s in p if s.get('lbc', 0) == 1],
+    '昨日打二板以上': lambda p, z: [s['code'] for s in p if s.get('lbc', 0) >= 3],
+    '昨日炸板':       lambda p, z: [c['code'] for c in z],
+}
+
+
+def fetch_ytd_lists(y_date):
+    """昨日各梯队名单（同花顺历史涨停池/炸板池）。y_date 形如 '20260916'。"""
+    pool, _ = THS.fetch_zt_pool(y_date)
+    zb = THS.fetch_zb_pool(y_date)
+    return {name: fn(pool, zb) for name, fn in YTD_BOARD_DEF.items()}
+
+
+def fetch_ytd_board_pct(y_date, lists=None):
+    """昨日各梯队「今日」等权平均涨跌幅（%）。返回 ({名: pct}, {名: [代码]})。"""
+    lists = lists or fetch_ytd_lists(y_date)
+    codes = sorted({c for v in lists.values() for c in v})
+    if not codes:
+        return {}, lists
+    snap = THS.fetch_realhead([('hs', c) for c in codes], max_workers=10)
     out = {}
-    if not t:
-        return out
-    try:
-        d = json.loads(t)
-    except Exception:
-        return out
-    for it in (d.get('data') or {}).get('diff') or []:
-        nm = YTD_BOARD_CODES.get(it.get('f12'))
-        if nm:
-            out[nm] = it.get('f3')
-    return out
+    for name, cs in lists.items():
+        vals = []
+        for c in cs:
+            v = snap.get(('hs', c)) or {}
+            if v.get('pct') is not None:
+                vals.append(v['pct'])
+        out[name] = round(sum(vals) / len(vals), 2) if vals else None
+    return out, lists
 
 
-def fetch_ytd_lianban_codes():
-    """「昨日连板」板块(BK0816) 成分股代码列表 = 昨日连板股。"""
-    t = em_get('/api/qt/clist/get?pn=1&pz=200&po=1&np=1&fltt=2&invt=2&fid=f3'
-               '&fs=b:BK0816&fields=f12,f14,f3,f2')
-    out = []
-    if not t:
-        return out
-    try:
-        d = json.loads(t)
-    except Exception:
-        return out
-    for it in (d.get('data') or {}).get('diff') or []:
-        c = it.get('f12')
-        if c:
-            out.append(c)
-    return out
+def build_board_perf(today_pool, tdays=None):
+    """连板晋级 + 昨日涨停表现。返回 dict 供前端渲染。
 
-
-def build_board_perf(today_pool):
-    """连板晋级 + 昨日涨停表现。返回 dict 供前端渲染。"""
+    tdays：交易日列表（升序）。昨日 = tdays[-2]；缺省则从 today_pool 的日期无从推断，
+    此时跳过「昨日表现」部分（宁缺勿假）。
+    """
     pool = today_pool or []
     zt_codes = {s.get('code') for s in pool}
     bp = {
@@ -806,16 +809,20 @@ def build_board_perf(today_pool):
         'y_zt': None, 'y_lb': None, 'y_fb': None, 'y_2plus': None, 'y_broken': None,
         'y_lb_total': 0, 'y_lb_promo': 0, 'ok': False,
     }
-    ytd = fetch_ytd_board_pct()
     km = {'昨日涨停': 'y_zt', '昨日连板': 'y_lb', '昨日首板': 'y_fb',
           '昨日打二板以上': 'y_2plus', '昨日炸板': 'y_broken'}
-    for nm, key in km.items():
-        bp[key] = ytd.get(nm)
-    # 晋级：昨日连板成分股中今日仍在涨停池的
-    lb_codes = fetch_ytd_lianban_codes()
-    bp['y_lb_total'] = len(lb_codes)
-    bp['y_lb_promo'] = len([c for c in lb_codes if c in zt_codes])
-    bp['ok'] = bool(ytd) and bp['y_lb_total'] > 0
+    y_date = None
+    if tdays and len(tdays) >= 2:
+        y_date = str(tdays[-2]).replace('-', '')
+    if y_date:
+        ytd, lists = fetch_ytd_board_pct(y_date)
+        for nm, key in km.items():
+            bp[key] = ytd.get(nm)
+        lb_codes = lists.get('昨日连板') or []
+        bp['y_lb_total'] = len(lb_codes)
+        bp['y_lb_promo'] = len([c for c in lb_codes if c in zt_codes])
+        bp['y_date'] = y_date
+        bp['ok'] = bool(ytd) and bp['y_lb_total'] > 0
     # 降级：实时拉取失败时用上一轮复盘的结构化数据兜底（1 日滞后）
     if not bp['ok']:
         rv = load_json(os.path.join(BASE, 'review_data.json'), {})
@@ -828,56 +835,52 @@ def build_board_perf(today_pool):
 
 
 # ============ 2. 涨停池 ============
+# 市场情绪缓存：涨停池响应里自带「涨停/跌停家数、封板率、炸板数」，
+# 一次请求拿全，**不再需要任何东财情绪接口**（原 fetch_dt_count 已废弃）。
+ZT_STAT = {}
+
+
 def fetch_zt_pool(date_yyyymmdd):
-    """返回当日涨停股列表（含连板数、成交额、封单、行业）"""
-    url = ('https://push2ex.eastmoney.com/getTopicZTPool?ut=%s&dpt=wz.ztzt&'
-           'Pageindex=0&pagesize=500&sort=fbt%%3Aasc&date=%s' % (UT, date_yyyymmdd))
-    txt = http_get(url, silent=True)
-    if not txt:
+    """当日涨停池（**同花顺**）。
+
+    数据源：`data.10jqka.com.cn/dataapi/limit_up/limit_up_pool`
+      · 一次请求同时返回 `limit_up_count` / `limit_down_count` → 写入全局 ZT_STAT
+      · 个股字段：连板数(high_days_value hex)、封单额(order_amount)、流通/总市值、
+        成交额(turnover)、换手率(turnover_rate)、涨停原因(reason_type → concepts)
+      · 封板时间：本接口不返回，由 `fetch_block_top` 的 first_limit_up_time 回填（约 87%），
+        其余由分时反推（见 fetch_seal_amount）
+    """
+    global ZT_STAT
+    pool, stat = THS.fetch_zt_pool(date_yyyymmdd)
+    if stat:
+        ZT_STAT = stat
+    if not pool:
+        print('  [warn] 同花顺涨停池为空：%s' % date_yyyymmdd)
         return []
-    try:
-        d = json.loads(txt)
-        pool = (d.get('data') or {}).get('pool') or []
-    except Exception:
-        return []
-    out = []
-    skipped = 0
-    for s in pool:
-        try:
-            # 全局剔除：北交所 / 科创板 / ST（用户要求所有股票池一律不收）
-            if is_excluded(s.get('c', ''), s.get('n', '')):
-                skipped += 1
-                continue
-            out.append({
-                'code':   s.get('c', ''),
-                'market': s.get('m', 1),
-                'name':   s.get('n', ''),
-                'price':  round((s.get('p') or 0) / 1000.0, 2),
-                'chg':    round(s.get('zdp') or 0, 2),
-                'amount': s.get('amount') or 0,          # 成交额（元）
-                'float_cap': s.get('ltsz') or 0,         # 流通市值
-                'total_cap': s.get('tshare') or 0,       # 总市值
-                'turnover': round(s.get('hs') or 0, 2),  # 换手率
-                'lbc':    s.get('lbc') or 0,             # 连板数
-                'first_seal': s.get('fbt') or 0,         # 首次封板时间
-                'last_seal':  s.get('lbt') or 0,         # 最后(回)封板时间
-                'seal_fund': s.get('fund') or 0,         # 封单资金
-                'zbc':    s.get('zbc') or 0,             # 炸板次数
-                'is_yizi': (s.get('fbt') or 999999) <= 93005,  # 一字板：9:30:05 前首次封板
-                'industry': s.get('hybk') or '',         # 行业板块
-            })
-        except Exception:
-            continue
     # 总市值修正（用户核对的当前值优先，按日期锁定）
-    for s in out:
+    for s in pool:
         k = (s['code'], date_yyyymmdd)
         if k in CAP_OVERRIDE:
             s['total_cap'] = CAP_OVERRIDE[k]
-    return out
+        # 兼容旧字段：industry 用首个题材词（下游 ferment_count / 前端 tooltip 仍读它）
+        if not s.get('industry'):
+            s['industry'] = (s.get('concepts') or [''])[0]
+    return pool
+
+
+def fetch_zt_pool_full(date_yyyymmdd):
+    """涨停池 + 市场情绪（ZT_STAT）一次返回，供 main 里少跑一趟。"""
+    p = fetch_zt_pool(date_yyyymmdd)
+    return p, dict(ZT_STAT)
 
 
 def fetch_dt_pool(date_yyyymmdd):
     """返回当日跌停股列表。
+
+    ⚠️ **同花顺唯一缺口**：THS 无公开的「跌停个股池」接口（`down_limit_pool` 等均 404），
+    只有跌停**家数**（见 ZT_STAT['dt']）。故明细仍走东财 push2ex `getTopicDTPool`
+    —— 该域不在被封的 push2his 路径下，实测可用；若将来也不可用，前端「跌停板梯队」
+    会降级为只有家数、无个股明细。
 
     接口踩坑：跌停池用 `getTopicDTPool`，但 **dpt 仍是 `wz.ztzt`**（写成 wz.dtzt 会返回 0 条）。
     字段：days = 连续跌停天数；oc = 当日开板次数；fund = 封单额（跌停为卖单封单）。
@@ -1074,47 +1077,34 @@ def fetch_seal_amount(code, market, date_str, fbt, is_yizi=False):
             c = cache[key]
             return c.get('seal'), c.get('total')
 
-    # 主源：东财分时 trends2（f57=逐分钟增量额，累计需自加）
-    # ⚠️ push2his 系列在本机常间歇性不可达（RemoteDisconnected），必须轮询备用主机，
-    #    否则上板量取空 → 退化成「全天成交额×50%」的错误口径（硬线被严重高估）。
-    secid = _secid(code, market)
-    path = ('/api/qt/stock/trends2/get?'
-            'secid=%s&fields1=f1,f2,f3,f4,f5,f6,f7,f8'
-            '&fields2=f51,f52,f53,f54,f55,f56,f57,f58&iscr=0&ndays=5' % secid)
+    # ── 主源：同花顺分时 d.10jqka.com.cn/v6/time/hs_<码>/last.js（仅当日）
+    #    字段序（**与东财不同**）：时间, 现价, 该分钟成交额(元), 均价, 该分钟量(股)
+    #    —— 首根 0930 = 集合竞价那根，其余各行为**该分钟增量**（不是累计），
+    #       与旧东财 trends2 的 f57 语义完全一致，故口径代码可 1:1 平移。
     seal, total = None, None
-    day = []
-    for _host in ('push2his.eastmoney.com', '1.push2his.eastmoney.com',
-                  'push2delay.eastmoney.com'):
-        txt = http_get('https://%s%s' % (_host, path), silent=True)
-        if not txt:
-            continue
-        try:
-            d = json.loads(txt).get('data') or {}
-            trends = d.get('trends') or []
-        except Exception:
-            trends = []
-        day = [t for t in trends if t.startswith(date_str)]
-        if day:
-            break
-    if day:
-        hhmm = seal_bar_label(fbt)                # 封板所在分时线（已进位到下一分钟）
-        hhmm_comp = hhmm.replace(':', '') if hhmm else None
-        cum = 0.0
-        first_own = None
-        own_at_seal = None
-        for t in day:
-            p = t.split(',')
-            tm = p[0][11:16]
+    rows = THS.fetch_minute(code)
+    if rows:
+        total = sum(r[2] for r in rows)
+        first_own = rows[0][2]                    # 首根 09:30（含集合竞价）
+        hhmm = seal_bar_label(fbt) if fbt else None
+        if not hhmm:
+            # fbt 缺失（block_top 未覆盖的少数票）→ 从分时反推封板时刻：
+            # 涨停票的「封板价 == 当日最高价」，首次触及该价的那根即为封板那根。
+            # 该根标签是区间**结束**时刻，本身已正确包含封板瞬间，**不需再进位**。
             try:
-                own = float(p[6])                 # 东财 f57 = 该分钟成交额（增量）
+                mx = max(r[1] for r in rows)
+                for r in rows:
+                    if r[1] >= mx - 1e-6:
+                        hhmm = '%s:%s' % (r[0][:2], r[0][2:4])
+                        break
             except Exception:
-                own = 0.0
-            cum += own
-            if first_own is None:
-                first_own = own                   # 首根 09:30（含集合竞价）
+                hhmm = None
+        hhmm_comp = hhmm.replace(':', '') if hhmm else None
+        own_at_seal = None
+        for _t, _px, amt, _avg, _v in rows:
+            tm = '%s:%s' % (_t[:2], _t[2:4])
             if own_at_seal is None and hhmm and tm >= hhmm:
-                own_at_seal = own                 # 首次封板那一根的成交额（仅认第一次）
-        total = cum
+                own_at_seal = amt                 # 首次封板那一根的成交额（仅认第一次）
         if is_yizi and first_own is not None:
             seal = first_own                      # 一字板：集合竞价额
         elif own_at_seal is not None:
@@ -1240,183 +1230,213 @@ def _is_limit_up(code, name, pct):
     return p >= 9.8
 
 
-def fetch_board_zt_stats(boards, max_workers=8):
+def fetch_board_zt_stats(boards, max_workers=5):
     """给每个板块补「涨停家数 / 成分股总数」（board: {zt_count, stock_total}）。
 
-    做法：拉板块成分股（东财 `fs=b:BKxxxx`）逐只按涨跌停规则判定；已剔除北交所。
+    数据源：同花顺板块成分股页（**按当日涨跌幅降序**）—— 涨停股必然排在最前，
+    故取第 1 页即可覆盖该板块当日绝大多数涨停股；总家数取页面 `page_info` 推出的真实家数。
+
+    板块代码口径：`ths_code`（881/885/886xxx）或 `code`（东财BK）经 THS_MAP 转同花顺码。
     """
     if not boards:
         return
 
     def _one(b):
-        code = b.get('code') or b.get('em_code')
-        if not code:
+        tc = b.get('ths_code') or ''
+        if not tc:
+            m = THS_MAP.get(b.get('em_code') or b.get('code') or '')
+            tc = m[0] if m else ''
+        if not tc:
             return
-        stocks, seen = [], set()
-        for pn in range(1, 8):
-            path = ('/api/qt/clist/get?pn=%d&pz=100&po=1&np=1&fltt=2&invt=2&fid=f3'
-                    '&fs=b:%s+f:!50&fields=f12,f14,f3' % (pn, code))
-            t = em_get(path)
-            if not t:
-                break
-            try:
-                df = (json.loads(t).get('data') or {}).get('diff') or []
-            except Exception:
-                break
-            if not df:
-                break
-            for s in df:
-                c = s.get('f12')
-                if c and c not in seen:
-                    seen.add(c)
-                    stocks.append(s)
-            if len(df) < 100:
-                break
-        if not stocks:
+        try:
+            r = THS.count_board_zt(tc, max_page=1)
+        except Exception:
+            r = None
+        if not r:
             return
-        use = [s for s in stocks
-               if not str(s.get('f12') or '').startswith(('4', '8', '92'))]
-        if not use:
-            return
-        b['stock_total'] = len(use)
-        b['zt_count'] = sum(1 for s in use
-                            if _is_limit_up(s.get('f12'), s.get('f14'), s.get('f3')))
+        b['stock_total'] = r['stock_total']
+        b['zt_count'] = r['zt_count']
+        if r.get('leader') and not b.get('leader'):
+            b['leader'] = r['leader']
+            b['leader_pct'] = r['leader_pct']
 
     with ThreadPoolExecutor(max_workers=max_workers) as ex:
         list(ex.map(_one, boards))
 
 
-def fetch_board_klines(boards, day_n=120, week_n=60, max_workers=None):
+def fetch_board_klines(boards, day_n=120, week_n=60, max_workers=None, old=None):
     """预生成榜单板块的日K/周K，随 data.js 下发。
 
-    为什么放在后端：浏览器直连东财 `push2his` 取板块K线**跨域不可靠**（无 CORS 头，JSONP 也时好时坏），
-    改为 Python 抓一次、落进 data.js，前端点击即可秒开、离线也能看。
+    为什么放在后端：浏览器直连同花顺 `d.10jqka.com.cn` 取板块K线需 script 注入
+    （回调名固定），离线也不可用；改为 Python 抓一次、落进 data.js，前端点击即可秒开。
 
-    实际取数在 `board_kline_src.fetch_board_klines`：**先探测东财，通则整批走东财；
-    东财 K线路径对高频 IP 会整段封禁（见 项目约定.md 3.9.1）→ 不通则整批切同花顺板块指数**。
-    两家指数基期不同、点位不可混用，故不允许按单个板块切换来源。
+    实际取数在 `board_kline_src.fetch_board_klines`（**整批统一走同花顺板块指数**，
+    `SOURCE_PREF='ths'`；两家指数基期不同、点位不可混用，故不允许按单个板块切换来源）。
+    `old` 传入上一版 board_kline → 自动合并，新数据残缺的板块沿用老数据。
 
-    返回 {code: {'name':.., 'day': ['日期,开,收,高,低', ...], 'week': [...], 'src': 'em'|'ths'}}
+    返回 {code: {'name':.., 'day': ['日期,开,收,高,低', ...], 'week': [...], 'src': 'ths'}}
     """
-    return _bk_fetch_board_klines(boards, day_n=day_n, week_n=week_n, max_workers=max_workers)
+    return _bk_fetch_board_klines(boards, day_n=day_n, week_n=week_n,
+                                  max_workers=max_workers, old=old)
 
 
 def fetch_board_rank(top=60):
-    """板块榜：**只用东财**，口径与「东方财富 App → 行情 → 板块」完全对齐。
+    """板块榜：**只用同花顺**（东财已停用）。
 
-    · 行业榜：只取**二级行业**（剔除申万一级与三级细分）→ 同 App「行业」tab
-    · 概念榜：t:3 全部，剔除「风格类」→ 同 App「概念」tab
+    三个来源（均已实测）：
+      · 行业榜/概念榜  `data.10jqka.com.cn/funds/<hy|gn>zjl/` 资金流表（分页 ajax）
+            → 名称 / 当日涨跌幅 / 净额(亿) / **公司家数** / 领涨股 / 领涨股涨跌幅
+      · 板块实时快照    `d.10jqka.com.cn/v6/realhead/bk_<板块指数码>/defer/last.js`
+            → 当日涨跌幅、成交额、**成分股总数**（field 37）
+      · 中期涨幅        同花顺板块指数日K 自算（同花顺榜页无 3日/5日 列）
 
-    字段：pct=当日涨跌幅(f3)；d3=3日涨跌幅(f127)；d5=5日涨跌幅(f109)；
-          up/down=板块内上涨/下跌家数(f104/f105)；leader/leader_pct=领涨股(f128/f136)；
-          zljlr_wan=主力净流入(f62，万元)；em_code=板块K线代码(secid=90.<code>)
+    字段：pct=当日涨跌幅；d3/d5=3日/5日涨幅（自算）；up/down=上涨/下跌家数；
+          leader/leader_pct=领涨股；zljlr_wan=主力净额（万元）；em_code/ths_code=板块代码
 
-    返回 {'industry': [...按当日降序], 'concept': [...按当日降序]}
+    返回 {'industry': [...], 'concept': [...], 'all': [...], 'watch': [...28 产业板块...]}
     """
-    F = 'f3,f12,f14,f62,f104,f105,f109,f127,f128,f136'
-    jobs = [(fs, pn) for fs in ('m:90+t:2+f:!50', 'm:90+t:3+f:!50') for pn in range(1, 7)]
+    all_fund = THS.fetch_all_fund_rank()
+    industry = THS.fetch_fund_rank('hy', pages=2)
+    concept = THS.fetch_fund_rank('gn', pages=8)
 
-    def _page(job):
-        fs, pn = job
-        path = ('/api/qt/clist/get?pn=%d&pz=100&po=1&np=1&fltt=2&invt=2&fid=f3&fs=%s&fields=%s'
-                % (pn, fs, F))
-        t = em_get(path)
-        if not t:
-            return fs, []
+    def _norm(b, is_ind):
+        return {
+            'name': b['name'], 'code': b.get('name'),
+            'pct': b.get('pct') or 0.0,
+            'd3': None, 'd5': None,
+            'up': 0, 'down': 0,
+            'total': b.get('stock_total') or 0,
+            'stock_total': b.get('stock_total') or 0,
+            'leader': b.get('leader') or '',
+            'leader_pct': b.get('leader_pct'),
+            'zljlr_wan': round((b.get('net_in_yi') or 0) * 1e4, 2),
+            'amount_yi': b.get('amount_yi'),
+            'em_code': '', 'ths_code': '',
+        }
+
+    board = [_norm(b, True) for b in industry]
+    cpt = [_norm(b, False) for b in concept]
+
+    # 板块名 → 同花顺板块指数码（realhead/日K 都要用）
+    name2code = {}
+    for c, v in (THS.index_table() or {}).items():
+        nm = (v.get('name') if isinstance(v, dict) else v) or ''
+        if nm and nm not in name2code:
+            name2code[nm] = c
+    for b in board + cpt:
+        b['ths_code'] = name2code.get(b['name'], '') or ''
+
+    # ---- 用户「产业板块」清单（28 个）：以 SECTOR_WATCH 为准，逐条取同花顺数据 ----
+    watch = []
+    _secs = []
+    for _disp, _em in SECTOR_WATCH:
+        _t = THS_MAP.get(_em)
+        if not _t:
+            continue
+        watch.append({'disp': _disp, 'em': _em, 'ths': _t[0], 'ts_name': _t[1]})
+        _secs.append(('bk', _t[0]))
+    snap = THS.fetch_realhead(_secs, max_workers=10) if _secs else {}
+
+    out_watch = []
+    for w in watch:
+        v = snap.get(('bk', w['ths'])) or {}
+        f = THS.match_fund_row(all_fund, w['ts_name']) or {}
+        # 成分股页首行 = 当日涨幅第一 → 领涨股（资金流榜匹配不到时的兜底）
+        out_watch.append({
+            'name': w['disp'],
+            'code': w['em'],
+            'em_code': w['em'],
+            'ths_code': w['ths'],
+            'pct': v.get('pct') if v.get('pct') is not None else (f.get('pct') or 0.0),
+            'd3': None, 'd5': None,
+            'up': 0, 'down': 0,
+            'stock_total': int(v.get('stock_total') or f.get('stock_total') or 0),
+            'total': int(v.get('stock_total') or f.get('stock_total') or 0),
+            'leader': f.get('leader') or '',
+            'leader_pct': f.get('leader_pct'),
+            'zljlr_wan': round((f.get('net_in_yi') or 0) * 1e4, 2),
+            'amount_yi': round((v.get('amount') or 0) / 1e8, 2),
+        })
+
+    board.sort(key=lambda x: -x['pct'])
+    cpt.sort(key=lambda x: -x['pct'])
+    out_watch.sort(key=lambda x: -x['pct'])
+
+    # 中期涨幅（3日/5日）：同花顺榜页只有当日一列 → 按板块指数码自算（并发）
+    _need = [b for b in (board[:30] + cpt[:30] + out_watch) if b.get('ths_code')]
+
+    def _mid(b):
         try:
-            return fs, ((json.loads(t).get('data') or {}).get('diff') or [])
+            b['d3'] = THS.pct_over(b['ths_code'], 3)
+            b['d5'] = THS.pct_over(b['ths_code'], 5)
         except Exception:
-            return fs, []
+            pass
 
-    with ThreadPoolExecutor(max_workers=6) as ex:
-        pages = list(ex.map(_page, jobs))
+    with ThreadPoolExecutor(max_workers=10) as ex:
+        list(ex.map(_mid, _need))
 
-    def _num(v, d=0.0):
-        try:
-            return float(v)
-        except Exception:
-            return d
-
-    industry, concept, watch = [], [], []
-    _watch_codes = {c for _, c in SECTOR_WATCH}    # 用户「产业板块」清单（无条件保留，不受名称过滤影响）
-    for fs, diff in pages:
-        is_ind = fs.startswith('m:90+t:2')
-        for it in diff:
-            name = (it.get('f14') or '').strip()
-            code = it.get('f12') or ''
-            if not name or not code:
-                continue
-            in_watch = code in _watch_codes
-            if not in_watch:
-                if any(name.startswith(k) for k in BOARD_SKIP):
-                    continue
-                if is_ind:
-                    if not is_l2_industry(code):
-                        continue
-                elif any(k in name for k in STYLE_BOARD_KW):
-                    continue
-            up = int(_num(it.get('f104')))
-            down = int(_num(it.get('f105')))
-            row = {
-                'name': name, 'code': code,
-                'pct': _num(it.get('f3')),
-                'd3': _num(it.get('f127')),      # 3日涨跌幅（与 App「3日」同口径）
-                'd5': _num(it.get('f109')),      # 5日涨跌幅
-                'up': up, 'down': down, 'total': up + down,
-                'leader': it.get('f128') or '',
-                'leader_pct': _num(it.get('f136')),
-                'zljlr_wan': _num(it.get('f62')) / 1e4,
-                'em_code': code,                 # 板块K线弹层用（secid=90.<code>）
-            }
-            if in_watch:
-                watch.append(row)              # 产业板块清单：单独收集（可能本就属于行业/概念）
-            else:
-                (industry if is_ind else concept).append(row)
-
-    industry.sort(key=lambda x: -x['pct'])
-    concept.sort(key=lambda x: -x['pct'])
-    watch.sort(key=lambda x: -x['pct'])
-
-    # 全量板块热度留档（行业+概念）：个股概念按「对应板块当日涨幅」排序，
+    # 全量板块热度留档（行业+概念+产业清单）：个股概念按「对应板块当日涨幅」排序，
     # 实现「同一个票每一波走不同概念 → 取当下正在炒的那个」。
     try:
         BOARD_HEAT.clear()
-        for b in industry + concept + watch:
+        for b in board + cpt + out_watch:
             if b['name']:
                 BOARD_HEAT[b['name']] = b['pct']
     except Exception:
         pass
-    print('[板块] 东财口径：二级行业 %d 个 · 概念 %d 个（已剔一级/三级/风格）· 产业清单 %d 个'
-          % (len(industry), len(concept), len(watch)))
-    _allmap = {b['code']: b for b in industry + concept}
-    for b in watch:
-        _allmap[b['code']] = b             # 产业清单优先
-    return {'industry': industry[:top], 'concept': concept[:top],
-            'all': list(_allmap.values()), 'watch': watch}
+    print('[板块] 同花顺口径：行业 %d 个 · 概念 %d 个 · 产业清单 %d 个'
+          % (len(board), len(cpt), len(out_watch)))
+    _allmap = {b['name']: b for b in board + cpt}
+    for b in out_watch:
+        _allmap[b['name']] = b
+    _got = {w['em_code'] for w in out_watch}
+    _missing = [e for e, _ in SECTOR_WATCH if e not in _got]
+    return {'industry': board[:top], 'concept': cpt[:top],
+            'all': list(_allmap.values()), 'watch': out_watch,
+            'watch_missing': _missing}
 # ============ 4. 指数行情 ============
+# 同花顺指数码（`zs_` 前缀）。北证50 同花顺无此指数 → 由腾讯单条兜底（该指数不参与选股池）。
+INDEX_SPEC = [
+    ('sh000001', 'zs_1A0001', '上证指数'),
+    ('sz399001', 'zs_399001', '深证成指'),
+    ('sz399006', 'zs_399006', '创业板指'),
+    ('sh000688', 'zs_1B0688', '科创50'),
+    ('bj899050', None,        '北证50'),
+    ('sh000300', 'zs_399300', '沪深300'),
+]
+
+
 def fetch_index():
-    codes = ['sh000001', 'sz399001', 'sz399006', 'sh000688', 'bj899050', 'sh000300']
-    url = 'https://qt.gtimg.cn/q=' + ','.join(codes)
-    txt = http_get(url, enc='gbk')  # 腾讯行情接口返回 GBK，按 UTF-8 解会产生乱码
+    """指数行情：主源同花顺 realhead；同花顺没有的（北证50）用腾讯单条兜底。"""
+    ids = [(zs, tx, disp) for tx, zs, disp in INDEX_SPEC if zs]
+    snap = THS.fetch_index() if ids else []
+    by_tx = {i['code']: i for i in snap}
     out = []
-    if not txt:
-        return out
-    for seg in txt.split(';'):
-        if '~' not in seg:
-            continue
-        parts = seg.split('~')
-        if len(parts) < 45:
-            continue
-        try:
-            out.append({
-                'name': parts[1],
-                'code': parts[2],
-                'price': float(parts[3]),
-                'chg_pct': float(parts[32]),
-                'amount_yi': round(float(parts[37]) / 10000.0, 2) if parts[37] else 0,
-            })
-        except Exception:
-            continue
+    missing = []
+    for tx_code, zs, disp in INDEX_SPEC:
+        it = by_tx.get(tx_code)
+        if it and it.get('price') is not None:
+            out.append(it)
+        else:
+            missing.append(tx_code)
+    if missing:
+        txt = http_get('https://qt.gtimg.cn/q=' + ','.join(missing),
+                       enc='gbk', timeout=8, retry=2, silent=True)
+        for seg in (txt or '').split(';'):
+            if '~' not in seg:
+                continue
+            p = seg.split('~')
+            if len(p) < 45:
+                continue
+            try:
+                out.append({
+                    'name': p[1], 'code': p[2],
+                    'price': float(p[3]), 'chg_pct': float(p[32]),
+                    'amount_yi': round(float(p[37]) / 10000.0, 2) if p[37] else 0,
+                    'src': 'tx',
+                })
+            except Exception:
+                continue
     return out
 
 
@@ -1541,19 +1561,14 @@ def news_brief(title, summary, limit=72):
 
 # ============ 5. 新闻 ============
 def fetch_news(days=1):
-    """抓取每日必看新闻。
+    """抓取每日必看新闻（**同花顺 7×24 快讯**，东财已停用）。
     days=1 只取当日（盘后完整复盘口径）；
     days>1 取最近 N 天（早盘口径，用于覆盖周末与隔夜外围行情）。
     """
-    url = ('https://np-listapi.eastmoney.com/comm/web/getFastNewsList?client=web&biz=web_724'
-           '&fastColumn=102&sortEnd=&pageSize=%d&req_trace=1' % NEWS_PAGE_SIZE)
-    txt = http_get(url)
-    if not txt:
-        return {'macro': [], 'good': [], 'bad': [], 'overseas': []}
-    try:
-        d = json.loads(txt)
-        items = (d.get('data') or {}).get('fastNewsList') or []
-    except Exception:
+    # 同花顺快讯按时间倒序分页，每页 200 条；days>1 时多翻几页以覆盖前几个自然日
+    pages = 1 if days <= 1 else min(4, days)
+    items = THS.fetch_news(pagesize=NEWS_PAGE_SIZE, pages=pages)
+    if not items:
         return {'macro': [], 'good': [], 'bad': [], 'overseas': []}
 
     today = datetime.now().strftime('%Y-%m-%d')
@@ -1562,12 +1577,12 @@ def fetch_news(days=1):
     multi = days > 1
     res = {'macro': [], 'good': [], 'bad': [], 'overseas': []}
     for it in items:
-        show_time = it.get('showTime', '')
+        show_time = it.get('time') or ''
         if not show_time or show_time[:10] < earliest or show_time[:10] > today:
             continue
         title = (it.get('title') or '').strip()
-        summary = (it.get('summary') or '').strip()
-        # 只显示「完整句子」的简述（源站摘要常被截断，故按句号取完整句）
+        summary = (it.get('digest') or '').strip()
+        # 同花顺快讯的 title 常是短标题、digest 才是完整句 → 合并后按句号取完整句
         brief = news_brief(title, summary)
         if not brief:
             continue
@@ -1599,71 +1614,57 @@ def fetch_news(days=1):
 
 # ============ 6. 个股标签（地域 / 概念 / 拼音） ============
 def fetch_stock_events(code, name, days=10, own_concepts=None):
-    """从个股近期新闻标题中提取「涨停原因」。
+    """个股「涨停原因」—— **同花顺涨停原因口径**（东财新闻搜索已停用）。
 
     返回 (events, hot_boards)：
-      events     —— 事件标签，如 重组 / 中标 / 业绩预增 / 政策利好 …
-      hot_boards —— 新闻里点名的板块，如「CPO板块短线走高」→ ['CPO']
-    这两项都是「当下驱动」，优先级高于静态所属概念。
+      events     —— 事件标签，如 重组 / 中标 / 业绩预增 / 政策利好 …（由原因文本按关键词归纳）
+      hot_boards —— 该股最近一次涨停时的**题材原因词**，如 ['存储芯片','资产重组']
 
-    own_concepts：该股已有的概念列表。新闻里点名的板块必须与之相关才采纳，
-    否则市场综述（如"农业、化肥板块全线爆发"）会把不相干的板块误配给个股。
+    数据源：同花顺 `limit_up/block_top` 的 `reason_type` / `reason_info`
+      （每个交易日一次请求，由 `build_reason_index()` 预先整批拉好并缓存到模块级 REASON_INDEX）。
+      这比抓新闻标题更准：它就是同花顺自己给的「涨停原因」，且与全站同一数据源。
     """
-    if not name:
+    if not name or not code:
         return [], []
-    from urllib.parse import quote
-    import datetime as _dt
-    param = {
-        "uid": "", "keyword": name,
-        "type": ["cmsArticleWebOld"], "client": "web", "clientType": "web",
-        "clientVersion": "curr",
-        "param": {"cmsArticleWebOld": {"searchScope": "default", "sort": "time",
-                                       "pageIndex": 1, "pageSize": 20}},
-    }
-    url = ('https://search-api-web.eastmoney.com/search/jsonp?cb=&param=%s'
-           % quote(json.dumps(param, ensure_ascii=False), safe=''))
-    txt = http_get(url, silent=True)
-    if not txt:
+    rec = REASON_INDEX.get(str(code))
+    if not rec:
         return [], []
-    try:
-        t = txt.strip()
-        if t.startswith('('):
-            t = t[1:-1]
-        d = json.loads(t)
-        arr = (d.get('result') or {}).get('cmsArticleWebOld') or []
-    except Exception:
-        return [], []
-
-    cutoff = (_dt.date.today() - _dt.timedelta(days=days)).strftime('%Y-%m-%d')
-    own = set(own_concepts or [])
-    events, boards = [], []
-    for it in arr[:20]:
-        title = re.sub(r'<[^>]+>', '', it.get('title') or '')
-        dt = (it.get('date') or '')[:10]
-        if not title:
-            continue
-        if dt and dt < cutoff:
-            continue          # 只看最近 N 天，避免拿旧闻当当下原因
-        if any(k in title for k in NEWS_SKIP):
-            continue          # 市场综述类：提到个股只是碰巧，不作数
-        if name not in title:
-            continue          # 标题必须点名该股
-        for ev, kws in EVENT_KW.items():
-            if ev in events:
-                continue
-            if any(k in title for k in kws):
-                events.append(ev)
-        for rgx in (NEWS_BOARD_RE, NEWS_BOARD_RE2):
-            for m in rgx.finditer(title):
-                b = m.group(1).strip()
-                if not (2 <= len(b) <= 8) or b == name or b in boards:
-                    continue
-                if own and not _related(b, own):
-                    continue      # 与个股已有概念无关的板块，判定为综述误配
-                boards.append(b)
-    # 真原因在前，现象在后
+    boards = [b for b in (rec.get('concepts') or [])][:3]
+    text = rec.get('info') or ''
+    events = []
+    for ev, kws in EVENT_KW.items():
+        if any(k in text for k in kws):
+            events.append(ev)
+    # 原因词本身可能直接就是事件（如「资产重组」「股份回购」「业绩预增」）
+    joined = ' '.join(boards) + text[:200]
+    for ev, kws in EVENT_KW.items():
+        if ev not in events and any(k in joined for k in kws):
+            events.append(ev)
     events.sort(key=lambda e: 0 if e in EVENT_REAL else 1)
     return events, boards
+
+
+def build_reason_index(days):
+    """整批预热「涨停原因索引」（近 N 个交易日各拉一次 block_top）。
+
+    必须在节点/个股标注**之前**调用，否则 REASON_INDEX 为空 → 事件标签全丢。
+    """
+    global REASON_INDEX
+    ds = [str(d).replace('-', '') for d in (days or [])]
+    if not ds:
+        return {}
+    try:
+        REASON_INDEX = THS.fetch_reason_index(ds, limit=60, max_workers=6)
+    except Exception as e:
+        print('  [warn] 涨停原因索引抓取失败：%s' % type(e).__name__)
+        REASON_INDEX = {}
+    if REASON_INDEX:
+        print('  涨停原因索引：%d 只（覆盖 %d 个交易日）' % (len(REASON_INDEX), len(ds)))
+    return REASON_INDEX
+
+
+# 涨停原因索引（模块级缓存，见 build_reason_index）
+REASON_INDEX = {}
 
 
 def _related(board, own_concepts):
@@ -1723,7 +1724,11 @@ def _secid(code, market=None):
 
 
 def fetch_stock_tags(code, market, name, cache):
-    """返回 {region, concepts, industry, pinyin}"""
+    """返回 {region, concepts, industry, pinyin}。
+
+    数据源：同花顺 F10（`basic.10jqka.com.cn/<码>/concept.html` 概念 + `company.html` 地域/行业）。
+    东财 `push2/slist` 与 `datacenter F10` 均已停用。
+    """
     key = '%s.%s' % (market_of(code), code)
     cached = cache.get(key) or {}
     if cached.get('concepts') and cached.get('_v') == TAGS_VER:
@@ -1731,43 +1736,10 @@ def fetch_stock_tags(code, market, name, cache):
         c['pinyin'] = pinyin_abbr(name)
         return c
 
-    sid = _secid(code, market)
-    # 所属板块（概念 + 行业 + 地域板块），全量抓取不截断
-    raw, region = [], ''
-    url = ('https://push2.eastmoney.com/api/qt/slist/get?spt=3&fltt=2&invt=2&secid=%s'
-           '&fields=f12,f13,f14,f3&pn=1&np=1&pz=60' % sid)
-    txt = http_get(url, silent=True)
-    if txt:
-        try:
-            d = json.loads(txt)
-            for it in (d.get('data') or {}).get('diff') or []:
-                bn = (it.get('f14') or '').strip()
-                if not bn:
-                    continue
-                base = bn.replace('板块', '').strip()
-                if base in PROVINCES or (bn.endswith('板块') and base in PROVINCES):
-                    if not region:
-                        region = base
-                    continue        # 地域板块只用于填 region，不进 concepts
-                raw.append(bn)
-        except Exception:
-            pass
-
-    # F10 兜底取地域
-    if not region:
-        sufix = '%s.SH' % code if market_of(code) == 1 else '%s.SZ' % code
-        url2 = ('https://datacenter.eastmoney.com/securities/api/data/v1/get?'
-                'reportName=RPT_F10_BASIC_ORGINFO&columns=ALL&filter=(SECUCODE%%3D%%22%s%%22)'
-                '&pageNumber=1&pageSize=1&source=HSF10&client=PC' % sufix)
-        txt2 = http_get(url2, silent=True)
-        if txt2:
-            try:
-                d2 = json.loads(txt2)
-                rows = (d2.get('result') or {}).get('data') or []
-                if rows:
-                    region = (rows[0].get('PROVINCE') or '').strip()
-            except Exception:
-                pass
+    f10 = THS.fetch_f10(code)
+    raw = list(f10.get('concepts') or [])
+    region = (f10.get('region') or '').strip()
+    ths_industry = (f10.get('industry') or '').strip()
 
     # ---- 板块分流：行业 -> industry，题材 -> concepts（噪声/地域已剔除）----
     def _is_industry(bn):
@@ -1784,6 +1756,11 @@ def fetch_stock_tags(code, market, name, cache):
             continue
         b = bn.replace('板块', '').strip()
         b2 = re.sub(r'[ⅠⅡⅢⅣⅤ]+$', '', b)
+        # 地域类概念（如「北京」「江苏」）只填 region，不进 concepts
+        if b in PROVINCES or b2 in PROVINCES:
+            if not region:
+                region = b
+            continue
         themes.append(CONCEPT_ALIAS.get(bn) or CONCEPT_ALIAS.get(b) or CONCEPT_ALIAS.get(b2) or b)
 
     # 去重保序
@@ -1805,7 +1782,7 @@ def fetch_stock_tags(code, market, name, cache):
         clean = rank_concepts(clean)
     clean = clean[:6]
 
-    industry = industries[0] if industries else ''
+    industry = industries[0] if industries else ths_industry
 
     # 网络失败且无新数据时，降级用旧缓存（但按新口径过滤一遍）
     if not clean and cached.get('concepts'):
@@ -2261,23 +2238,16 @@ def main():
         brd = f_board.result()
         news = f_news.result()
         mv = f_mv.result()
-    board = brd['industry']      # 二级行业（对齐东财 App「行业」）
-    concept = brd['concept']     # 概念（对齐东财 App「概念」）
+    board = brd['industry']      # 同花顺行业榜
+    concept = brd['concept']     # 同花顺概念榜
 
-    # ---- 产业板块榜：按用户指定清单（SECTOR_WATCH），从东财全量里按代码取数 ----
-    _allmap = {b['code']: b for b in (brd.get('watch') or [])}
-    sector = []
-    for _disp, _code in SECTOR_WATCH:
-        _b = _allmap.get(_code)
-        if not _b:
-            continue
-        _x = dict(_b)
-        _x['name'] = _disp         # 用用户清单里的显示名（如「存储」而非东财「存储芯片」）
-        _x['em_code'] = _code
-        sector.append(_x)
+    # ---- 产业板块榜：按用户指定清单（SECTOR_WATCH），由同花顺逐条取数 ----
+    sector = list(brd.get('watch') or [])
     sector.sort(key=lambda x: -x['pct'])
-    print('  产业板块 %d/%d 个匹配到东财（按当日涨幅降序）' % (len(sector), len(SECTOR_WATCH)))
-    print('  指数 %d 条 | 二级行业 %d 条 | 概念 %d 条 | 新闻 宏观%d 利好%d 利空%d 外围%d'
+    _miss = brd.get('watch_missing') or []
+    print('  产业板块 %d/%d 个匹配到同花顺（按当日涨幅降序）%s'
+          % (len(sector), len(SECTOR_WATCH), ('，缺：' + '、'.join(_miss)) if _miss else ''))
+    print('  指数 %d 条 | 行业 %d 条 | 概念 %d 条 | 新闻 宏观%d 利好%d 利空%d 外围%d'
           % (len(index), len(board), len(concept), len(news['macro']),
              len(news['good']), len(news['bad']), len(news['overseas'])))
 
@@ -2290,22 +2260,24 @@ def main():
         print('  沪深京量能：本次未取到，%s'
               % ('沿用上次 %d 日' % len(mv) if mv else '无数据'))
 
-    # 3 日榜：直接用东财 f127（3日涨跌幅）——与东财 App「3日」同口径，无需自建历史快照
+    # 3 日榜：同花顺榜页无 3日/5日 列 → 按板块指数日K自算（见 fetch_board_rank）
     print('\n[4/7] 生成 3 日榜...')
     today = days[-1]
-    board_3d = sorted(board, key=lambda x: -(x.get('d3') or 0))[:10]
-    board_3d_note = '3日涨幅（东财口径）'
+    board_3d = sorted([b for b in board if b.get('d3') is not None],
+                      key=lambda x: -(x.get('d3') or 0))[:10]
+    board_3d_note = '3日涨幅（同花顺板块指数自算）'
     # 产业板块 3 日榜（同一份清单，按 3 日涨幅降序）
     sector_3d = sorted(sector, key=lambda x: -(x.get('d3') or 0))
     board_3d_days = 3
     print('  3日榜：%d 条 · %s' % (len(board_3d), board_3d_note))
 
-    # 板块「涨停 / 全部」统计：拉成分股逐只判涨停（行业榜+概念榜+3日榜，按板块代码去重）
+    # 板块「涨停 / 全部」统计：拉成分股逐只判涨停（行业榜+概念榜+3日榜+产业清单，去重）
     print('\n[4b/7] 统计板块涨停家数...')
     _stat = {}
-    for _b in (board[:10] + board_3d + sector):   # 含产业板块清单（给「涨停/全部」列取数）
-        if _b.get('code'):
-            _stat[_b['code']] = _b
+    for _b in (board[:10] + board_3d + sector):
+        _k = _b.get('ths_code') or _b.get('code')
+        if _k:
+            _stat[_k] = _b
     fetch_board_zt_stats(list(_stat.values()))
     print('  已统计 %d/%d 个板块' % (
         sum(1 for _b in _stat.values() if _b.get('stock_total')), len(_stat)))
@@ -2314,13 +2286,12 @@ def main():
     print('\n[4c/7] 预生成榜单板块的日K/周K...')
     # 只给「页面实际展示的板块」生成K线（= 产业板块清单 28 个）。
     # 注：board_daily/board_3d 已不在页面展示（仅供盘后 module4 补成分股用），故不再预生成其K线，
-    #     否则请求数翻倍会触发东财限流（实测 82 个请求时日K大面积失败）。
+    #     否则请求数翻倍（同花顺虽宽松，但也没必要）。
     _kl = {}
     for _b in sector:
-        if _b.get('code'):
-            _kl[_b['code']] = _b
-    # 传入上一版 board_kline：内部会自动合并——新数据残缺/失效的板块沿用老数据，
-    # 避免东财「抽风式限流」（偶发放行几次后被封）把整批好数据覆盖成个位数。
+        if _b.get('em_code'):
+            _kl[_b['em_code']] = _b
+    # 传入上一版 board_kline：内部会自动合并——新数据残缺/失效的板块沿用老数据。
     _old_kl = (load_json(DATA_JSON, {}) or {}).get('board_kline') or {}
     board_kline = fetch_board_klines(list(_kl.values()), old=_old_kl)
     print('  已生成 %d/%d 个板块的日K/周K（日K120根·周K60根）' % (len(board_kline), len(_kl)))
@@ -2362,6 +2333,8 @@ def main():
 
     # ---- 节点判定 ----
     print('\n[6/7] 节点判定...')
+    # 涨停原因索引：必须在节点票标注**之前**整批预热（同花顺口径，替代原东财新闻搜索）
+    build_reason_index(days[-12:])
     raw_nodes = detect_nodes(zt_hist, [d for d in days if d in zt_hist])
     print('  检出节点 %d 个' % len(raw_nodes))
     for n in raw_nodes:
@@ -2437,6 +2410,8 @@ def main():
                 'is_yizi': s.get('is_yizi', False),
                 'folded': status == '已断板',   # 已断板默认折叠
             })
+            if tags.get('concepts') or tags.get('region') != '—':
+                tagged += 1
 
         # 触发票标签同样只读缓存
         trg_tags = {'region': '—', 'concepts': [], 'industry': trg.get('industry', ''),
@@ -2620,11 +2595,13 @@ def main():
         print('\n[厄尔尼诺] 自动收录新龙头：' + '，'.join(
             '%s(%s)%d板' % (e['name'], e['code'], e['boards']) for e in new_leaders))
 
-    # ---- 板块K线可用性：行业榜/概念榜/3日榜全部是东财口径，code 即 BK 代码，均可点 ----
+    # ---- 板块K线可用性：同花顺口径下以 ths_code 为准（em_code 仅用于前端 bklink 桥接） ----
+    def _k_ok(_b):
+        return bool(_b.get('ths_code') or _b.get('em_code'))
     print('\n[板块] 板块K线可用：行业 %d/%d · 概念 %d/%d · 3日 %d/%d'
-          % (sum(1 for _b in board[:10] if _b.get('em_code')), len(board[:10]),
-             sum(1 for _b in concept[:15] if _b.get('em_code')), len(concept[:15]),
-             sum(1 for _b in board_3d if _b.get('em_code')), len(board_3d)))
+          % (sum(1 for _b in board[:10] if _k_ok(_b)), len(board[:10]),
+             sum(1 for _b in concept[:15] if _k_ok(_b)), len(concept[:15]),
+             sum(1 for _b in board_3d if _k_ok(_b)), len(board_3d)))
 
     data = {
         'updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -2644,7 +2621,7 @@ def main():
         'dt_pool': dt_today,        # 跌停板梯队：今日明细（含题材）
         'dt_ladder': dt_series,     # 跌停板梯队：近 7 日家数/最高连跌趋势
         'nodes': nodes_out[:12],
-        'board_perf': build_board_perf(today_pool),  # 连板晋级 + 昨日涨停表现
+        'board_perf': build_board_perf(today_pool, days),  # 连板晋级 + 昨日涨停表现（同花顺自算）
         'market_volume': {                           # 沪深京量能（近15个已收盘交易日）
             'list': mv,
             'date': mv[-1]['date'] if mv else None,
