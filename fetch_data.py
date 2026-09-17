@@ -2324,6 +2324,15 @@ def main():
     _old_kl = (load_json(DATA_JSON, {}) or {}).get('board_kline') or {}
     board_kline = fetch_board_klines(list(_kl.values()), old=_old_kl)
     print('  已生成 %d/%d 个板块的日K/周K（日K120根·周K60根）' % (len(board_kline), len(_kl)))
+    # ⚠️ 同花顺日K**盘中不含当日**（当日行缺省或为昨收占位）→ 末条日期落后于今日时明确提示，
+    #    避免「板块涨幅是今天、K线却停在昨天」这种静默落后。
+    _smp = next((v for v in board_kline.values() if v.get('day')), None)
+    if _smp:
+        _last = str(_smp['day'][-1]).split(',')[0].replace('-', '')
+        _today = datetime.now().strftime('%Y%m%d')
+        if _last != _today:
+            print('  [warn] 板块K线末条=%s，未含今日(%s) —— 同花顺日K收盘后才更新，若已收盘请稍后重跑 '
+                  'fill_board_kline.py' % (_smp['day'][-1].split(',')[0], _today))
 
     # ---- 梯队折线图数据 ----
     print('\n[5/7] 构建梯队折线数据...')
