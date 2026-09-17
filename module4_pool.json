@@ -3,52 +3,9 @@
   "overlap_boards": [
     "生物制品",
     "医疗服务",
-    "光学光电子",
     "互联网电商"
   ],
   "stocks": [
-    {
-      "code": "301080",
-      "name": "百普赛斯",
-      "market": "0",
-      "boards": [
-        "生物制品"
-      ],
-      "best_rank": 3,
-      "multi_board": 1,
-      "ma5": 90.758,
-      "ma10": 88.108,
-      "ma20": 87.393,
-      "close": 101.23,
-      "bias20": 15.83,
-      "div_strength": 3.85,
-      "vol_ratio": 0.95,
-      "recent5_ret": 24.06,
-      "overbought": false,
-      "score": 44.0,
-      "rank": 1
-    },
-    {
-      "code": "301183",
-      "name": "东田微",
-      "market": "0",
-      "boards": [
-        "光学光电子"
-      ],
-      "best_rank": 8,
-      "multi_board": 1,
-      "ma5": 274.538,
-      "ma10": 253.266,
-      "ma20": 241.492,
-      "close": 301.25,
-      "bias20": 24.75,
-      "div_strength": 13.68,
-      "vol_ratio": 0.73,
-      "recent5_ret": 27.98,
-      "overbought": true,
-      "score": 42.5,
-      "rank": 2
-    },
     {
       "code": "300464",
       "name": "星徽股份",
@@ -56,7 +13,7 @@
       "boards": [
         "互联网电商"
       ],
-      "best_rank": 10,
+      "best_rank": 7,
       "multi_board": 1,
       "ma5": 8.83,
       "ma10": 8.396,
@@ -68,49 +25,28 @@
       "recent5_ret": 17.0,
       "overbought": false,
       "score": 42.5,
-      "rank": 3
+      "rank": 1
     },
     {
-      "code": "300939",
-      "name": "秋田微",
+      "code": "301080",
+      "name": "百普赛斯",
       "market": "0",
       "boards": [
-        "光学光电子"
+        "生物制品"
       ],
-      "best_rank": 8,
+      "best_rank": 4,
       "multi_board": 1,
-      "ma5": 78.012,
-      "ma10": 73.925,
-      "ma20": 68.755,
-      "close": 91.24,
-      "bias20": 32.7,
-      "div_strength": 13.46,
-      "vol_ratio": 1.35,
-      "recent5_ret": 31.55,
-      "overbought": true,
-      "score": 35.8,
-      "rank": 4
-    },
-    {
-      "code": "300752",
-      "name": "隆利科技",
-      "market": "0",
-      "boards": [
-        "光学光电子"
-      ],
-      "best_rank": 8,
-      "multi_board": 1,
-      "ma5": 12.32,
-      "ma10": 11.911,
-      "ma20": 11.57,
-      "close": 13.11,
-      "bias20": 13.31,
-      "div_strength": 6.48,
-      "vol_ratio": 0.7,
-      "recent5_ret": 16.33,
+      "ma5": 90.758,
+      "ma10": 88.108,
+      "ma20": 87.393,
+      "close": 101.23,
+      "bias20": 15.83,
+      "div_strength": 3.85,
+      "vol_ratio": 0.95,
+      "recent5_ret": 24.06,
       "overbought": false,
-      "score": 35.0,
-      "rank": 5
+      "score": 40.0,
+      "rank": 2
     },
     {
       "code": "002172",
@@ -119,7 +55,7 @@
       "boards": [
         "医疗服务"
       ],
-      "best_rank": 4,
+      "best_rank": 5,
       "multi_board": 1,
       "ma5": 4.96,
       "ma10": 4.838,
@@ -130,8 +66,8 @@
       "vol_ratio": 0.75,
       "recent5_ret": 9.43,
       "overbought": false,
-      "score": 33.7,
-      "rank": 6
+      "score": 29.7,
+      "rank": 3
     },
     {
       "code": "002821",
@@ -140,7 +76,7 @@
       "boards": [
         "医疗服务"
       ],
-      "best_rank": 4,
+      "best_rank": 5,
       "multi_board": 1,
       "ma5": 177.802,
       "ma10": 173.635,
@@ -151,50 +87,8 @@
       "vol_ratio": 0.97,
       "recent5_ret": 10.12,
       "overbought": false,
-      "score": 31.6,
-      "rank": 7
-    },
-    {
-      "code": "002137",
-      "name": "实益达",
-      "market": "0",
-      "boards": [
-        "光学光电子"
-      ],
-      "best_rank": 8,
-      "multi_board": 1,
-      "ma5": 7.858,
-      "ma10": 7.778,
-      "ma20": 7.737,
-      "close": 8.64,
-      "bias20": 11.67,
-      "div_strength": 1.56,
-      "vol_ratio": 2.73,
-      "recent5_ret": 14.29,
-      "overbought": false,
-      "score": 31.5,
-      "rank": 8
-    },
-    {
-      "code": "002106",
-      "name": "莱宝高科",
-      "market": "0",
-      "boards": [
-        "光学光电子"
-      ],
-      "best_rank": 8,
-      "multi_board": 1,
-      "ma5": 11.518,
-      "ma10": 11.175,
-      "ma20": 10.826,
-      "close": 12.04,
-      "bias20": 11.21,
-      "div_strength": 6.39,
-      "vol_ratio": 1.0,
-      "recent5_ret": 11.48,
-      "overbought": false,
-      "score": 31.1,
-      "rank": 9
+      "score": 27.6,
+      "rank": 4
     },
     {
       "code": "300347",
@@ -203,7 +97,7 @@
       "boards": [
         "医疗服务"
       ],
-      "best_rank": 4,
+      "best_rank": 5,
       "multi_board": 1,
       "ma5": 55.826,
       "ma10": 54.018,
@@ -214,182 +108,23 @@
       "vol_ratio": 0.62,
       "recent5_ret": 6.52,
       "overbought": false,
-      "score": 29.0,
-      "rank": 10
-    },
-    {
-      "code": "002745",
-      "name": "木林森",
-      "market": "0",
-      "boards": [
-        "光学光电子"
-      ],
-      "best_rank": 8,
-      "multi_board": 1,
-      "ma5": 11.956,
-      "ma10": 11.512,
-      "ma20": 11.459,
-      "close": 12.48,
-      "bias20": 8.91,
-      "div_strength": 4.34,
-      "vol_ratio": 0.55,
-      "recent5_ret": 12.53,
-      "overbought": false,
-      "score": 25.8,
-      "rank": 11
-    },
-    {
-      "code": "301045",
-      "name": "天禄科技",
-      "market": "0",
-      "boards": [
-        "光学光电子"
-      ],
-      "best_rank": 8,
-      "multi_board": 1,
-      "ma5": 67.522,
-      "ma10": 65.8,
-      "ma20": 65.462,
-      "close": 72.46,
-      "bias20": 10.69,
-      "div_strength": 3.15,
-      "vol_ratio": 0.71,
-      "recent5_ret": 10.85,
-      "overbought": false,
-      "score": 25.7,
-      "rank": 12
-    },
-    {
-      "code": "002876",
-      "name": "三利谱",
-      "market": "0",
-      "boards": [
-        "光学光电子"
-      ],
-      "best_rank": 8,
-      "multi_board": 1,
-      "ma5": 30.678,
-      "ma10": 29.857,
-      "ma20": 29.782,
-      "close": 31.73,
-      "bias20": 6.54,
-      "div_strength": 3.01,
-      "vol_ratio": 0.33,
-      "recent5_ret": 12.36,
-      "overbought": false,
-      "score": 21.2,
-      "rank": 13
-    },
-    {
-      "code": "300632",
-      "name": "光莆股份",
-      "market": "0",
-      "boards": [
-        "光学光电子"
-      ],
-      "best_rank": 8,
-      "multi_board": 1,
-      "ma5": 18.262,
-      "ma10": 18.247,
-      "ma20": 18.194,
-      "close": 19.14,
-      "bias20": 5.2,
-      "div_strength": 0.37,
-      "vol_ratio": 1.07,
-      "recent5_ret": 6.1,
-      "overbought": false,
-      "score": 15.4,
-      "rank": 14
-    },
-    {
-      "code": "300909",
-      "name": "汇创达",
-      "market": "0",
-      "boards": [
-        "光学光电子"
-      ],
-      "best_rank": 8,
-      "multi_board": 1,
-      "ma5": 59.272,
-      "ma10": 58.45,
-      "ma20": 57.364,
-      "close": 59.99,
-      "bias20": 4.58,
-      "div_strength": 3.33,
-      "vol_ratio": 0.46,
-      "recent5_ret": 3.2,
-      "overbought": false,
-      "score": 15.3,
-      "rank": 15
-    },
-    {
-      "code": "002962",
-      "name": "五方光电",
-      "market": "0",
-      "boards": [
-        "光学光电子"
-      ],
-      "best_rank": 8,
-      "multi_board": 1,
-      "ma5": 13.194,
-      "ma10": 13.093,
-      "ma20": 12.977,
-      "close": 13.39,
-      "bias20": 3.18,
-      "div_strength": 1.67,
-      "vol_ratio": 0.96,
-      "recent5_ret": 4.36,
-      "overbought": false,
-      "score": 13.8,
-      "rank": 16
+      "score": 25.0,
+      "rank": 5
     }
   ],
-  "added_today": [
-    "百普赛斯",
-    "星徽股份",
-    "澳洋健康",
-    "凯莱英",
+  "added_today": [],
+  "removed_today": [
+    "东田微",
+    "秋田微",
+    "隆利科技",
     "实益达",
     "莱宝高科",
-    "泰格医药",
     "木林森",
     "天禄科技",
+    "三利谱",
     "光莆股份",
-    "汇创达"
-  ],
-  "removed_today": [
-    "逸豪新材",
-    "宏昌电子",
-    "博敏电子",
-    "金安国纪",
-    "华正新材",
-    "明阳电路",
-    "嘉立创",
-    "骏亚科技",
-    "依顿电子",
-    "金百泽",
-    "科翔股份",
-    "协和电子",
-    "一博科技",
-    "奥士康",
-    "广信材料",
-    "铜峰电子",
-    "满坤科技",
-    "海星股份",
-    "崇达技术",
-    "麦捷科技",
-    "创益通",
-    "超声电子",
-    "三环集团",
-    "康强电子",
-    "风华高科",
-    "盈方微",
-    "澳弘电子",
-    "威尔高",
-    "达利凯普",
-    "顺络电子",
-    "弘信电子",
-    "红板科技"
+    "汇创达",
+    "五方光电"
   ],
   "history": [
     {
@@ -867,6 +602,23 @@
         "顺络电子",
         "弘信电子",
         "红板科技"
+      ]
+    },
+    {
+      "date": "2026-09-17",
+      "added": [],
+      "removed": [
+        "东田微",
+        "秋田微",
+        "隆利科技",
+        "实益达",
+        "莱宝高科",
+        "木林森",
+        "天禄科技",
+        "三利谱",
+        "光莆股份",
+        "汇创达",
+        "五方光电"
       ]
     }
   ]
