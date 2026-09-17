@@ -1283,7 +1283,7 @@ function secidOf(code, market){
   return m+'.'+String(code);
 }
 function txCode(secid){ const p=secid.split('.'); return (p[0]==='1'?'sh':'sz')+p[1]; }
-function emQuoteUrl(secid){ const p=secid.split('.'); return 'https://quote.eastmoney.com/'+(p[0]==='1'?'sh':'sz')+p[1]+'.html'; }
+function emQuoteUrl(secid){ const p=secid.split('.'); return 'https://stockpage.10jqka.com.cn/'+p[1]+'/'; }
 function jget(url){
   let tries=0;
   const once=()=>fetch(url,{cache:'no-store'})
@@ -1302,18 +1302,33 @@ function openStock(code, market, name){
   drawStock();
 }
 function closeStock(){ document.getElementById('sk-modal').classList.remove('show'); }
-// 取数：腾讯（CORS:* 兼容最好）优先 → 东财兜底
+// 取数：腾讯（CORS:* 兼容最好）优先 → 同花顺兜底（东财已停用）
 function loadSeries(secid, isMin){
   const tx=txCode(secid);
   const txUrl = isMin
     ? 'https://web.ifzq.gtimg.cn/appstock/app/minute/query?code='+tx
     : 'https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param='+tx+',day,,,120,qfq';
-  const emUrl = isMin
-    ? 'https://push2his.eastmoney.com/api/qt/stock/trends2/get?secid='+secid+'&fields1=f1,f2,f3,f4,f5,f6,f7,f8&fields2=f51,f52,f53,f54,f55,f56,f57,f58&iscr=0&ndays=1'
-    : 'https://push2his.eastmoney.com/api/qt/stock/kline/get?secid='+secid+'&fields1=f1,f2,f3&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&end=20500101&lmt=120';
-  // 腾讯源支持 CORS(*)；东财 push2his 不返回跨域头 → 兜底必须用 JSONP，否则必然失败
+  // 腾讯源支持 CORS(*) → 直连即可；同花顺不返回跨域头 → 用 script 注入 + 固定回调名
+  const tc='hs_'+String(secid||'').split('.').pop();
   return jget(txUrl).then(d=>parseTx(d, tx, isMin))
-         .catch(()=>jsonpGet(emUrl, 9000).then(d=>parseEm(d, isMin)));
+    .catch(()=> isMin
+      ? thsCall('https://d.10jqka.com.cn/v6/time/'+tc+'/last.js','quotebridge_v6_time_'+tc+'_last')
+          .then(d=>parseThsMin(d, tc))
+      : thsCall('https://d.10jqka.com.cn/v6/line/'+tc+'/01/last.js','quotebridge_v6_line_'+tc+'_01_last')
+          .then(d=>parseThsK(d, tc)));
+}
+function parseThsMin(d, tc){
+  const node=(d||{})[tc]||{}; const raw=node.data||'';
+  const rows=raw.split(';').filter(Boolean); if(!rows.length) return null;
+  const lines=rows.map(s=>{ const a=s.split(',');
+    return {t:a[0].slice(0,2)+':'+a[0].slice(2), p:+a[1], avg:+(a[3]||a[1])}; });
+  return {kind:'min', preClose:+(node.pre||0), lines};
+}
+function parseThsK(d, tc){
+  const node=(d||{})[tc]||d||{}; const raw=node.data||'';
+  const rows=raw.split(';').filter(Boolean); if(!rows.length) return null;
+  return {kind:'k', bars:rows.map(s=>{ const a=s.split(',');
+    return {d:a[0], o:+a[1], c:+a[4], h:+a[2], l:+a[3], v:+a[5]}; })};   // 同花顺序：开,高,低,收
 }
 function parseTx(d, tx, isMin){
   const node=((d||{}).data||{})[tx]; if(!node) return null;
@@ -1332,16 +1347,6 @@ function parseTx(d, tx, isMin){
   const rows=node.qfqday||node.day||[]; if(!rows.length) return null;
   return {kind:'k', bars:rows.map(r=>({d:r[0], o:+r[1], c:+r[2], h:+r[3], l:+r[4], v:+r[5]}))};
 }
-function parseEm(d, isMin){
-  const dd=(d||{}).data; if(!dd) return null;
-  if(isMin){
-    const rows=dd.trends||[]; if(!rows.length) return null;
-    return {kind:'min', preClose:+(dd.preClose||0),
-            lines:rows.map(s=>{ const a=s.split(','); return {t:a[0].slice(11), p:+a[2], avg:+(a[7]||a[2])}; })};
-  }
-  const rows=dd.klines||[]; if(!rows.length) return null;
-  return {kind:'k', bars:rows.map(r=>{ const a=r.split(','); return {d:a[0], o:+a[1], c:+a[2], h:+a[4], l:+a[3], v:+a[5]}; })};
-}
 function drawStock(){
   const el=document.getElementById('sk-chart');
   if(skChart){ try{ skChart.dispose(); }catch(e){} skChart=null; }
@@ -1353,7 +1358,7 @@ function drawStock(){
     if(res.kind==='min') renderMinute(el, res); else renderKline(el, res);
   }).catch(()=>{
     el.innerHTML='<div class="empty">行情加载失败（网络或接口受限）<br>'
-      +'<a href="'+emQuoteUrl(skSecid)+'" target="_blank" rel="noopener" style="color:#2563eb;">点此用东方财富网页查看</a></div>';
+      +'<a href="'+emQuoteUrl(skSecid)+'" target="_blank" rel="noopener" style="color:#2563eb;">点此用同花顺网页查看</a></div>';
   });
 }
 function renderMinute(el, res){
@@ -1433,45 +1438,14 @@ function openBoard(code, name, pct){
   drawBoard();
 }
 function closeBoard(){ document.getElementById('bk-modal').classList.remove('show'); }
-/* 东财 push2his 不给跨域头（浏览器直连会被 CORS 拦）→ 用 JSONP(cb=) 绕过；
-   仍保留直连 fetch 作为兜底，两条都失败才提示。 */
-let _jsonpSeq=0;
-function jsonpGet(url, timeoutMs){
+/* 同花顺通用取数（数据源已统一为同花顺，东财停用）
+   接口：https://d.10jqka.com.cn/v6/line/<hs_600519|bk_886033>/<01=日|11=周>/last.js
+        https://d.10jqka.com.cn/v6/time/<hs_600519>/last.js          （分时）
+   返回的 JS 形如 `quotebridge_v6_line_bk_886033_01_last({...})` —— **回调名固定**，
+   故先挂上同名全局函数、再注入 <script> 即可拿到数据（script 标签不受 CORS 限制，
+   且全部走 https，GitHub Pages 的 HTTPS 页面不会触发混合内容拦截）。 */
+function thsCall(url, cbName, timeoutMs){
   return new Promise((resolve,reject)=>{
-    const cb='__emcb'+(_jsonpSeq++);
-    const s=document.createElement('script');
-    let settled=false;
-    function finish(ok,val){
-      if(settled) return;
-      settled=true;
-      try{ delete window[cb]; }catch(e){ try{ window[cb]=undefined; }catch(e2){} }
-      if(s.parentNode) s.parentNode.removeChild(s);
-      clearTimeout(tm);
-      ok?resolve(val):reject(new Error('jsonp-fail'));
-    }
-    window[cb]=d=>finish(true,d);
-    const tm=setTimeout(()=>finish(false), timeoutMs||9000);
-    s.onerror=()=>finish(false);
-    s.src=url+(url.indexOf('?')>=0?'&':'?')+'cb='+cb;
-    document.head.appendChild(s);
-  });
-}
-/* 同花顺板块指数K线（东财 push2his K线路径对高频 IP 会封禁 → 首选兜底源）
-   接口：https://d.10jqka.com.cn/v6/line/bk_<同花顺码>/<01=日|11=周>/last.js
-   返回：quotebridge_v6_line_bk_<码>_<周期>_last({...})  ← 回调名固定，
-   故先挂上同名全局函数、再注入 <script> 即可拿到数据（script 标签不受 CORS 限制）。
-   字段序为「日期,开,高,低,收,…」，与东财「日期,开,收,高,低,…」不同，需换序。
-   注：周K 在同一份数据上有 11 / 12 两个分片，部分板块只有其一可访问。 */
-const THS_BK_MAP={BK1128:'886033',BK0877:'885959',BK1036:'881121',BK1137:'886042',BK0922:'885887',
-  BK0579:'885362',BK1111:'886019',BK0963:'886078',BK1408:'885517',BK0802:'885736',BK0428:'881145',
-  BK0457:'881278',BK1163:'886065',BK1031:'885531',BK1303:'885710',BK0490:'885700',BK0464:'881180',
-  BK0843:'885430',BK1027:'881170',BK0547:'885530',BK1283:'881155',BK0474:'881156',BK0473:'881157',
-  BK1106:'886015',BK0899:'885927',BK1626:'885343',BK1037:'881124'};
-function thsBoardGet(thsCode, period){
-  const pers=(period==='week')?['11','12']:['01'];
-  const take=(period==='week')?60:120;
-  const one=per=>new Promise((resolve,reject)=>{
-    const cbName='quotebridge_v6_line_bk_'+thsCode+'_'+per+'_last';
     const s=document.createElement('script');
     let settled=false;
     const finish=(ok,val)=>{
@@ -1481,17 +1455,33 @@ function thsBoardGet(thsCode, period){
       if(s.parentNode) s.parentNode.removeChild(s);
       ok?resolve(val):reject(new Error('ths-fail'));
     };
-    window[cbName]=j=>{
+    window[cbName]=d=>finish(true,d);
+    const tm=setTimeout(()=>finish(false), timeoutMs||9000);
+    s.onerror=()=>finish(false);
+    s.src=url+(url.indexOf('?')>=0?'&':'?')+'_='+Date.now();
+    document.head.appendChild(s);
+  });
+}
+/* 同花顺板块指数K线
+   字段序为「日期,开,高,低,收,…」→ 换序成前端统一的「日期,开,收,高,低,…」。
+   注：周K 在同一份数据上有 11 / 12 两个分片，部分板块只有其一可访问 → 依次尝试。 */
+const THS_BK_MAP={BK1128:'886033',BK0877:'885959',BK1036:'881121',BK1137:'886042',BK0922:'885887',
+  BK0579:'885362',BK1111:'886019',BK0963:'886078',BK1408:'885517',BK0802:'885736',BK0428:'881145',
+  BK0457:'881278',BK1163:'886065',BK1031:'885531',BK1303:'885710',BK0490:'885700',BK0464:'881180',
+  BK0843:'885430',BK1027:'881170',BK0547:'885530',BK1283:'881155',BK0474:'881156',BK0473:'881157',
+  BK1106:'886015',BK0899:'885927',BK1626:'885343',BK1037:'881124'};
+function thsBoardGet(thsCode, period){
+  const pers=(period==='week')?['11','12']:['01'];
+  const take=(period==='week')?60:120;
+  const one=per=>thsCall('https://d.10jqka.com.cn/v6/line/bk_'+thsCode+'/'+per+'/last.js',
+                         'quotebridge_v6_line_bk_'+thsCode+'_'+per+'_last')
+    .then(j=>{
       const rows=(((j||{}).data)||'').split(';').filter(Boolean), out=[];
       for(const r of rows){ const p=r.split(','); if(p.length<5) continue;
         out.push([p[0],p[1],p[4],p[2],p[3]].join(',')); }
-      finish(out.length>0, out.slice(-take));
-    };
-    const tm=setTimeout(()=>finish(false), 9000);
-    s.onerror=()=>finish(false);
-    s.src='https://d.10jqka.com.cn/v6/line/bk_'+thsCode+'/'+per+'/last.js?_='+Date.now();
-    document.head.appendChild(s);
-  });
+      if(!out.length) throw new Error('ths-empty');
+      return out.slice(-take);
+    });
   return pers.reduce((p,per)=>p.catch(()=>one(per)), Promise.reject());
 }
 function drawBoard(){
@@ -1501,26 +1491,15 @@ function drawBoard(){
   const local=(D.board_kline||{})[bkCode];
   const ksLocal=local?((bkPeriod==='week')?local.week:local.day):null;
   if(ksLocal && ksLocal.length){ el.innerHTML=''; renderBoardK(el, ksLocal); return; }
-  // ② 兜底一：同花顺板块K线（东财被封时仍可用）→ ③ 兜底二：东财 JSONP
+  // ② 兜底：同花顺板块指数（数据源已统一为同花顺；东财已停用）
   el.innerHTML='<div class="sk-loading">加载中…</div>';
-  const klt=(bkPeriod==='week')?102:101;
-  const base='https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=90.'+bkCode
-        + '&fields1=f1,f2,f3&fields2=f51,f52,f53,f54,f55,f56&klt='+klt
-        + '&fqt=1&end=20500101&lmt=150';
   const draw=ks=>{ el.innerHTML='';
     if(!ks.length){ el.innerHTML='<div class="empty">该板块暂无K线数据</div>'; return; }
     renderBoardK(el, ks); };
-  const got=j=>draw((((j||{}).data)||{}).klines||[]);
-  const fail=()=>{ el.innerHTML='<div class="empty">板块K线暂时取不到（数据源限流）<br>'
-      +'<a href="https://quote.eastmoney.com/bk/90.'+bkCode+'.html" target="_blank" rel="noopener" style="color:#2563eb;">点此在东方财富查看该板块</a></div>'; };
-  const emTry=()=>jsonpGet(base, 9000)
-      .then(got)
-      .catch(()=>fetch(base,{cache:'no-store'})
-        .then(r=>{ if(!r.ok) throw new Error('http'); return r.json(); })
-        .then(got));
+  const fail=()=>{ el.innerHTML='<div class="empty">板块K线暂时取不到（数据源限流，稍后重试）</div>'; };
   const thsCode=THS_BK_MAP[bkCode];
-  const run=thsCode?thsBoardGet(thsCode, bkPeriod).then(draw).catch(emTry):emTry();
-  Promise.resolve(run).catch(fail);
+  if(!thsCode){ fail(); return; }
+  thsBoardGet(thsCode, bkPeriod).then(draw).catch(fail);
 }
 function maSeries(closes,n){
   const out=[]; let sum=0;

@@ -1,100 +1,31 @@
 # -*- coding: utf-8 -*-
 """增量补齐板块K线：按「日K / 周K」分别检查完整性，缺哪补哪，合并写回（可反复运行）。
 
-数据源（自动切换，整批单一来源）：
-  ① 东财 push2his  —— 首选。与页面「板块涨幅」同源，指数口径完全一致。
-  ② 同花顺 d.10jqka.com.cn —— 兜底。东财 K线路径对单一 IP 高频请求会封禁
-     （RemoteDisconnected / curl exit 56；同主机分时接口仍正常），此时自动切到同花顺。
-     两家指数基期不同，点位不可混用，故不按单个板块切换——先探测东财，通则全东财，不通则全同花顺。
+取数实现见 `board_kline_src.py`：**先探测东财，通则整批走东财；东财 K线路径被封时整批切同花顺**
+（两家板块指数基期不同、点位不可混用，故不允许按单个板块切换来源）。
 
 用法：
-  python fill_board_kline.py              # 补齐（缺哪补哪）
+  python fill_board_kline.py              # 补齐（缺哪补哪，推荐）
   python fill_board_kline.py --force      # 全部重取
-  python fill_board_kline.py --src ths    # 强制指定数据源（em/ths）
+  python fill_board_kline.py --src ths    # 强制指定数据源（em / ths）
 """
-import sys, os, json, time, ssl, urllib.request
-from concurrent.futures import ThreadPoolExecutor
+import sys, os
 sys.stdout.reconfigure(encoding='utf-8')
 import fetch_data as F
+from board_kline_src import (fetch_em_kline, fetch_ths_kline, probe_source,
+                             SOURCE_PREF, THS_MISSING_FALLBACK_EM)
 from ths_board_map import THS_MAP
 
-DAY_MIN, WEEK_MIN = 100, 50          # 低于此根数视为缺失
+DAY_MIN, WEEK_MIN = 100, 50          # 「齐备」口径（仅用于展示）
 DAY_N, WEEK_N = 120, 60              # 目标根数
 
 FORCE = '--force' in sys.argv
-SRC = None
-if '--src' in sys.argv:
-    SRC = sys.argv[sys.argv.index('--src') + 1]
+SRC = sys.argv[sys.argv.index('--src') + 1] if '--src' in sys.argv else None
 
-_ctx = ssl.create_default_context()
-_ctx.check_hostname = False
-_ctx.verify_mode = ssl.CERT_NONE
-THS_UA = {'User-Agent': F.UA['User-Agent'], 'Referer': 'http://q.10jqka.com.cn/'}
-
-
-# ---------- 东财 ----------
-def fetch_em(code, klt):
-    n = DAY_N if klt == 101 else WEEK_N
-    url = ('https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=90.%s'
-           '&fields1=f1,f2,f3&fields2=f51,f52,f53,f54,f55,f56&klt=%d&fqt=1'
-           '&end=20500101&lmt=%d&_=%d' % (code, klt, n, int(time.time() * 1000)))
-    t = F.http_get(url, timeout=6, retry=2, silent=True)
-    if not t:
-        return []
-    try:
-        ks = (json.loads(t).get('data') or {}).get('klines') or []
-    except Exception:
-        return []
-    return [','.join(k.split(',')[:5]) for k in ks]     # 东财字段已是 日期,开,收,高,低
-
-
-# ---------- 同花顺 ----------
-def _ths_raw(ths_code, per):
-    url = 'https://d.10jqka.com.cn/v6/line/bk_%s/%s/last.js?_=%d' % (ths_code, per, int(time.time() * 1000))
-    req = urllib.request.Request(url, headers=THS_UA)
-    with urllib.request.urlopen(req, timeout=8, context=_ctx) as r:
-        b = r.read().decode('utf-8', 'ignore')
-    if '(' not in b:
-        return None
-    j = json.loads(b[b.index('(') + 1:b.rindex(')')])
-    return j
-
-
-def _ths_rows(j, n):
-    """同花顺 K线 字段序为 日期,开,高,低,收 → 换序为 日期,开,收,高,低（对齐东财口径）"""
-    rows = [x for x in (j.get('data') or '').split(';') if x]
-    out = []
-    for r in rows:
-        p = r.split(',')
-        if len(p) < 5:
-            continue
-        out.append('%s,%s,%s,%s,%s' % (p[0], p[1], p[4], p[2], p[3]))
-    return out[-n:]
-
-
-def fetch_ths(ths_code, per, n):
-    """同花顺日K用 01；周K 用 11 或 12 —— 同一份周K数据由不同分片提供，
-    部分板块只有其中一个分片可访问（'11' 报 HTTPError 时 '12' 往往可用），故依次尝试。"""
-    periods = ('01',) if per == '01' else ('11', '12')
-    for p in periods:
-        for _ in range(2):
-            try:
-                j = _ths_raw(ths_code, p)
-                if not j:
-                    continue
-                out = _ths_rows(j, n)
-                if out:
-                    return out
-                break
-            except Exception:
-                time.sleep(0.6)
-    return []
-
-
-# ---------- 目标清单 ----------
 data = F.load_json(F.DATA_JSON, {})
 have = data.get('board_kline') or {}
 codes = {}
+# 只处理「页面展示的产业板块」（board_daily/board_3d 已不在页面展示）
 for b in ((data.get('sector_daily') or []) + (data.get('sector_3d') or [])):
     if b.get('code'):
         codes[b['code']] = b.get('name', '')
@@ -102,22 +33,22 @@ if not codes:
     print('⚠️ data.json 里没有产业板块清单（sector_daily/sector_3d），先跑 fetch_data.py')
     raise SystemExit(1)
 
-# ---------- 数据源探测（整批单一来源）----------
 if not SRC:
-    probe = codes and fetch_em(sorted(codes)[0], 101)
-    SRC = 'em' if probe else 'ths'
-    print('数据源探测：东财 %s → 本次使用「%s」' % ('可用' if probe else '不可用（K线路径被封）', '东财' if SRC == 'em' else '同花顺'))
+    # 默认跟 board_kline_src.SOURCE_PREF（现为 'ths'：用户已停用东财）；仅当偏好设为 auto 时才探测
+    SRC = SOURCE_PREF if SOURCE_PREF in ('em', 'ths') else probe_source(sorted(codes)[0])
+    print('数据源＝%s（SOURCE_PREF=%s）' % ('东财' if SRC == 'em' else '同花顺', SOURCE_PREF))
 if SRC == 'ths':
     miss = [n for c, n in codes.items() if c not in THS_MAP]
     if miss:
-        print('⚠️ 同花顺无对应板块，本次跳过：%s' % '、'.join(miss))
+        print('⚠️ 同花顺无对应板块：%s%s' % ('、'.join(miss),
+              '→ 改用东财单独补' if THS_MISSING_FALLBACK_EM else '→ 跳过'))
 
-# ---------- 待补清单 ----------
 todo = []
 for c, name in codes.items():
     v = have.get(c) or {}
-    need_d = FORCE or len(v.get('day') or []) < DAY_MIN
-    need_w = FORCE or len(v.get('week') or []) < WEEK_MIN
+    # 只补「空」的：有的板块（如东财「新消费」）本身历史就短，非空即视为已拿到，不再反复重试
+    need_d = FORCE or not (v.get('day') or [])
+    need_w = FORCE or not (v.get('week') or [])
     if need_d or need_w:
         todo.append((c, name, need_d, need_w, v))
 
@@ -127,34 +58,47 @@ if not todo:
     print('✅ 已全部齐备')
     raise SystemExit(0)
 
+def _pick(c, rsrc, need_d, need_w):
+    """按来源取日K/周K；同花顺无对应板块时（若允许）单独用东财补。"""
+    t = THS_MAP.get(c) if rsrc == 'ths' else None
+    if rsrc == 'ths' and not t and not THS_MISSING_FALLBACK_EM:
+        return None, None, None
+    src = 'ths' if t else 'em'
+    day = week = None
+    if need_d:
+        day = fetch_ths_kline(t[0], '01', DAY_N) if t else fetch_em_kline(c, 101, DAY_N)
+    if need_w:
+        week = fetch_ths_kline(t[0], '11', WEEK_N) if t else fetch_em_kline(c, 102, WEEK_N)
+    return day, week, src
 
-def work(item):
-    c, name, need_d, need_w, v = item
+
+for c, name, need_d, need_w, v in todo:
     rec = dict(v) if v else {'name': name}
     rec['name'] = rec.get('name') or name
-    rec['src'] = SRC
-    if SRC == 'em':
-        if need_d: rec['day'] = fetch_em(c, 101)
-        if need_w: rec['week'] = fetch_em(c, 102)
+    day, week, src = _pick(c, SRC, need_d, need_w)
+    if day is None and week is None:
+        print('  ⏭  %-12s 同花顺无对应板块，跳过' % name)
+        continue
+    # ⚠️ 只在取回非空时覆盖：避免数据源抽风（偶发空返回）把已有K线清空
+    if day:
+        rec['day'] = day
+    if week:
+        rec['week'] = week
+    if src:
+        rec['src'] = src
+    have[c] = rec
+    d_n, w_n = len(rec.get('day') or []), len(rec.get('week') or [])
+    if not d_n and not w_n:
+        tag = '⚠️ 无数据'
+    elif d_n >= DAY_MIN and w_n >= WEEK_MIN:
+        tag = '✅'
     else:
-        t = THS_MAP.get(c)
-        if t:
-            if need_d: rec['day'] = fetch_ths(t[0], '01', DAY_N)
-            if need_w: rec['week'] = fetch_ths(t[0], '11', WEEK_N)
-    return c, name, rec
-
-
-# 同行并发（东财限流敏感 → 并发压到 3；同花顺可到 5）
-with ThreadPoolExecutor(max_workers=3 if SRC == 'em' else 5) as ex:
-    for c, name, rec in ex.map(work, todo):
-        have[c] = rec
-        ok = len(rec.get('day') or []) >= DAY_MIN and len(rec.get('week') or []) >= WEEK_MIN
-        print('  %s %-12s 日K%3d 周K%3d  [%s]' % ('✅' if ok else '⚠️', name,
-              len(rec.get('day') or []), len(rec.get('week') or []), SRC))
+        tag = '✅' if d_n and w_n else '⚠️'      # 非空但偏短 → 多为该板块历史本就短
+    print('  %s %-12s 日K%3d 周K%3d  [%s]%s' % (tag, name, d_n, w_n, rec.get('src'),
+          '' if (day or week) else '（本次空返回，沿用旧值）'))
 
 data['board_kline'] = have
 F.save_json(F.DATA_JSON, data)
 F.save_js(os.path.join(F.BASE, 'data.js'), data)
-full = sum(1 for c in codes if len((have.get(c) or {}).get('day') or []) >= DAY_MIN
-           and len((have.get(c) or {}).get('week') or []) >= WEEK_MIN)
-print('累计 %d 个板块有K线（齐备 %d/%d）' % (len(have), full, len(codes)))
+full = sum(1 for c in codes if (have.get(c) or {}).get('day') and (have.get(c) or {}).get('week'))
+print('累计 %d 个板块有K线（日K/周K 均非空 %d/%d）' % (len(have), full, len(codes)))

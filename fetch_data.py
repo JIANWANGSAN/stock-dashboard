@@ -12,11 +12,16 @@ A股短线仪表盘 - 数据采集 / 节点判定 / 推荐计算
     board_history.json 板块每日涨幅累积（用于3日累计榜）
 """
 
-import sys, os, json, time, re, argparse, copy
+import sys, os, json, time, re, argparse, copy, threading
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 
 from em_boards import em_get   # 东财板块接口（主场冗余）
+# 板块/指数 K线取数（东财优先、被封时自动切同花顺）；勿从本模块 import 以免循环依赖
+from board_kline_src import (fetch_board_klines as _bk_fetch_board_klines,
+                             fetch_ths_amount as _bk_fetch_ths_amount,
+                             THS_INDEX as _BK_THS_INDEX,
+                             SOURCE_PREF as _BK_SOURCE_PREF)
 
 sys.stdout.reconfigure(encoding='utf-8')
 import urllib.request
@@ -35,6 +40,7 @@ NODES_JSON     = os.path.join(BASE, 'nodes.json')
 BOARD_HIST     = os.path.join(BASE, 'board_history.json')
 STOCK_CACHE    = os.path.join(BASE, '.stock_cache.json')
 SEAL_CACHE     = os.path.join(BASE, '.seal_cache.json')
+_SEAL_CACHE_LOCK = threading.Lock()      # 保护 SEAL_CACHE 的 load→save（多线程调用防丢条目）
 EVENT_CACHE    = os.path.join(BASE, '.event_cache.json')
 TRADE_DAYS_CACHE = os.path.join(BASE, '.trade_days_cache.json')
 # 用户核对后的总市值修正（元），按 (code, yyyymmdd) 锁定日期，避免污染未来交易日
@@ -1062,19 +1068,26 @@ def fetch_seal_amount(code, market, date_str, fbt, is_yizi=False):
     if key in SEAL_OVERRIDE:
         sv = SEAL_OVERRIDE[key]
         return sv[0], sv[1]
-    cache = load_json(SEAL_CACHE, {})
-    if key in cache:
-        c = cache[key]
-        return c.get('seal'), c.get('total')
+    with _SEAL_CACHE_LOCK:                 # build_reco 用 6 线程并发调用，load/save 必须串行，
+        cache = load_json(SEAL_CACHE, {})  # 否则各线程各持一份快照互相覆盖 → 缓存条目丢失
+        if key in cache:
+            c = cache[key]
+            return c.get('seal'), c.get('total')
 
     # 主源：东财分时 trends2（f57=逐分钟增量额，累计需自加）
+    # ⚠️ push2his 系列在本机常间歇性不可达（RemoteDisconnected），必须轮询备用主机，
+    #    否则上板量取空 → 退化成「全天成交额×50%」的错误口径（硬线被严重高估）。
     secid = _secid(code, market)
-    url = ('https://push2his.eastmoney.com/api/qt/stock/trends2/get?'
-           'secid=%s&fields1=f1,f2,f3,f4,f5,f6,f7,f8'
-           '&fields2=f51,f52,f53,f54,f55,f56,f57,f58&iscr=0&ndays=5' % secid)
-    txt = http_get(url, silent=True)
+    path = ('/api/qt/stock/trends2/get?'
+            'secid=%s&fields1=f1,f2,f3,f4,f5,f6,f7,f8'
+            '&fields2=f51,f52,f53,f54,f55,f56,f57,f58&iscr=0&ndays=5' % secid)
     seal, total = None, None
-    if txt:
+    day = []
+    for _host in ('push2his.eastmoney.com', '1.push2his.eastmoney.com',
+                  'push2delay.eastmoney.com'):
+        txt = http_get('https://%s%s' % (_host, path), silent=True)
+        if not txt:
+            continue
         try:
             d = json.loads(txt).get('data') or {}
             trends = d.get('trends') or []
@@ -1082,28 +1095,30 @@ def fetch_seal_amount(code, market, date_str, fbt, is_yizi=False):
             trends = []
         day = [t for t in trends if t.startswith(date_str)]
         if day:
-            hhmm = seal_bar_label(fbt)                # 封板所在分时线（已进位到下一分钟）
-            hhmm_comp = hhmm.replace(':', '') if hhmm else None
-            cum = 0.0
-            first_own = None
-            own_at_seal = None
-            for t in day:
-                p = t.split(',')
-                tm = p[0][11:16]
-                try:
-                    own = float(p[6])                 # 东财 f57 = 该分钟成交额（增量）
-                except Exception:
-                    own = 0.0
-                cum += own
-                if first_own is None:
-                    first_own = own                   # 首根 09:30（含集合竞价）
-                if own_at_seal is None and hhmm and tm >= hhmm:
-                    own_at_seal = own                 # 首次封板那一根的成交额（仅认第一次）
-            total = cum
-            if is_yizi and first_own is not None:
-                seal = first_own                      # 一字板：集合竞价额
-            elif own_at_seal is not None:
-                seal = own_at_seal                    # 自然/T板：封板那一根成交额，炸板回封不计
+            break
+    if day:
+        hhmm = seal_bar_label(fbt)                # 封板所在分时线（已进位到下一分钟）
+        hhmm_comp = hhmm.replace(':', '') if hhmm else None
+        cum = 0.0
+        first_own = None
+        own_at_seal = None
+        for t in day:
+            p = t.split(',')
+            tm = p[0][11:16]
+            try:
+                own = float(p[6])                 # 东财 f57 = 该分钟成交额（增量）
+            except Exception:
+                own = 0.0
+            cum += own
+            if first_own is None:
+                first_own = own                   # 首根 09:30（含集合竞价）
+            if own_at_seal is None and hhmm and tm >= hhmm:
+                own_at_seal = own                 # 首次封板那一根的成交额（仅认第一次）
+        total = cum
+        if is_yizi and first_own is not None:
+            seal = first_own                      # 一字板：集合竞价额
+        elif own_at_seal is not None:
+            seal = own_at_seal                    # 自然/T板：封板那一根成交额，炸板回封不计
 
     # 兜底：腾讯分钟线（格式: 时间 价格 量(手) 累计额(元)，时间字段 'HHMM' 无冒号）
     if seal is None:
@@ -1145,8 +1160,10 @@ def fetch_seal_amount(code, market, date_str, fbt, is_yizi=False):
 
     # 仅在取到有效上板量时落缓存；None（接口缺失/限流）不缓存，下次运行可重试
     if seal is not None:
-        cache[key] = {'seal': seal, 'total': total}
-        save_json(SEAL_CACHE, cache)
+        with _SEAL_CACHE_LOCK:
+            cache = load_json(SEAL_CACHE, {})
+            cache[key] = {'seal': seal, 'total': total}
+            save_json(SEAL_CACHE, cache)
     return seal, total
 
 
@@ -1269,52 +1286,19 @@ def fetch_board_zt_stats(boards, max_workers=8):
         list(ex.map(_one, boards))
 
 
-def fetch_board_klines(boards, day_n=120, week_n=60, max_workers=8):
+def fetch_board_klines(boards, day_n=120, week_n=60, max_workers=None):
     """预生成榜单板块的日K/周K，随 data.js 下发。
 
     为什么放在后端：浏览器直连东财 `push2his` 取板块K线**跨域不可靠**（无 CORS 头，JSONP 也时好时坏），
     改为 Python 抓一次、落进 data.js，前端点击即可秒开、离线也能看。
 
-    返回 {code: {'name':.., 'day': ['日期,开,收,高,低', ...], 'week': [...]}}
+    实际取数在 `board_kline_src.fetch_board_klines`：**先探测东财，通则整批走东财；
+    东财 K线路径对高频 IP 会整段封禁（见 项目约定.md 3.9.1）→ 不通则整批切同花顺板块指数**。
+    两家指数基期不同、点位不可混用，故不允许按单个板块切换来源。
+
+    返回 {code: {'name':.., 'day': ['日期,开,收,高,低', ...], 'week': [...], 'src': 'em'|'ths'}}
     """
-    out = {}
-
-    def _kline(code, klt, n):
-        # push2his 是唯一的板块历史K线源（push2delay 只给实时、klines 为空），
-        # 且它对高频访问会限流 → 多主机 + 多轮重试
-        hosts = ('push2his.eastmoney.com', '1.push2his.eastmoney.com',
-                 '7.push2his.eastmoney.com', 'push2his.eastmoney.com')
-        for rnd in range(3):
-            for host in hosts:
-                url = ('https://%s/api/qt/stock/kline/get?secid=90.%s'
-                       '&fields1=f1,f2,f3&fields2=f51,f52,f53,f54,f55,f56&klt=%d&fqt=1'
-                       '&end=20500101&lmt=%d&_=%d'
-                       % (host, code, klt, n, int(time.time() * 1000)))
-                t = http_get(url, silent=True)
-                if t:
-                    try:
-                        ks = (json.loads(t).get('data') or {}).get('klines') or []
-                        if ks:
-                            # 精简为「日期,开,收,高,低」（前端只用这 5 列，省体积）
-                            return [','.join(k.split(',')[:5]) for k in ks]
-                    except Exception:
-                        pass
-                time.sleep(0.4)
-            time.sleep(1.0)
-        return []
-
-    def _one(b):
-        code = b.get('code') or b.get('em_code')
-        if not code:
-            return
-        day = _kline(code, 101, day_n)
-        week = _kline(code, 102, week_n)
-        if day or week:
-            out[code] = {'name': b.get('name', ''), 'day': day, 'week': week}
-
-    with ThreadPoolExecutor(max_workers=max_workers) as ex:
-        list(ex.map(_one, boards))
-    return out
+    return _bk_fetch_board_klines(boards, day_n=day_n, week_n=week_n, max_workers=max_workers)
 
 
 def fetch_board_rank(top=60):
@@ -1468,19 +1452,29 @@ def fetch_tx_turnover_today():
 def fetch_market_volume(days=15):
     """沪深两市量能（亿元）：上证综指 + 深证综指 的日成交额之和（不含北交所）。
 
-    数据源：东财 push2his 日K，fields2=f51(日期),f57(成交额,元)。
-    push2his 连接不稳定（偶发 RemoteDisconnected），故单节点 + 慢节奏重试。
+    数据源：**同花顺指数日K**（`zs_1A0001` 上证 / `zs_399106` 深证综指，第 7 列＝成交额，单位元）。
+    原东财 push2his 口径（fields2=f51,f57）已停用 —— 其 K线路径会按 IP 封禁，且用户已停用东财。
     返回升序列表 [{'date','amount_yi'}]，末尾为最新一个「已收盘」交易日。
     """
     host = 'push2his.eastmoney.com'
     secids = ['1.000001', '0.399106']   # 沪 / 深
 
     def _amt(secid, lmt=25):
-        for _ in range(4):
+        # ① 同花顺指数日K（首选；用户已停用东财）
+        if _BK_SOURCE_PREF != 'em':
+            ths = _BK_THS_INDEX.get(secid)
+            if ths:
+                m = _bk_fetch_ths_amount(ths, lmt)
+                if m:
+                    return m
+            if _BK_SOURCE_PREF == 'ths':
+                return None
+        # ② 东财 push2his（仅在未显式停用时才尝试）
+        for _ in range(2):
             url = ('https://%s/api/qt/stock/kline/get?secid=%s&fields1=f1,f2,f3&'
                    'fields2=f51,f57&klt=101&fqt=0&end=20500101&lmt=%d'
                    % (host, secid, lmt))
-            txt = http_get(url, timeout=8, retry=2, silent=True)
+            txt = http_get(url, timeout=8, retry=1, silent=True)
             if txt:
                 try:
                     ks = json.loads(txt)['data']['klines']
@@ -1488,7 +1482,7 @@ def fetch_market_volume(days=15):
                         return {k.split(',')[0]: float(k.split(',')[1]) for k in ks}
                 except Exception:
                     pass
-            time.sleep(1.2)          # 慢节奏，避免被限流
+            time.sleep(0.8)          # 慢节奏，避免被限流
         return None
 
     # 沪/深相互独立 → 并行拉取（原先串行且各自 8 次重试，抖动时极易拖到分钟级）
@@ -2113,15 +2107,25 @@ def build_candidates(nodes_out, today_pool, hot_concepts, cache):
         cur = today_map.get(trg['code'])
         if not cur or cur.get('lbc', 0) < 2:
             continue
-        ck = '%s.%s' % (trg.get('market', 1), trg['code'])
+        # ⚠️ nodes 里的 trigger 常缺 market 字段：不能默认 1(沪)，否则深市票会查错
+        #    cache key（'1.000993'）→ 概念/地域/行业全空，且 secid 指向别的标的。
+        mk = trg.get('market')
+        if mk not in (0, 1, '0', '1'):
+            mk = 1 if str(trg['code']).startswith('6') else 0
+        mk = int(mk)
+        ck = '%s.%s' % (mk, trg['code'])
         _c = cache.get(ck) or {}
-        hit = concept_hit_count(_c.get('concepts', []), hot_concepts)
-        ferm = ferment_count(_c.get('concepts', []), today_pool, cur.get('industry') or '')
+        # cache 未收录时，回退用节点自身记录的题材/地域/行业（同源数据，非虚构）
+        cpt = _c.get('concepts') or trg.get('concepts') or []
+        ind = _c.get('industry') or trg.get('industry') or ''
+        rgn = _c.get('region') or trg.get('region') or '—'
+        hit = concept_hit_count(cpt, hot_concepts)
+        ferm = ferment_count(cpt, today_pool, cur.get('industry') or ind)
         cands.append({
             'node_type': n['type'], 'node_date': n['date'], 'node_id': n['id'],
-            'code': trg['code'], 'market': trg.get('market', 1), 'name': trg['name'],
-            'region': _c.get('region', '—'), 'pinyin': pinyin_abbr(trg.get('name', '')),
-            'concepts': _c.get('concepts', []), 'industry': _c.get('industry', ''),
+            'code': trg['code'], 'market': mk, 'name': trg['name'],
+            'region': rgn, 'pinyin': trg.get('pinyin') or pinyin_abbr(trg.get('name', '')),
+            'concepts': cpt, 'industry': ind,
             'boards': cur['lbc'], 'status': '连板中',
             'concept_hit': hit, 'ferment': ferm,
             'zbc': int(cur.get('zbc') or 0),          # 当日炸板次数（风险标记）
@@ -2315,11 +2319,10 @@ def main():
     for _b in sector:
         if _b.get('code'):
             _kl[_b['code']] = _b
-    board_kline = fetch_board_klines(list(_kl.values()))
-    if not board_kline:
-        # 取数失败（东财限流）→ 沿用上一次的结果，别把已有数据清空
-        board_kline = (load_json(DATA_JSON, {}) or {}).get('board_kline') or {}
-        print('  [warn] 本次未取到，沿用上次 %d 个板块的K线' % len(board_kline))
+    # 传入上一版 board_kline：内部会自动合并——新数据残缺/失效的板块沿用老数据，
+    # 避免东财「抽风式限流」（偶发放行几次后被封）把整批好数据覆盖成个位数。
+    _old_kl = (load_json(DATA_JSON, {}) or {}).get('board_kline') or {}
+    board_kline = fetch_board_klines(list(_kl.values()), old=_old_kl)
     print('  已生成 %d/%d 个板块的日K/周K（日K120根·周K60根）' % (len(board_kline), len(_kl)))
 
     # ---- 梯队折线图数据 ----
