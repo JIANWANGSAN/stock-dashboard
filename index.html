@@ -1456,6 +1456,44 @@ function jsonpGet(url, timeoutMs){
     document.head.appendChild(s);
   });
 }
+/* 同花顺板块指数K线（东财 push2his K线路径对高频 IP 会封禁 → 首选兜底源）
+   接口：https://d.10jqka.com.cn/v6/line/bk_<同花顺码>/<01=日|11=周>/last.js
+   返回：quotebridge_v6_line_bk_<码>_<周期>_last({...})  ← 回调名固定，
+   故先挂上同名全局函数、再注入 <script> 即可拿到数据（script 标签不受 CORS 限制）。
+   字段序为「日期,开,高,低,收,…」，与东财「日期,开,收,高,低,…」不同，需换序。
+   注：周K 在同一份数据上有 11 / 12 两个分片，部分板块只有其一可访问。 */
+const THS_BK_MAP={BK1128:'886033',BK0877:'885959',BK1036:'881121',BK1137:'886042',BK0922:'885887',
+  BK0579:'885362',BK1111:'886019',BK0963:'886078',BK1408:'885517',BK0802:'885736',BK0428:'881145',
+  BK0457:'881278',BK1163:'886065',BK1031:'885531',BK1303:'885710',BK0490:'885700',BK0464:'881180',
+  BK0843:'885430',BK1027:'881170',BK0547:'885530',BK1283:'881155',BK0474:'881156',BK0473:'881157',
+  BK1106:'886015',BK0899:'885927',BK1626:'885343',BK1037:'881124'};
+function thsBoardGet(thsCode, period){
+  const pers=(period==='week')?['11','12']:['01'];
+  const take=(period==='week')?60:120;
+  const one=per=>new Promise((resolve,reject)=>{
+    const cbName='quotebridge_v6_line_bk_'+thsCode+'_'+per+'_last';
+    const s=document.createElement('script');
+    let settled=false;
+    const finish=(ok,val)=>{
+      if(settled) return; settled=true;
+      clearTimeout(tm);
+      try{ delete window[cbName]; }catch(e){ try{ window[cbName]=undefined; }catch(e2){} }
+      if(s.parentNode) s.parentNode.removeChild(s);
+      ok?resolve(val):reject(new Error('ths-fail'));
+    };
+    window[cbName]=j=>{
+      const rows=(((j||{}).data)||'').split(';').filter(Boolean), out=[];
+      for(const r of rows){ const p=r.split(','); if(p.length<5) continue;
+        out.push([p[0],p[1],p[4],p[2],p[3]].join(',')); }
+      finish(out.length>0, out.slice(-take));
+    };
+    const tm=setTimeout(()=>finish(false), 9000);
+    s.onerror=()=>finish(false);
+    s.src='https://d.10jqka.com.cn/v6/line/bk_'+thsCode+'/'+per+'/last.js?_='+Date.now();
+    document.head.appendChild(s);
+  });
+  return pers.reduce((p,per)=>p.catch(()=>one(per)), Promise.reject());
+}
 function drawBoard(){
   const el=document.getElementById('bk-chart');
   if(bkChart){ try{ bkChart.dispose(); }catch(e){} bkChart=null; }
@@ -1463,26 +1501,26 @@ function drawBoard(){
   const local=(D.board_kline||{})[bkCode];
   const ksLocal=local?((bkPeriod==='week')?local.week:local.day):null;
   if(ksLocal && ksLocal.length){ el.innerHTML=''; renderBoardK(el, ksLocal); return; }
-  // ② 兜底：直接取网络（东财 push2his 跨域不稳，仅当本地没有该板块时才走）
+  // ② 兜底一：同花顺板块K线（东财被封时仍可用）→ ③ 兜底二：东财 JSONP
   el.innerHTML='<div class="sk-loading">加载中…</div>';
   const klt=(bkPeriod==='week')?102:101;
   const base='https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=90.'+bkCode
         + '&fields1=f1,f2,f3&fields2=f51,f52,f53,f54,f55,f56&klt='+klt
         + '&fqt=1&end=20500101&lmt=150';
-  const got=j=>{
-    const ks=(((j||{}).data)||{}).klines||[];
-    el.innerHTML='';
+  const draw=ks=>{ el.innerHTML='';
     if(!ks.length){ el.innerHTML='<div class="empty">该板块暂无K线数据</div>'; return; }
-    renderBoardK(el, ks);
-  };
+    renderBoardK(el, ks); };
+  const got=j=>draw((((j||{}).data)||{}).klines||[]);
   const fail=()=>{ el.innerHTML='<div class="empty">板块K线暂时取不到（数据源限流）<br>'
       +'<a href="https://quote.eastmoney.com/bk/90.'+bkCode+'.html" target="_blank" rel="noopener" style="color:#2563eb;">点此在东方财富查看该板块</a></div>'; };
-  jsonpGet(base, 9000)
-    .then(got)
-    .catch(()=>fetch(base,{cache:'no-store'})
-      .then(r=>{ if(!r.ok) throw new Error('http'); return r.json(); })
+  const emTry=()=>jsonpGet(base, 9000)
       .then(got)
-      .catch(fail));
+      .catch(()=>fetch(base,{cache:'no-store'})
+        .then(r=>{ if(!r.ok) throw new Error('http'); return r.json(); })
+        .then(got));
+  const thsCode=THS_BK_MAP[bkCode];
+  const run=thsCode?thsBoardGet(thsCode, bkPeriod).then(draw).catch(emTry):emTry();
+  Promise.resolve(run).catch(fail);
 }
 function maSeries(closes,n){
   const out=[]; let sum=0;
