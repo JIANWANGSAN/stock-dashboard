@@ -865,7 +865,8 @@ def board_ref(ths_code):
 #      https://data.10jqka.com.cn/funds/hyzjl/            → 第 1 页 50 行
 #      https://data.10jqka.com.cn/funds/hyzjl/page/2/     → 第 2 页 40 行
 #    故改用列表页 + `/page/N/` 翻页（**必须 HTTPS**，HTTP 版会被跳转/401）。
-#    行业共 90 个（50+40）、概念约 430 个 → `pages` 按需传 2 / 9。
+#    实测总条数：**行业 90（2 页）· 概念 337（8 页）** —— 列表页每页约 42~50 条，不是固定 50，
+#    第 9 页起返回空 → 用 `pages` 传够即可，多传一次无害。
 _FUND_URL = 'https://data.10jqka.com.cn/funds/%szjl/'
 _FUND_PAGE_URL = 'https://data.10jqka.com.cn/funds/%szjl/page/%d/'
 _FUND_REF = 'https://data.10jqka.com.cn/funds/gnzjl/'
@@ -893,8 +894,14 @@ def fetch_fund_rank(kind='gn', pages=8, max_workers=6, silent=True):
 
     def _one(p):
         u = _FUND_URL % kind if p == 1 else _FUND_PAGE_URL % (kind, p)
-        h = ths_get(u, enc='gbk', silent=silent, ref=_FUND_REF)
-        return _fund_rows(h or '')
+        # 并发翻页时偶发空响应/超时（瞬时）→ 重试，否则该页整页丢失
+        # （表现为概念榜条数忽多忽少：387 ↔ 337）。第 1 页不重试（失败说明源不可用）。
+        for _try in range(3 if p > 1 else 1):
+            rows = _fund_rows(ths_get(u, enc='gbk', silent=silent, ref=_FUND_REF) or '')
+            if rows:
+                return rows
+            time.sleep(0.35 + 0.25 * _try)
+        return []
 
     rows, seen = [], set()
     with ThreadPoolExecutor(max_workers=max_workers) as ex:

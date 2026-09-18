@@ -170,9 +170,12 @@ def fetch_heat():
 
 
 def fetch_fund():
-    """行业资金流榜 → 净额升/降序各取前 N，并回填 heat 的净额与领涨股。"""
+    """行业资金流榜 → 净额升/降序各取前 N，并回填 heat 的净额与领涨股。
+
+    实测条数：行业 90（2 页）· 概念 337（8 页）—— 列表页每页约 42~50 条，非固定 50。
+    """
     hy = THS.fetch_fund_rank('hy', pages=2)
-    gn = THS.fetch_fund_rank('gn', pages=9)
+    gn = THS.fetch_fund_rank('gn', pages=8)
     return hy, gn
 
 

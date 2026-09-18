@@ -86,7 +86,7 @@
 - **板块榜口径（数据层）：只用同花顺**（2026-09-17 东财全站停用）：
   - **行业榜**：`data.10jqka.com.cn/funds/hyzjl/field/zdf/order/desc/page/N/ajax/1/`（2 页 × 50 = 90 个）。单行给全 `序号|名称|指数|涨跌幅%|流入亿|流出亿|净额亿|公司家数|领涨股|领涨股涨跌幅%|当前价`。
     同花顺「行业」是他自有的分类，**命名体系与东财/申万不同** → 原先的 `is_l2_industry` / `L1_BOARD_CODES` / `STYLE_BOARD_KW` 过滤逻辑**已全部废弃**。
-  - **概念榜**：同域 `gnzjl/...`（8 页 × 50 ≈ 385 个）。
+  - **概念榜**：同域 `https://data.10jqka.com.cn/funds/gnzjl/page/N/`（337 个 · 8 页）。
     ⚠️ 概念榜**只在数据层**（`data.js → board_concept`），**页面不展示**；它供盘前任务的「题材共振」匹配候选题材用。
   - 字段：`name / code / ths_code(881xxx|885xxx|886xxx|概念ID) / em_code(东财BK，仅前端链接与本地K线键) / pct / d3 / d5 / up / down / leader / leader_pct / zljlr_wan / stock_total / zt_count / amount_yi`。
   - **3日/5日涨幅**：同花顺榜页**没有**这两列 → 由 `THS.pct_over(ths_code, N)` 按**板块指数日K自算**（近 N 根收盘累计涨幅）；榜单 TOP30 + 产业清单并发（10 线程）补算，约 3~5s。
