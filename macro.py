@@ -55,6 +55,16 @@ STYLE_DIMS = [
     ('弹性/情绪', '深市主板', '深证成指', '北证/小盘', '国证2000'),
 ]
 
+# ── ④b 风格轮动 · 相对强弱（近 20 日 RS 折线）──────────────────────────────
+# (标题, 左标签, 左同花顺码, 右标签, 右同花顺码)
+# RS 定义：以 20 日前为基准，把两侧指数各自归一化（各自 former 收盘 = 1），
+#          再取「右/左」比值 → 上行＝右侧（成长/消费…）相对走强。
+STYLE_RS = [
+    ('大盘价值', '小盘成长', '价值强', 'zs_399300', '成长强', 'zs_1B0852'),
+    ('周期',     '消费',     '周期强', 'zs_399998', '消费强', 'zs_399396'),
+]
+RS_DAYS = 20
+
 
 # 产业板块「显示简称」→ 同花顺榜上的名字。
 # 用户清单用的是行情软件里的短名，同花顺概念榜有时用全称（且把英文缩写放在括号里，
@@ -197,47 +207,154 @@ def build_style(indices):
     return out
 
 
+def build_style_rs():
+    """④b 风格轮动 · 近 20 日相对强弱（RS）折线。
+
+    RS 构造：两侧指数各以区间首日收盘归一化 → 比值（右/左）→ 再整体归一化到 100 作基。
+    上行＝右侧（成长/消费）相对走强；下行＝左侧（价值/周期）相对走强。
+    返回 [{title, left, right, series:[float], labels:[date], trend:{dir,days,delta}, tail}]
+    """
+    from concurrent.futures import ThreadPoolExecutor
+
+    jobs = []
+    for ldim, rdim, lname, lcode, rname, rcode in STYLE_RS:
+        jobs += [lcode, rcode]
+
+    def _k(code):
+        try:
+            # 多取几天做缓冲（个别指数可能缺当日），最终统一按共同日期对齐
+            return code, THS.fetch_daily_kline(code, n=RS_DAYS + 12, prefix='')
+        except Exception:
+            return code, []
+
+    cache = {}
+    with ThreadPoolExecutor(max_workers=4) as ex:
+        for code, k in ex.map(_k, jobs):
+            cache[code] = k
+
+    out = []
+    for ldim, rdim, lname, lcode, rname, rcode in STYLE_RS:
+        L = {r[0]: r[2] for r in cache.get(lcode, []) if r[2]}
+        R = {r[0]: r[2] for r in cache.get(rcode, []) if r[2]}
+        days = sorted(set(L) & set(R))          # 只取两侧都有值的交易日
+        if len(days) < 5:
+            continue
+        days = days[-(RS_DAYS + 1):]
+        lb, rb = L[days[0]], R[days[0]]         # 各自区间首日 = 基准
+        if not lb or not rb:
+            continue
+        series = [round((R[d] / rb) / (L[d] / lb) * 100, 4) for d in days]
+        labels = ['%s-%s' % (d[4:6], d[6:8]) for d in days]
+
+        # 趋势：从末点往回数，连续同向的天数 + 区间首尾变化
+        delta = series[-1] - series[0]
+        streak = 0
+        for i in range(len(series) - 1, 0, -1):
+            step = series[i] - series[i - 1]
+            if (step > 0) == (delta > 0) and abs(step) > 1e-9:
+                streak += 1
+            else:
+                break
+        out.append({
+            'title': '%s ↔ %s' % (ldim, rdim),   # 卡片标题（维度名）
+            'left': ldim, 'right': rdim,          # 左右轴＝维度名（如「大盘价值」「小盘成长」）
+            'left_tag': lname, 'right_tag': rname,  # 上下轴标注＝强弱名（如「价值强」「成长强」）
+            'labels': labels,
+            'series': series,
+            'tail': round(series[-1], 2),
+            'trend': {'dir': 'up' if delta > 0 else 'down',
+                      'days': streak, 'delta': round(delta, 2)},
+        })
+    return out
+
+
 def _fmt(v, unit='', nd=2):
     if v is None:
         return '—'
     return ('%+.' + str(nd) + 'f') % v if v >= 0 else ('%.' + str(nd) + 'f') % v
 
 
+def build_style_conclusion(style_rs):
+    """④b 配文：由 RS 折线的方向与连续天数推出的一句话结论（客观描述，不含预测）。"""
+    if not style_rs:
+        return ''
+    parts = []
+    for r in style_rs:
+        t = r.get('trend') or {}
+        up = t.get('dir') == 'up'
+        who = r['right'] if up else r['left']
+        short = who.replace('强', '') + '占优'
+        if t.get('days'):
+            parts.append('%s相对强弱连续 %d 日%s，%s'
+                         % (who.replace('强', ''), t['days'], '上行' if up else '下行', short))
+        else:
+            parts.append('%s相对强弱%s，%s'
+                         % (who.replace('强', ''), '上行' if up else '下行', short))
+    ups = [r for r in style_rs if (r.get('trend') or {}).get('dir') == 'up']
+    if len(ups) == len(style_rs):
+        tail = '风格天平偏向右端（成长/消费）。'
+    elif not ups:
+        tail = '风格天平偏向左端（价值/周期）。'
+    else:
+        tail = '风格天平偏向分化，两端各有支撑。'
+    return '；'.join(parts) + '。→ ' + tail
+
+
 def build_notes(indices, heat, fund_in, fund_out, breadth, stat, hy):
-    """⑤ 3 条行业配置研判 —— 全部由当日客观数据推出，不含涨跌预测。"""
+    """⑤ 轮动研判 · 行业配置观点 —— 全部由当日客观数据推出，不含涨跌预测。
+
+    每条输出结构（与前端 index.html 的 .cfg 卡片一一对应）：
+      tag/level  → 配置标签（超配 / 标配 / 观察）
+      init       → 字母角标（与标签首字一致，原生卡片风格）
+      title      → 主标题（方向 / 产业链）
+      body       → 客观论述（必带数据，不带预测）
+      drivers[]  → 驱动 tag 行
+      risks[]    → 风险 tag 行
+      data       → 数据来源
+    """
     notes = []
     m = {i['name']: i for i in indices}
+    d0 = datetime.now().strftime('%Y-%m-%d')
 
     # 研判1：资金集中度 —— 头部净流入占全部净流入之和的比重
     pos = sum(b['net_in_yi'] for b in fund_in if (b.get('net_in_yi') or 0) > 0)
     top3 = sum((b.get('net_in_yi') or 0) for b in fund_in[:3])
     if pos > 0 and fund_in:
         share = top3 / pos * 100
-        names = '、'.join(b['name'] for b in fund_in[:3])
+        names = ' / '.join(b['name'] for b in fund_in[:3])
+        lead = fund_in[0]
+        hi = share >= 45          # 集中度高 → 超配；中等 → 标配；其余 → 观察
         notes.append({
-            'tag': '资金集中度',
-            'level': '高' if share >= 45 else ('中' if share >= 25 else '低'),
-            'title': '主力资金向「%s」集中' % names,
-            'body': ('全部 %d 个行业中净流入为正者合计 %.0f 亿，其中前 3 大行业（%s）合计 %.0f 亿、'
-                     '占比 %.0f%%；%s 以 %.0f 亿居首。'
+            'tag': '超配' if hi else '标配',
+            'init': '超' if hi else '标',
+            'level': '超配' if hi else '标配',
+            'title': '%s（资金主线）' % names,
+            'body': ('全部 %d 个行业中净流入为正者合计 %.0f 亿，其中前 3 大方向（%s）合计 %.0f 亿、'
+                     '占比 %.0f%%，集中度%s；%s 以 %.0f 亿居首%s。'
                      % (len(hy), pos, names, top3, share,
-                        fund_in[0]['name'], fund_in[0]['net_in_yi'])),
-            'data': '同花顺行业资金流 · %s' % datetime.now().strftime('%Y-%m-%d'),
+                        '偏高' if hi else ('中等' if share >= 25 else '偏低'),
+                        lead['name'], lead['net_in_yi'],
+                        ('，当日涨 %.2f%%' % lead['pct']) if lead.get('pct') is not None else '')),
+            'drivers': ['资金净流入居首', '净流入占比 %.0f%%' % share],
+            'risks': ['集中度过高易回落', '需成交额配合验证'],
+            'data': '同花顺行业资金流 · %s' % d0,
         })
 
-    # 研判2：量价背离 —— 涨幅为正但主力净流出
+    # 研判2：量价背离 —— 涨幅为正但主力净流出（用户要求保留此条）
     diverge = [b for b in heat if (b.get('pct') or 0) > 0.5 and (b.get('net_in_yi') or 0) < -1]
     if diverge:
-        d = diverge[0]
         notes.append({
-            'tag': '量价背离',
-            'level': '留意',
-            'title': '%d 个板块「价升量减」' % len(diverge),
+            'tag': '观察',
+            'init': '观',
+            'level': '观察',
+            'title': '%d 个板块「价升量减」· 量价背离' % len(diverge),
             'body': ('%s。这类板块涨幅由情绪或小单推动，主力资金实为净流出，'
                      '持续性弱于「价量同向」的板块。'
                      % '、'.join('%s(涨%.2f%%/净流出%.2f亿)' % (x['name'], x['pct'], x['net_in_yi'])
                                  for x in diverge[:3])),
-            'data': '同花顺板块快照 + 行业资金流 · %s' % datetime.now().strftime('%Y-%m-%d'),
+            'drivers': [],
+            'risks': ['涨幅与资金背离', '持续性存疑'],
+            'data': '同花顺板块快照 + 行业资金流 · %s' % d0,
         })
 
     # 研判3：风格 —— 小盘成长 vs 大盘价值
@@ -248,18 +365,24 @@ def build_notes(indices, heat, fund_in, fund_out, breadth, stat, hy):
     if grow.get('pct') is not None and value.get('pct') is not None:
         spread = (grow.get('pct') or 0) - (value.get('pct') or 0)
         sm = ((small.get('pct') or 0) - (big.get('pct') or 0)) if small.get('pct') is not None else None
+        is_grow = spread > 0
         notes.append({
-            'tag': '风格取向',
-            'level': '小盘成长占优' if spread > 0 else '大盘价值占优',
-            'title': '成长跑赢价值 %.2f 个百分点' % abs(spread),
+            'tag': '标配' if abs(spread) < 1.5 else ('超配' if is_grow else '观察'),
+            'init': '标' if abs(spread) < 1.5 else ('超' if is_grow else '观'),
+            'level': '标配' if abs(spread) < 1.5 else ('超配' if is_grow else '观察'),
+            'title': '%s跑赢 %.2f 个百分点' % ('成长' if is_grow else '价值', abs(spread)),
             'body': ('创业板指 %s%% vs 上证50 %s%%；%s市值端 中证1000 %s%% vs 沪深300 %s%%。'
-                     '全市涨停 %d 家 / 跌停 %d 家、封板率 %.0f%%，弹性品种强于权重蓝筹。'
+                     '全市涨停 %d 家 / 跌停 %d 家、封板率 %.0f%%，%s。'
                      % (_fmt(grow.get('pct')), _fmt(value.get('pct')),
                         ('小盘占优（差 %+.2f）· ' % sm) if sm is not None else '',
                         _fmt(small.get('pct')), _fmt(big.get('pct')),
                         stat.get('zt') or 0, stat.get('dt') or 0,
-                        (stat.get('zt_rate') or 0) * 100)),
-            'data': '同花顺指数 + 涨停池 · %s' % datetime.now().strftime('%Y-%m-%d'),
+                        (stat.get('zt_rate') or 0) * 100,
+                        '弹性品种强于权重蓝筹' if is_grow else '权重蓝筹强于弹性品种')),
+            'drivers': ['涨停 %d 家' % (stat.get('zt') or 0),
+                        '封板率 %.0f%%' % ((stat.get('zt_rate') or 0) * 100)],
+            'risks': ['风格切换需连续验证', '权重与成长易跷跷板'],
+            'data': '同花顺指数 + 涨停池 · %s' % d0,
         })
     return notes[:3]
 
@@ -333,6 +456,9 @@ def run(quiet=False):
     style = build_style(indices)
     print('[风格] %d 组维度' % len(style))
 
+    style_rs = build_style_rs()
+    print('[风格RS] %d 组 20 日相对强弱' % len(style_rs))
+
     notes = build_notes(indices, heat, fund_in, fund_out, breadth, stat, hy)
     print('[研判] %d 条' % len(notes))
 
@@ -366,6 +492,8 @@ def run(quiet=False):
         'concept_in': [{'name': b['name'], 'pct': b['pct'], 'net_in_yi': b['net_in_yi'],
                         'leader': b['leader']} for b in gn_in],
         'style': style,
+        'style_rs': style_rs,
+        'style_rs_note': build_style_conclusion(style_rs),
         'notes': notes,
     }
 

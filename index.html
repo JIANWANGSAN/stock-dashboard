@@ -82,15 +82,19 @@
   .kpi .k { font-size: 11px; color: #6b7280; }
   .kpi .v { font-size: 15.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
   .mkt-main-h { font-size: 12px; color: #374151; font-weight: 600; margin-bottom: 8px; }
-  .mkt-main { display: grid; grid-template-columns: repeat(auto-fill, minmax(172px,1fr)); gap: 8px; }
-  .ml-item { background: linear-gradient(90deg,#fef2f2,#fff); border: 1px solid #fee2e2;
-             border-left: 3px solid #dc2626; border-radius: 0 8px 8px 0; padding: 8px 11px; }
-  .ml-item .r1 { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
-  .ml-item .nm { font-size: 13px; font-weight: 700; }
-  .ml-item .pc { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .ml-item .r2 { font-size: 11px; color: #6b7280; margin-top: 4px; display: flex;
-                 justify-content: space-between; align-items: baseline; gap: 6px; }
-  .ml-item .net { font-size: 12.5px; font-weight: 800; color: #dc2626; font-variant-numeric: tabular-nums; }
+  /* 今日资金主线 TOP6 —— 紧凑横排卡条（左名 / 右涨幅，下家数·领涨 / 右净额） */
+  .mkt-main { display: grid; grid-template-columns: repeat(auto-fill, minmax(212px,1fr)); gap: 8px; }
+  .ml-item { position: relative; background: #fff; border: 1px solid #e8eaef;
+             border-radius: 6px; padding: 7px 11px 8px 13px; overflow: hidden; }
+  .ml-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #dc2626; }
+  .ml-item .r1 { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .ml-item .nm { font-size: 13px; font-weight: 700; color: #111827; }
+  .ml-item .pc { font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .ml-item .r2 { font-size: 11px; color: #6b7280; margin-top: 3px; display: flex;
+                 justify-content: space-between; align-items: baseline; gap: 8px; }
+  .ml-item .r2 .ld { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ml-item .net { font-size: 12.5px; font-weight: 800; color: #dc2626; font-variant-numeric: tabular-nums;
+                  white-space: nowrap; }
 
   /* ② 涨跌热力网格 */
   .heat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px,1fr)); gap: 6px; }
@@ -131,31 +135,59 @@
   .fr-fill.neg { right: 50%; background: linear-gradient(270deg,#86efac,#16a34a); }
   .fr-val { font-variant-numeric: tabular-nums; font-weight: 700; text-align: right; }
 
-  /* ④ 风格轮动 */
-  .sty-wrap { display: flex; flex-direction: column; gap: 12px; }
-  .sty-row { display: grid; grid-template-columns: 58px 1fr; gap: 10px; align-items: center; }
-  .sty-dim { font-size: 11.5px; color: #6b7280; }
-  .sty-body { display: grid; grid-template-columns: 92px 1fr 92px; gap: 8px; align-items: center; }
-  .sty-side { font-size: 11.5px; display: flex; gap: 5px; align-items: baseline; }
-  .sty-side.r { justify-content: flex-end; }
-  .sty-side .lb { color: #6b7280; }
-  .sty-side .pc { font-weight: 700; font-variant-numeric: tabular-nums; }
-  .sty-bar { position: relative; height: 14px; background: #f3f4f6; border-radius: 7px; overflow: hidden; }
-  .sty-bar::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: #d1d5db; z-index: 2; }
-  .sty-fill { position: absolute; top: 2px; bottom: 2px; border-radius: 5px; }
-  .sty-fill.r { left: 50%; background: linear-gradient(90deg,#fca5a5,#dc2626); }
-  .sty-fill.l { right: 50%; background: linear-gradient(270deg,#86efac,#16a34a); }
+  /* ===== ④ 风格轮动 · 相对强弱（RS，近 20 日）—— 深色卡片 ===== */
+  #style-card { background: #12161f; border: 1px solid #232a38; }
+  #style-card .card-title { color: #e5e7eb; }
+  #style-card .card-title .tag { background: #1e2432; color: #8b95a7; }
+  .rs-head { display: flex; align-items: center; gap: 7px; }
+  .rs-head .rs-ico { font-size: 15px; color: #34d399; line-height: 1; }
+  .rs-wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(228px,1fr)); gap: 11px; }
+  .rs-box { background: #1a1f2b; border: 1px solid #262e3d; border-radius: 9px; padding: 10px 12px 8px; }
+  .rs-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .rs-dim { font-size: 13px; font-weight: 700; color: #e5e7eb; letter-spacing: .2px; }
+  .rs-dim .ar { color: #6b7280; font-weight: 400; margin: 0 3px; }
+  .rs-verdict { font-size: 12px; font-weight: 800; white-space: nowrap; }
+  .rs-verdict.up { color: #f87171; }     /* 成长/右侧占优 → 红 */
+  .rs-verdict.down { color: #4ade80; }   /* 左侧占优 → 绿 */
+  .rs-chart { position: relative; margin-top: 8px; }
+  .rs-chart svg { display: block; width: 100%; height: 62px; overflow: visible; }
+  .rs-y { position: absolute; left: 0; top: 1px; font-size: 10px; font-weight: 700; line-height: 1; }
+  .rs-y.top { color: #f87171; }
+  .rs-y.bot { color: #4ade80; top: auto; bottom: 15px; }
+  .rs-x { font-size: 9.5px; color: #6b7280; margin-top: 3px; text-align: right; }
+  .rs-foot { margin-top: 11px; padding-top: 9px; border-top: 1px dashed #2c3543;
+             font-size: 12.5px; line-height: 1.7; color: #cbd5e1; }
+  .rs-foot b { color: #f87171; }
+  .rs-foot .ar2 { color: #34d399; font-weight: 700; }
 
-  /* ⑤ 行业配置研判 */
-  .note-wrap { display: flex; flex-direction: column; gap: 10px; }
-  .cfg { border: 1px solid #e5e7eb; border-left: 3px solid #2563eb;
-         border-radius: 0 9px 9px 0; padding: 11px 14px; background: #fff; }
-  .cfg .nh { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 5px; }
-  .cfg .ntag { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 5px; background: #eff6ff; color: #1d4ed8; }
-  .cfg .nlv { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 5px; background: #fef3c7; color: #b45309; }
-  .cfg .nti { font-size: 13.5px; font-weight: 700; }
-  .cfg .nb { font-size: 12.5px; color: #374151; line-height: 1.65; }
-  .cfg .nd { font-size: 10.5px; color: #9ca3af; margin-top: 6px; }
+  /* ===== ⑤ 轮动研判 · 行业配置观点 ===== */
+  #notes-card .card-title { justify-content: flex-start; }
+  .note-wrap { display: flex; flex-direction: column; gap: 11px; }
+  .cfg { position: relative; border: 1px solid #e5e7eb; border-radius: 9px;
+         padding: 11px 13px 11px 15px; background: #fff; overflow: hidden; }
+  .cfg::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+  .cfg.lv-over::before { background: #dc2626; }
+  .cfg.lv-neu::before { background: #f59e0b; }
+  .cfg.lv-obs::before { background: #94a3b8; }
+  .cfg .cfg-no { position: absolute; right: 11px; top: 9px; font-size: 10.5px;
+                 font-weight: 700; color: #cbd5e1; font-variant-numeric: tabular-nums; letter-spacing: .5px; }
+  .cfg .nh { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; padding-right: 26px; }
+  .cfg .ntag { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 5px; }
+  .cfg.lv-over .ntag { background: #fee2e2; color: #b91c1c; }
+  .cfg.lv-neu  .ntag { background: #fef3c7; color: #b45309; }
+  .cfg.lv-obs  .ntag { background: #f1f5f9; color: #475569; }
+  .cfg .ninit { font-size: 11px; font-weight: 700; color: #fff; background: #475569;
+                width: 18px; height: 18px; border-radius: 50%; display: inline-flex;
+                align-items: center; justify-content: center; flex: 0 0 auto; }
+  .cfg .nti { font-size: 13.5px; font-weight: 700; color: #111827; }
+  .cfg .nb { font-size: 12.5px; color: #374151; line-height: 1.7; }
+  .cfg .ntags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+  .cfg .tg { font-size: 11px; padding: 2px 8px; border-radius: 5px; font-weight: 600;
+             border: 1px solid transparent; }
+  .cfg .tg.drv { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+  .cfg .tg.rsk { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+  .cfg .tg .tgk { opacity: .62; font-weight: 500; margin-right: 3px; }
+  .cfg .nd { font-size: 10.5px; color: #9ca3af; margin-top: 8px; }
   .mktsrc-foot { margin-top: 12px; font-size: 10.5px; color: #9ca3af; line-height: 1.65; }
   /* 图表 */
   #echart-ladder { width: 100%; height: 380px; }
@@ -533,13 +565,17 @@
     .heat-cell .hp{ font-size: 13px; }
     .heat-cell .hx{ font-size: 9.5px; }
     .fr-row{ grid-template-columns: 66px 1fr 50px; gap: 6px; font-size: 11px; }
-    .sty-row{ grid-template-columns: 50px 1fr; gap: 7px; }
-    .sty-body{ grid-template-columns: 74px 1fr 74px; gap: 6px; }
-    .sty-side{ font-size: 10.5px; }
-    .sty-side .lb{ font-size: 10px; }
-    .cfg{ padding: 10px 12px; }
+    .rs-wrap{ grid-template-columns: 1fr; gap: 9px; }
+    .rs-box{ padding: 9px 11px 7px; }
+    .rs-dim{ font-size: 12.5px; }
+    .rs-verdict{ font-size: 11.5px; }
+    .rs-chart svg{ height: 56px; }
+    .rs-foot{ font-size: 12px; line-height: 1.65; margin-top: 9px; padding-top: 8px; }
+    .cfg{ padding: 10px 11px 10px 13px; }
     .cfg .nti{ font-size: 12.5px; }
     .cfg .nb{ font-size: 12px; }
+    .cfg .tg{ font-size: 10.5px; padding: 1px 6px; }
+    .cfg .cfg-no{ font-size: 10px; right: 9px; top: 8px; }
   }
 </style>
 </head>
@@ -606,18 +642,20 @@
         <div class="fr-wrap" id="fund-rank"></div>
       </div>
 
-      <!-- ④ 风格轮动强弱 -->
+      <!-- ④ 风格轮动 · 相对强弱（RS 折线，近20日） -->
       <div class="card" id="style-card">
-        <div class="card-title">风格轮动强弱
-          <span class="tag">左＝防御/价值 · 右＝进攻/成长</span>
+        <div class="card-title"><span class="rs-head">
+          <span class="rs-ico">◉</span>风格轮动 · 相对强弱</span>
+          <span class="tag" id="rs-tag">近20日 RS</span>
         </div>
-        <div class="sty-wrap" id="style-box"></div>
+        <div class="rs-wrap" id="style-box"></div>
+        <div class="rs-foot" id="style-note"></div>
       </div>
 
-      <!-- ⑤ 行业配置研判 -->
+      <!-- ⑤ 轮动研判 · 行业配置观点 -->
       <div class="card" id="notes-card">
-        <div class="card-title">行业配置研判
-          <span class="tag">基于当日客观数据 · 不含涨跌预测</span>
+        <div class="card-title">轮动研判 · 行业配置观点
+          <span class="tag">研究视角 · 含驱动 / 风险</span>
         </div>
         <div class="note-wrap" id="notes-box"></div>
       </div>
@@ -748,7 +786,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.18-2';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.18-3';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -862,11 +900,42 @@ function tipHTML(title, lines){
   window.addEventListener('resize', hideTip);
 })();
 
+/* ---- 风格 RS 迷你折线（内联 SVG，无依赖，自动随容器宽度缩放）----
+   基期 100 的上下各留余量；100 处画一条虚线参考线，红色为「右侧占优」、绿色为「左侧占优」。 */
+function rsSvg(series, color, idx){
+  const W=240, H=62, PADT=5, PADB=13;
+  const s=(series||[]).map(Number).filter(v=>isFinite(v));
+  if(s.length<2) return '<svg viewBox="0 0 '+W+' '+H+'"></svg>';
+  const mn=Math.min(...s), mx=Math.max(...s);
+  // 让 100 基期线始终在可视区内，同时保证纵轴有最小跨度（避免一条直线被放大成剧烈波动）
+  const lo=Math.min(mn,100), hi=Math.max(mx,100);
+  const span=Math.max(hi-lo, Math.max(1.2, Math.abs(hi)*0.008));
+  const mid=(hi+lo)/2, y0=mid-span/2, y1=mid+span/2;
+  const X=i=>i/(s.length-1)*W;
+  const Y=v=>PADT+(y1-v)/(y1-y0)*(H-PADT-PADB);
+  const pts=s.map((v,i)=>X(i).toFixed(1)+','+Y(v).toFixed(1)).join(' ');
+  const area='0,'+(H-PADB)+' '+pts+' '+W+','+(H-PADB);
+  const yb=Y(100).toFixed(1);
+  const id='rsg'+idx;
+  const showBase = yb>PADT-1 && yb<H-PADB+1;
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'
+    +'<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1">'
+    +'<stop offset="0" stop-color="'+color+'" stop-opacity=".26"/>'
+    +'<stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'
+    +(showBase?'<line x1="0" y1="'+yb+'" x2="'+W+'" y2="'+yb+'" stroke="#3a4455" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>':'')
+    +'<polygon points="'+area+'" fill="url(#'+id+')"/>'
+    +'<polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="1.9" '
+    +'stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>'
+    +'<circle cx="'+X(s.length-1).toFixed(1)+'" cy="'+Y(s[s.length-1]).toFixed(1)+'" r="2.4" fill="'+color+'"/>'
+    +'</svg>';
+}
+
 function renderMacro(){
   const m=D.macro;
   if(!m){
     ['mkt-indices','mkt-kpi','mkt-mainline','heat-grid','fund-rank','style-box','notes-box']
       .forEach(id=>{ const e=document.getElementById(id); if(e) e.innerHTML='<div class="empty">暂无宏观数据（运行 python macro.py 生成）</div>'; });
+    const sn0=document.getElementById('style-note'); if(sn0) sn0.innerHTML='';
     return;
   }
   const pc=v=> v==null?'—':((v>0?'+':'')+v.toFixed(2)+'%');
@@ -920,7 +989,7 @@ function renderMacro(){
       return `<div class="ml-item" data-tip-title="${escA(b.name)}" data-tip="${escA(tlines.join('\n'))}">
       <div class="r1"><span class="nm">${esc(b.name)}</span>
         <span class="pc ${cls(b.pct)}">${pc(b.pct)}</span></div>
-      <div class="r2"><span>${b.stock_total?b.stock_total+'家':'—'}${b.leader?' · '+esc(b.leader):''}</span>
+      <div class="r2"><span class="ld">${b.stock_total?b.stock_total+'家':'—'}${b.leader?' · '+esc(b.leader):''}</span>
         <span class="net">净+${(b.net_in_yi||0).toFixed(1)}亿</span></div>
     </div>`;
     }).join('');
@@ -980,33 +1049,74 @@ function renderMacro(){
                  + out.map((b,i)=>row(b,true,i===0)).join('');
   }
 
-  // ---- ④ 风格轮动强弱 ----
+  // ---- ④ 风格轮动 · 相对强弱（RS 折线，近20日） ----
   const sb=document.getElementById('style-box');
   if(sb){
-    sb.innerHTML=(m.style||[]).map(s=>{
-      const sp=s.spread||0, w=Math.min(50,Math.max(1,Math.round(Math.abs(sp)/3*50)));
-      const right=sp>=0;
-      return `<div class="sty-row">
-        <div class="sty-dim">${esc(s.dim)}</div>
-        <div class="sty-body">
-          <div class="sty-side l"><span class="lb">${esc(s.left.label)}</span><span class="pc ${cls(s.left.pct)}">${pc(s.left.pct)}</span></div>
-          <div class="sty-bar"><div class="sty-fill ${right?'r':'l'}" style="width:${w}%"></div></div>
-          <div class="sty-side r"><span class="pc ${cls(s.right.pct)}">${pc(s.right.pct)}</span><span class="lb">${esc(s.right.label)}</span></div>
-        </div>
-      </div>`;
-    }).join('');
+    const rs=(m.style_rs||[]);
+    if(!rs.length){
+      sb.innerHTML='<div class="empty">暂无风格 RS 数据</div>';
+    }else{
+      sb.innerHTML=rs.map((r,i)=>{
+        const up=(r.trend&&r.trend.dir)==='up';
+        // 右侧（成长/消费）走强 → 红；左侧走强 → 绿（A股涨红跌绿惯例落到「谁占优」上）
+        const line=up?'#f87171':'#4ade80';
+        const verdict=(up?r.right:r.left)+'占优';
+        const ltag=r.left_tag||r.left, rtag=r.right_tag||r.right;
+        return `<div class="rs-box">
+          <div class="rs-top">
+            <div class="rs-dim">${esc(r.left)}<span class="ar">↔</span>${esc(r.right)}</div>
+            <div class="rs-verdict ${up?'up':'down'}">${esc(verdict)}</div>
+          </div>
+          <div class="rs-chart">
+            <div class="rs-y top">${esc(rtag)}</div>
+            <div class="rs-y bot">${esc(ltag)}</div>
+            ${rsSvg(r.series,line,i)}
+          </div>
+          <div class="rs-x">${(r.labels&&r.labels[0])||''} → ${(r.labels&&r.labels[r.labels.length-1])||''}</div>
+        </div>`;
+      }).join('');
+    }
+    // 底部配文（一句话结论，来自 macro.py 的 style_rs_note）
+    const sn=document.getElementById('style-note');
+    if(sn){
+      const t=m.style_rs_note||'';
+      const k=t.indexOf('→');
+      sn.innerHTML = k<0 ? esc(t)
+        : esc(t.slice(0,k))+'<span class="ar2">→</span>'+esc(t.slice(k+1));
+    }
   }
 
-  // ---- ⑤ 行业配置研判 ----
+  // ---- ⑤ 轮动研判 · 行业配置观点 ----
   const nb=document.getElementById('notes-box');
   if(nb){
-    nb.innerHTML=(m.notes||[]).map(n=>`<div class="cfg">
-      <div class="nh"><span class="ntag">${esc(n.tag||'')}</span>
-        <span class="nlv">${esc(n.level||'')}</span>
-        <span class="nti">${esc(n.title||'')}</span></div>
-      <div class="nb">${esc(n.body||'')}</div>
-      <div class="nd">数据来源：${esc(n.data||'')}</div>
-    </div>`).join('');
+    // 每条：{tag(超配/标配/观察), init(字母角标), title, body, drivers[], risks[], data}
+    // 兼容旧结构（n.level 存「超配/标配」、无 drivers/risks 时由 n.tag/n.level 兜底）
+    const lvCls=t=>{
+      const s=(t||'');
+      if(/超配|高配|加仓/.test(s)) return 'lv-over';
+      if(/标配|中性|持有/.test(s)) return 'lv-neu';
+      return 'lv-obs';
+    };
+    nb.innerHTML=(m.notes||[]).map((n,i)=>{
+      const lv=n.level||n.tag||'标配';
+      const drv=n.drivers||[], rsk=n.risks||[];
+      const tags=[].concat(
+        drv.map(x=>'<span class="tg drv"><span class="tgk">驱动</span>'+esc(x)+'</span>'),
+        rsk.map(x=>'<span class="tg rsk"><span class="tgk">风险</span>'+esc(x)+'</span>')
+      ).join('');
+      const letter=(n.init||n.tag||'').slice(0,1);
+      return `<div class="cfg ${lvCls(lv)}">
+        <div class="cfg-no">${String(i+1).padStart(2,'0')}</div>
+        <div class="nh">
+          <span class="ntag">${esc(lv)}</span>
+          ${letter?'<span class="ninit">'+esc(letter)+'</span>':''}
+          <span class="nti">${esc(n.title||'')}</span>
+        </div>
+        <div class="nb">${esc(n.body||'')}</div>
+        ${tags?'<div class="ntags">'+tags+'</div>':''}
+        ${n.data?'<div class="nd">数据来源：'+esc(n.data)+'</div>':''}
+      </div>`;
+    }).join('');
   }
 }
 
