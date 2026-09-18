@@ -26,7 +26,7 @@ for(const f of fns){
 }
 
 console.log('\n--- 必看页 7 个区块输出 ---');
-['mkt-indices','mkt-kpi','mkt-mainline','heat-grid','fund-rank','style-box','notes-box','style-note']
+['mkt-indices','mkt-kpi','mkt-mainline','heat-grid','fund-rank','style-box','notes-box','style-note','mkt-mainnote']
   .forEach(id=>console.log('  '+id+'  '+(cache[id].innerHTML||'').length+' 字符'));
 
 console.log('\n--- 已删模块的容器应「未被创建」---');

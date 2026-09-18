@@ -77,20 +77,27 @@
   .mkt-i .v { font-size: 15.5px; font-weight: 700; margin: 1px 0; font-variant-numeric: tabular-nums; letter-spacing: -.2px; }
   .mkt-i .c { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
   .mkt-i .amt { font-size: 10.5px; color: #9ca3af; margin-top: 1px; }
-  .mkt-kpi { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+  .mkt-kpi { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 13px; }
   .kpi { background: #f9fafb; border: 1px solid #eef0f4; border-radius: 8px; padding: 7px 13px; min-width: 92px; }
   .kpi .k { font-size: 11px; color: #6b7280; }
   .kpi .v { font-size: 15.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .mkt-main-h { font-size: 12px; color: #374151; font-weight: 600; margin-bottom: 8px; }
+  .mkt-main-h { font-size: 12px; color: #374151; font-weight: 600; margin-bottom: 6px; }
+  /* 资金主线一句话概览（顶部完整展示，不再被裁） */
+  .ml-note { font-size: 12px; line-height: 1.6; color: #374151; background: #fff7ed;
+             border: 1px solid #fed7aa; border-radius: 7px; padding: 6px 10px; margin-bottom: 8px;
+             word-break: break-word; }
+  .ml-note .mlk { color: #c2410c; font-weight: 700; margin-right: 4px; }
+  .ml-note b { color: #b91c1c; font-variant-numeric: tabular-nums; }
+  .ml-note .mlj { color: #92400e; font-weight: 600; }
   /* 今日资金主线 TOP6 —— 紧凑横排卡条（左名 / 右涨幅，下家数·领涨 / 右净额） */
-  .mkt-main { display: grid; grid-template-columns: repeat(auto-fill, minmax(212px,1fr)); gap: 8px; }
+  .mkt-main { display: grid; grid-template-columns: repeat(auto-fill, minmax(212px,1fr)); gap: 7px; }
   .ml-item { position: relative; background: #fff; border: 1px solid #e8eaef;
-             border-radius: 6px; padding: 7px 11px 8px 13px; overflow: hidden; }
+             border-radius: 6px; padding: 6px 10px 6px 12px; overflow: hidden; }
   .ml-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #dc2626; }
   .ml-item .r1 { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
   .ml-item .nm { font-size: 13px; font-weight: 700; color: #111827; }
   .ml-item .pc { font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
-  .ml-item .r2 { font-size: 11px; color: #6b7280; margin-top: 3px; display: flex;
+  .ml-item .r2 { font-size: 11px; color: #6b7280; margin-top: 2px; display: flex;
                  justify-content: space-between; align-items: baseline; gap: 8px; }
   .ml-item .r2 .ld { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ml-item .net { font-size: 12.5px; font-weight: 800; color: #dc2626; font-variant-numeric: tabular-nums;
@@ -557,8 +564,9 @@
     .kpi{ padding: 6px 10px; min-width: 82px; }
     .kpi .k{ font-size: 10px; }
     .kpi .v{ font-size: 13.5px; }
-    .mkt-main{ grid-template-columns: 1fr; gap: 6px; }
-    .ml-item{ padding: 7px 10px; }
+    .mkt-main{ grid-template-columns: 1fr; gap: 5px; }
+    .ml-item{ padding: 6px 9px 6px 11px; }
+    .ml-note{ font-size: 11.5px; padding: 6px 9px; margin-bottom: 7px; }
     .heat-grid{ grid-template-columns: repeat(auto-fill, minmax(76px,1fr)); gap: 5px; }
     .heat-cell{ padding: 7px 5px; }
     .heat-cell .hn{ font-size: 10.5px; }
@@ -615,6 +623,7 @@
         <div class="mkt-idx" id="mkt-indices"></div>
         <div class="mkt-kpi" id="mkt-kpi"></div>
         <div class="mkt-main-h">今日资金主线 · 行业主力净流入 TOP6</div>
+        <div class="ml-note" id="mkt-mainnote"></div>
         <div class="mkt-main" id="mkt-mainline"></div>
       </div>
 
@@ -786,7 +795,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.18-4';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.18-5';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -936,6 +945,7 @@ function renderMacro(){
     ['mkt-indices','mkt-kpi','mkt-mainline','heat-grid','fund-rank','style-box','notes-box']
       .forEach(id=>{ const e=document.getElementById(id); if(e) e.innerHTML='<div class="empty">暂无宏观数据（运行 python macro.py 生成）</div>'; });
     const sn0=document.getElementById('style-note'); if(sn0) sn0.innerHTML='';
+    const mn0=document.getElementById('mkt-mainnote'); if(mn0){ mn0.innerHTML=''; mn0.style.display='none'; }
     return;
   }
   const pc=v=> v==null?'—':((v>0?'+':'')+v.toFixed(2)+'%');
@@ -977,6 +987,18 @@ function renderMacro(){
   }
 
   // ---- 今日资金主线 ----
+  // 顶部一句话概览（资金主线方向 + 净流入合计 + 研判），由 macro.build_mainline_note() 产出
+  const mnh=document.getElementById('mkt-mainnote');
+  if(mnh){
+    const n=m.mainline_note||{};
+    mnh.innerHTML = n.lead
+      ? `<span class="mlk">今日主线</span>资金回流<b>${esc(n.lead)}</b>方向，`
+        + `净流入集中于<b>${esc(n.focus)}</b>；TOP6 合计净流入 <b>${(n.total_yi||0).toFixed(1)}亿</b>，`
+        + `其中<b>${esc(n.top_name)}</b> <b>${(n.top_yi||0).toFixed(1)}亿</b>居首。`
+        + `<span class="mlj">研判：${esc(n.judge||'')}</span>`
+      : '';
+    mnh.style.display = n.lead ? '' : 'none';
+  }
   const ml=document.getElementById('mkt-mainline');
   if(ml){
     ml.innerHTML=(m.mainline||[]).map(b=>{

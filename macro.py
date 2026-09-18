@@ -274,6 +274,80 @@ def _fmt(v, unit='', nd=2):
     return ('%+.' + str(nd) + 'f') % v if v >= 0 else ('%.' + str(nd) + 'f') % v
 
 
+# 资金主线一句话概览用的「方向归类」——把同花顺行业名归到短线口径的产业方向。
+# 只做**客观归类**，不改数字；未命中的行业直接原样输出。
+MAINLINE_SECTOR_GROUPS = [
+    ('AI算力',      ('半导体', '通信设备', '光学光电子', '消费电子', '元件', '电子化学品', '其他电子')),
+    ('算力租赁',    ('IT服务', '软件开发', '计算机设备', '通信服务')),
+    ('高端制造',    ('自动化设备', '通用设备', '专用设备', '工程机械', '机床工具')),
+    ('新能源',      ('光伏设备', '电池', '风电设备', '能源金属', '电网设备', '电源设备')),
+    ('医药生物',    ('医疗器械', '化学制药', '中药', '生物制品', '医疗服务')),
+    ('大消费',      ('白酒', '食品加工', '饮料乳品', '农副产品', '旅游及景区', '酒店餐饮')),
+    ('金融地产',    ('银行', '证券', '保险', '房地产开发', '房地产服务')),
+    ('周期资源',    ('煤炭开采', '石油行业', '工业金属', '贵金属', '小金属', '化学原料', '钢铁')),
+]
+
+
+def _group_of(name):
+    """行业名 → 产业方向（短线口径）。未命中返回原名。"""
+    for g, keys in MAINLINE_SECTOR_GROUPS:
+        for k in keys:
+            if k and (k in name or name in k):
+                return g
+    return name
+
+
+def build_mainline_note(mainline, fund_in, style_rs, stat):
+    """① 资金主线卡顶部的一句话概览（客观罗列，不含涨跌预测）。
+
+    形如：「主线 资金回流科技成长方向：AI算力 / 高端制造 领涨，
+          净流入集中于AI算力产业链；净流入合计 378.5 亿，
+          其中半导体 226.6 亿居首 —— 研判：主线聚焦科技成长，关注量能持续性。」
+
+    返回 {lead, dirs[], focus, total_yi, top_name, top_yi, judge}；无数据返回 {}。
+    """
+    if not mainline:
+        return {}
+
+    # 1) 方向归类（保持原顺序去重，最多 3 个）
+    dirs = []
+    for b in mainline:
+        g = _group_of(b['name'])
+        if g not in dirs:
+            dirs.append(g)
+    dirs = dirs[:3]
+
+    # 2) 领涨方向：TOP6 里涨幅最高的 1~2 个方向
+    lead = '、'.join(dirs[:2]) if len(dirs) >= 2 else (dirs[0] if dirs else '')
+
+    # 3) 净流入集中方向：净额最大的那个方向（及其首行业）
+    top = mainline[0]
+    focus = '%s产业链' % _group_of(top['name'])
+
+    total = sum((b.get('net_in_yi') or 0) for b in mainline)
+
+    # 4) 研判一句（由当日客观数据推出：方向属性 + 量能）
+    amt = stat.get('zt') or 0
+    tech = sum((b.get('net_in_yi') or 0) for b in mainline
+               if _group_of(b['name']) in ('AI算力', '算力租赁', '高端制造'))
+    if total > 0 and tech / total >= 0.5:
+        judge = '主线聚焦科技成长，关注量能持续性。'
+    elif total > 0 and tech / total < 0.3:
+        judge = '资金分散、主线尚未收敛，关注次日接力强度。'
+    else:
+        judge = '主线偏科技成长、其余方向跟随，关注量能持续性。'
+
+    return {
+        'lead': lead,
+        'dirs': dirs,
+        'focus': focus,
+        'total_yi': round(total, 1),
+        'top_name': top['name'],
+        'top_yi': round(top.get('net_in_yi') or 0, 1),
+        'judge': judge,
+    }
+
+
 def build_style_conclusion(style_rs):
     """④b 配文：由 RS 折线的方向与连续天数推出的一句话结论（客观描述，不含预测）。"""
     if not style_rs:
@@ -480,6 +554,7 @@ def run(quiet=False):
              'stock_total': b['stock_total'], 'leader': b['leader']}
             for b in fund_in[:6]
         ],
+        'mainline_note': build_mainline_note(fund_in[:6], fund_in, style_rs, stat),
         'heat': heat,
         'fund_rank': {
             'in': [{'name': b['name'], 'pct': b['pct'], 'net_in_yi': b['net_in_yi'],
