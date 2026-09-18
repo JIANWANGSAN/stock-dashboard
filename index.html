@@ -89,19 +89,6 @@
   .ml-note .mlk { color: #c2410c; font-weight: 700; margin-right: 4px; }
   .ml-note b { color: #b91c1c; font-variant-numeric: tabular-nums; }
   .ml-note .mlj { color: #92400e; font-weight: 600; }
-  /* 今日资金主线 TOP6 —— 紧凑横排卡条（左名 / 右涨幅，下家数·领涨 / 右净额） */
-  .mkt-main { display: grid; grid-template-columns: repeat(auto-fill, minmax(212px,1fr)); gap: 7px; }
-  .ml-item { position: relative; background: #fff; border: 1px solid #e8eaef;
-             border-radius: 6px; padding: 6px 10px 6px 12px; overflow: hidden; }
-  .ml-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #dc2626; }
-  .ml-item .r1 { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-  .ml-item .nm { font-size: 13px; font-weight: 700; color: #111827; }
-  .ml-item .pc { font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
-  .ml-item .r2 { font-size: 11px; color: #6b7280; margin-top: 2px; display: flex;
-                 justify-content: space-between; align-items: baseline; gap: 8px; }
-  .ml-item .r2 .ld { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ml-item .net { font-size: 12.5px; font-weight: 800; color: #dc2626; font-variant-numeric: tabular-nums;
-                  white-space: nowrap; }
 
   /* ② 涨跌热力网格 */
   .heat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px,1fr)); gap: 6px; }
@@ -564,9 +551,8 @@
     .kpi{ padding: 6px 10px; min-width: 82px; }
     .kpi .k{ font-size: 10px; }
     .kpi .v{ font-size: 13.5px; }
-    .mkt-main{ grid-template-columns: 1fr; gap: 5px; }
-    .ml-item{ padding: 6px 9px 6px 11px; }
-    .ml-note{ font-size: 11.5px; padding: 6px 9px; margin-bottom: 7px; }
+    .mkt-main-h{ margin-bottom: 5px; }
+    .ml-note{ font-size: 11.5px; padding: 6px 9px; margin-bottom: 0; }
     .heat-grid{ grid-template-columns: repeat(auto-fill, minmax(76px,1fr)); gap: 5px; }
     .heat-cell{ padding: 7px 5px; }
     .heat-cell .hn{ font-size: 10.5px; }
@@ -622,9 +608,8 @@
         </div>
         <div class="mkt-idx" id="mkt-indices"></div>
         <div class="mkt-kpi" id="mkt-kpi"></div>
-        <div class="mkt-main-h">今日资金主线 · 行业主力净流入 TOP6</div>
+        <div class="mkt-main-h">今日资金主线</div>
         <div class="ml-note" id="mkt-mainnote"></div>
-        <div class="mkt-main" id="mkt-mainline"></div>
       </div>
 
       <!-- ② 27 个产业板块 · 涨跌热力网格 -->
@@ -795,7 +780,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.18-5';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.18-6';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -953,7 +938,7 @@ function rsSvg(series, color, idx, base){
 function renderMacro(){
   const m=D.macro;
   if(!m){
-    ['mkt-indices','mkt-kpi','mkt-mainline','heat-grid','fund-rank','style-box','notes-box']
+    ['mkt-indices','mkt-kpi','heat-grid','fund-rank','style-box','notes-box']
       .forEach(id=>{ const e=document.getElementById(id); if(e) e.innerHTML='<div class="empty">暂无宏观数据（运行 python macro.py 生成）</div>'; });
     const sn0=document.getElementById('style-note'); if(sn0) sn0.innerHTML='';
     const mn0=document.getElementById('mkt-mainnote'); if(mn0){ mn0.innerHTML=''; mn0.style.display='none'; }
@@ -997,35 +982,18 @@ function renderMacro(){
     kpi.innerHTML=cells.map(x=>`<div class="kpi"><div class="k">${x.k}</div><div class="v">${x.v}</div></div>`).join('');
   }
 
-  // ---- 今日资金主线 ----
-  // 顶部一句话概览（资金主线方向 + 净流入合计 + 研判），由 macro.build_mainline_note() 产出
+  // ---- 今日资金主线（一句话概览；TOP6 卡条已按用户要求删除）----
+  // 概览数据来自 macro.build_mainline_note()
   const mnh=document.getElementById('mkt-mainnote');
   if(mnh){
     const n=m.mainline_note||{};
     mnh.innerHTML = n.lead
       ? `<span class="mlk">今日主线</span>资金回流<b>${esc(n.lead)}</b>方向，`
-        + `净流入集中于<b>${esc(n.focus)}</b>；TOP6 合计净流入 <b>${(n.total_yi||0).toFixed(1)}亿</b>，`
+        + `净流入集中于<b>${esc(n.focus)}</b>；合计净流入 <b>${(n.total_yi||0).toFixed(1)}亿</b>，`
         + `其中<b>${esc(n.top_name)}</b> <b>${(n.top_yi||0).toFixed(1)}亿</b>居首。`
         + `<span class="mlj">研判：${esc(n.judge||'')}</span>`
       : '';
     mnh.style.display = n.lead ? '' : 'none';
-  }
-  const ml=document.getElementById('mkt-mainline');
-  if(ml){
-    ml.innerHTML=(m.mainline||[]).map(b=>{
-      const tlines=[
-        '主力净额：'+((b.net_in_yi>=0?'+':'')+(b.net_in_yi||0).toFixed(2)+'亿'),
-        '涨跌幅：'+pc(b.pct),
-      ];
-      if(b.leader) tlines.push('领涨股：'+b.leader+(b.leader_pct!=null?' '+pc(b.leader_pct):''));
-      if(b.stock_total) tlines.push('成分股：'+b.stock_total+'家');
-      return `<div class="ml-item" data-tip-title="${escA(b.name)}" data-tip="${escA(tlines.join('\n'))}">
-      <div class="r1"><span class="nm">${esc(b.name)}</span>
-        <span class="pc ${cls(b.pct)}">${pc(b.pct)}</span></div>
-      <div class="r2"><span class="ld">${b.stock_total?b.stock_total+'家':'—'}${b.leader?' · '+esc(b.leader):''}</span>
-        <span class="net">净+${(b.net_in_yi||0).toFixed(1)}亿</span></div>
-    </div>`;
-    }).join('');
   }
 
   // ---- ② 涨跌热力网格 ----
