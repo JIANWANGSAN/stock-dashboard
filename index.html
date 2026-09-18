@@ -94,9 +94,10 @@
 
   /* ② 涨跌热力网格 */
   .heat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px,1fr)); gap: 6px; }
-  .heat-cell { border-radius: 7px; padding: 9px 7px; text-align: center; cursor: default;
+  .heat-cell { border-radius: 7px; padding: 9px 7px; text-align: center; cursor: pointer;
                transition: transform .12s; position: relative; }
   .heat-cell:hover { transform: scale(1.05); z-index: 2; box-shadow: 0 3px 12px rgba(0,0,0,.18); }
+  .heat-cell.on { transform: scale(1.05); z-index: 2; box-shadow: 0 0 0 2px #111827, 0 3px 12px rgba(0,0,0,.22); }
   .heat-cell .hn { font-size: 11.5px; font-weight: 700; line-height: 1.25; }
   .heat-cell .hp { font-size: 14.5px; font-weight: 800; margin-top: 3px; font-variant-numeric: tabular-nums; }
   .heat-cell .hx { font-size: 10px; opacity: .85; margin-top: 2px; }
@@ -104,6 +105,19 @@
                  font-size: 10.5px; color: #9ca3af; flex-wrap: wrap; }
   .heat-legend i { width: 17px; height: 10px; border-radius: 2px; display: inline-block; }
   .heat-note { margin-left: 4px; }
+
+  /* 自绘浮层：手机端没有 hover，原生 title 不显示 → 点击/长按弹出 */
+  #tip-layer { position: fixed; z-index: 9999; max-width: 260px; padding: 9px 11px;
+               background: #111827; color: #f9fafb; border-radius: 8px; font-size: 12px;
+               line-height: 1.55; box-shadow: 0 6px 22px rgba(0,0,0,.34); pointer-events: none;
+               opacity: 0; transition: opacity .13s; }
+  #tip-layer.on { opacity: 1; }
+  #tip-layer .tt { font-weight: 800; font-size: 12.5px; margin-bottom: 3px; }
+  #tip-layer .tl { display: flex; justify-content: space-between; gap: 12px; }
+  #tip-layer .tl b { font-variant-numeric: tabular-nums; font-weight: 800; }
+  #tip-layer .tl .u { color: #f87171; }
+  #tip-layer .tl .d { color: #4ade80; }
+  @media (max-width: 560px) { #tip-layer { max-width: 78vw; font-size: 12.5px; } }
 
   /* ③ 双向条形（主力资金排行） */
   .fr-wrap { display: flex; flex-direction: column; gap: 5px; }
@@ -734,7 +748,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.18-1';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.18-2';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -782,6 +796,71 @@ function heatStyle(p){
   const arr = p>=0?R:G;
   return {bg:arr[i], fg:(i>=4?'#fff':'#111827')};
 }
+
+/* ---- 自绘浮层（手机端无 hover，原生 title 不显示 → 点击/长按弹出自绘层）----
+   数据以 data-tip 属性挂在元素上（多行用 \n 分隔），事件委托在 document 上，
+   这样 renderMacro 重绘后无需重新绑定。
+   · 桌面：mouseenter 显示、mouseleave 隐藏；点击也显示（键盘/触屏板均可）
+   · 触屏：点一下显示，再点别处 / 点同一元素 / 滚动 / 3.5s 后自动收起 */
+let _tipEl=null, _tipTimer=null, _tipAnchor=null;
+function _tipHost(){
+  if(!_tipEl){ _tipEl=document.createElement('div'); _tipEl.id='tip-layer'; document.body.appendChild(_tipEl); }
+  return _tipEl;
+}
+function showTip(html, anchor){
+  const el=_tipHost();
+  el.innerHTML=html;
+  el.classList.add('on');
+  _tipAnchor=anchor;
+  // 定位：优先贴元素上方；上方放不下则放下方；水平方向夹在视口内
+  const r=anchor.getBoundingClientRect();
+  const w=el.offsetWidth||220, h=el.offsetHeight||60, vw=window.innerWidth, vh=window.innerHeight;
+  let top=r.top-h-8, below=false;
+  if(top<6){ top=r.bottom+8; below=true; }
+  let left=r.left+r.width/2-w/2;
+  left=Math.max(6, Math.min(left, vw-w-6));
+  if(top+h>vh-6) top=Math.max(6, vh-h-6);
+  el.style.top=top+'px'; el.style.left=left+'px';
+  el.dataset.below=below?'1':'0';
+  if(_tipTimer) clearTimeout(_tipTimer);
+  _tipTimer=setTimeout(hideTip, 3500);
+  anchor.classList.add('on');
+}
+function hideTip(){
+  if(_tipEl) _tipEl.classList.remove('on');
+  if(_tipAnchor){ _tipAnchor.classList.remove('on'); _tipAnchor=null; }
+  if(_tipTimer){ clearTimeout(_tipTimer); _tipTimer=null; }
+}
+// 把 data-tip 的纯文本渲染成带数值高亮的浮层内容
+function tipHTML(title, lines){
+  const body=(lines||[]).map(l=>{
+    const i=l.indexOf('：');
+    if(i<0) return '<div class="tl"><span>'+esc(l)+'</span></div>';
+    const k=l.slice(0,i), v=l.slice(i+1);
+    const c=/^[-+]/.test(v) ? (/^-/.test(v)?'d':'u') : '';
+    return '<div class="tl"><span>'+esc(k)+'</span><b class="'+c+'">'+esc(v)+'</b></div>';
+  }).join('');
+  return '<div class="tt">'+esc(title)+'</div>'+body;
+}
+(function bindTip(){
+  const target=e=> (e.target&&e.target.closest)?e.target.closest('[data-tip]'):null;
+  document.addEventListener('mouseover', e=>{
+    const t=target(e); if(t && !('ontouchstart' in window)) showTip(tipHTML(t.dataset.tipTitle||'', (t.dataset.tip||'').split('\n')), t);
+  });
+  document.addEventListener('mouseout', e=>{
+    const t=target(e); if(t && !('ontouchstart' in window)) hideTip();
+  });
+  document.addEventListener('click', e=>{
+    const t=target(e);
+    if(!t){ hideTip(); return; }
+    if(_tipAnchor===t){ hideTip(); return; }   // 再点同一元素 → 收起
+    showTip(tipHTML(t.dataset.tipTitle||'', (t.dataset.tip||'').split('\n')), t);
+    e.stopPropagation();
+  }, true);
+  // 滚动 / 缩放时浮层会跟丢位置 → 直接收起
+  window.addEventListener('scroll', hideTip, {passive:true});
+  window.addEventListener('resize', hideTip);
+})();
 
 function renderMacro(){
   const m=D.macro;
@@ -831,12 +910,20 @@ function renderMacro(){
   // ---- 今日资金主线 ----
   const ml=document.getElementById('mkt-mainline');
   if(ml){
-    ml.innerHTML=(m.mainline||[]).map(b=>`<div class="ml-item">
+    ml.innerHTML=(m.mainline||[]).map(b=>{
+      const tlines=[
+        '主力净额：'+((b.net_in_yi>=0?'+':'')+(b.net_in_yi||0).toFixed(2)+'亿'),
+        '涨跌幅：'+pc(b.pct),
+      ];
+      if(b.leader) tlines.push('领涨股：'+b.leader+(b.leader_pct!=null?' '+pc(b.leader_pct):''));
+      if(b.stock_total) tlines.push('成分股：'+b.stock_total+'家');
+      return `<div class="ml-item" data-tip-title="${escA(b.name)}" data-tip="${escA(tlines.join('\n'))}">
       <div class="r1"><span class="nm">${esc(b.name)}</span>
         <span class="pc ${cls(b.pct)}">${pc(b.pct)}</span></div>
       <div class="r2"><span>${b.stock_total?b.stock_total+'家':'—'}${b.leader?' · '+esc(b.leader):''}</span>
         <span class="net">净+${(b.net_in_yi||0).toFixed(1)}亿</span></div>
-    </div>`).join('');
+    </div>`;
+    }).join('');
   }
 
   // ---- ② 涨跌热力网格 ----
@@ -845,11 +932,19 @@ function renderMacro(){
     const rows=(m.heat||[]).slice().sort((a,b)=>(b.pct||-99)-(a.pct||-99));
     hg.innerHTML=rows.map(h=>{
       const s=heatStyle(h.pct);
-      const tip=[h.name, '涨跌 '+pc(h.pct),
+      // 浮层内容（点击/悬浮均可）：涨跌 / 主力净额 / 领涨股 / 家数
+      const tlines=[
+        '涨跌幅：'+pc(h.pct),
+        '主力净额：'+(h.net_in_yi!=null?((h.net_in_yi>=0?'+':'')+h.net_in_yi.toFixed(2)+'亿'):'—'),
+      ];
+      if(h.leader) tlines.push('领涨股：'+h.leader+(h.leader_pct!=null?' '+pc(h.leader_pct):''));
+      if(h.stock_total) tlines.push('成分股：'+h.stock_total+'家');
+      const tipTxt=[h.name,'涨跌 '+pc(h.pct),
                  h.net_in_yi!=null?('净额 '+h.net_in_yi.toFixed(2)+'亿'):'',
                  h.leader?('领涨 '+h.leader+(h.leader_pct!=null?' '+pc(h.leader_pct):'')):'',
                  h.stock_total?(h.stock_total+'家'):''].filter(Boolean).join(' · ');
-      return `<div class="heat-cell" style="background:${s.bg};color:${s.fg}" title="${escA(tip)}">
+      return `<div class="heat-cell" style="background:${s.bg};color:${s.fg}" title="${escA(tipTxt)}"
+        data-tip-title="${escA(h.name)}" data-tip="${escA(tlines.join('\n'))}">
         <div class="hn">${esc(h.name)}</div>
         <div class="hp">${h.pct!=null?(h.pct>0?'+':'')+h.pct.toFixed(2):'—'}</div>
         <div class="hx">${h.net_in_yi!=null?(h.net_in_yi>=0?'+':'')+h.net_in_yi.toFixed(1)+'亿':'—'}</div>
@@ -867,8 +962,16 @@ function renderMacro(){
       const w=Math.max(1,Math.round(Math.abs(b.net_in_yi||0)/mx*50));   // 半幅 50%
       const side=neg?'neg':'pos';
       const c=neg?'down':'up';
-      return `<div class="fr-row${first?' zero-line':''}">
-        <div class="fr-name" title="${escA(b.name + (b.leader?' · 领涨 '+b.leader:''))}">${esc(b.name)}</div>
+      const tlines=[
+        '主力净额：'+((b.net_in_yi>=0?'+':'')+(b.net_in_yi||0).toFixed(2)+'亿'),
+        '涨跌幅：'+pc(b.pct),
+      ];
+      if(b.leader) tlines.push('领涨股：'+b.leader+(b.leader_pct!=null?' '+pc(b.leader_pct):''));
+      if(b.stock_total) tlines.push('成分股：'+b.stock_total+'家');
+      const tipTxt=b.name + (b.leader?' · 领涨 '+b.leader:'');
+      return `<div class="fr-row${first?' zero-line':''}"
+        data-tip-title="${escA(b.name)}" data-tip="${escA(tlines.join('\n'))}">
+        <div class="fr-name" title="${escA(tipTxt)}">${esc(b.name)}</div>
         <div class="fr-bar"><div class="fr-fill ${side}" style="width:${w}%"></div></div>
         <div class="fr-val ${c}">${(b.net_in_yi>=0?'+':'')+(b.net_in_yi||0).toFixed(2)}</div>
       </div>`;

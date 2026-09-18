@@ -1472,9 +1472,15 @@ def fetch_tx_turnover_today():
 def fetch_market_volume(days=15):
     """沪深两市量能（亿元）：上证综指 + 深证综指 的日成交额之和（不含北交所）。
 
-    数据源：**同花顺指数日K**（`zs_1A0001` 上证 / `zs_399106` 深证综指，第 7 列＝成交额，单位元）。
+    数据源：**同花顺指数日K**（`zs_1A0001` 上证 / `zs_399106` 深证综指，第 7 列＝成交额，单位元）
+    ＋ **腾讯快照补当日**（`qt.gtimg.cn` 字段 37＝成交额/万元）。
     原东财 push2his 口径（fields2=f51,f57）已停用 —— 其 K线路径会按 IP 封禁，且用户已停用东财。
     返回升序列表 [{'date','amount_yi'}]，末尾为最新一个「已收盘」交易日。
+
+    ⚠️ **同花顺指数日K 盘后不更新当日**（15:00 收盘后仍停在昨日）→ 只靠日K 会永远"差一天"。
+    故：日K 出历史，**当日一律用腾讯快照补齐/覆盖**（15:00 后才可信，盘中不补）。
+    ⚠️ 旧版有个 bug：补完当日之后，末尾那段「排除未收盘的当日（hour<15）」会把刚补的当日又删掉，
+    表现为"盘后量能不刷新"。现在把「当日剔除」的判断**只作用于日K 自身**，补进来的当日不受影响。
     """
     host = 'push2his.eastmoney.com'
     secids = ['1.000001', '0.399106']   # 沪 / 深
@@ -1511,28 +1517,42 @@ def fetch_market_volume(days=15):
         for sid, m in zip(secids, ex.map(_amt, secids)):
             if m:
                 res[sid] = m
+
+    # 当日一律用腾讯快照对齐（同花顺日K 盘后不含当日）——15:00 后才有值，盘中返回 None
+    tx = fetch_tx_turnover_today()
+    today = datetime.now().strftime('%Y-%m-%d')
+
     # 沪深为量能主体，任一缺失则走兜底（宁缺勿假，避免出现严重偏小的假量能）
     if '1.000001' not in res or '0.399106' not in res:
-        tx = fetch_tx_turnover_today()
         if tx:
             prev = ((load_json(DATA_JSON, {}) or {}).get('market_volume') or {}).get('list') or []
             merged = {x['date']: x['amount_yi'] for x in prev if x.get('date')}
             merged[tx[0]] = tx[1]                     # 只补「当日」，历史沿用上次结果
             out = [{'date': d, 'amount_yi': merged[d]} for d in sorted(merged)]
-            print('  [warn] push2his 不通 → 用腾讯快照补当日量能 %s = %.0f亿（历史沿用上次 %d 天）'
+            print('  [warn] 指数日K 不全 → 用腾讯快照补当日量能 %s = %.0f亿（历史沿用上次 %d 天）'
                   % (tx[0], tx[1], len(prev)))
             return out[-days:]
         print('  [warn] 沪深量能主体缺失，跳过')
         return []
+
     base = res['1.000001']
+    # K线当天若为「未收盘的今日」（盘中拉到的半截数据）→ 先剔除，再由腾讯快照补全
+    k_last = sorted(base.keys())[-1] if base else None
+    in_session = k_last == today and datetime.now().hour < 15
     out = []
     for d in sorted(base.keys()):
+        if in_session and d == today:
+            continue
         tot = sum(m.get(d, 0.0) for m in res.values())
         out.append({'date': d, 'amount_yi': round(tot / 1e8, 1)})
-    # 排除未收盘的当日（盘中量能不完整，不计入统计）
-    now = datetime.now()
-    if out and out[-1]['date'] == now.strftime('%Y-%m-%d') and now.hour < 15:
-        out = out[:-1]
+
+    # 用腾讯快照的当日值补齐/覆盖（历史值保持同花顺日K 口径，不用腾讯覆盖）
+    if tx:
+        td, tval = tx
+        out = [x for x in out if x['date'] != td]     # 去重（同花顺偶尔提前给到当日）
+        out.append({'date': td, 'amount_yi': tval})
+        out.sort(key=lambda x: x['date'])
+
     return out[-days:]
 
 
