@@ -135,30 +135,30 @@
   .fr-fill.neg { right: 50%; background: linear-gradient(270deg,#86efac,#16a34a); }
   .fr-val { font-variant-numeric: tabular-nums; font-weight: 700; text-align: right; }
 
-  /* ===== ④ 风格轮动 · 相对强弱（RS，近 20 日）—— 深色卡片 ===== */
-  #style-card { background: #12161f; border: 1px solid #232a38; }
-  #style-card .card-title { color: #e5e7eb; }
-  #style-card .card-title .tag { background: #1e2432; color: #8b95a7; }
+  /* ===== ④ 风格轮动 · 相对强弱（RS，近 20 日）—— 白底，与整体卡片一致 ===== */
+  #style-card { background: #fff; border: none; }
+  #style-card .card-title { color: inherit; }
+  #style-card .card-title .tag { background: #f3f4f6; color: #6b7280; }
   .rs-head { display: flex; align-items: center; gap: 7px; }
-  .rs-head .rs-ico { font-size: 15px; color: #34d399; line-height: 1; }
+  .rs-head .rs-ico { font-size: 15px; color: #16a34a; line-height: 1; }
   .rs-wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(228px,1fr)); gap: 11px; }
-  .rs-box { background: #1a1f2b; border: 1px solid #262e3d; border-radius: 9px; padding: 10px 12px 8px; }
+  .rs-box { background: #f9fafb; border: 1px solid #eef0f4; border-radius: 9px; padding: 10px 12px 8px; }
   .rs-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-  .rs-dim { font-size: 13px; font-weight: 700; color: #e5e7eb; letter-spacing: .2px; }
-  .rs-dim .ar { color: #6b7280; font-weight: 400; margin: 0 3px; }
+  .rs-dim { font-size: 13px; font-weight: 700; color: #111827; letter-spacing: .2px; }
+  .rs-dim .ar { color: #9ca3af; font-weight: 400; margin: 0 3px; }
   .rs-verdict { font-size: 12px; font-weight: 800; white-space: nowrap; }
-  .rs-verdict.up { color: #f87171; }     /* 成长/右侧占优 → 红 */
-  .rs-verdict.down { color: #4ade80; }   /* 左侧占优 → 绿 */
+  .rs-verdict.up { color: #dc2626; }     /* 成长/右侧占优 → 红 */
+  .rs-verdict.down { color: #16a34a; }   /* 左侧占优 → 绿 */
   .rs-chart { position: relative; margin-top: 8px; }
   .rs-chart svg { display: block; width: 100%; height: 62px; overflow: visible; }
   .rs-y { position: absolute; left: 0; top: 1px; font-size: 10px; font-weight: 700; line-height: 1; }
-  .rs-y.top { color: #f87171; }
-  .rs-y.bot { color: #4ade80; top: auto; bottom: 15px; }
-  .rs-x { font-size: 9.5px; color: #6b7280; margin-top: 3px; text-align: right; }
-  .rs-foot { margin-top: 11px; padding-top: 9px; border-top: 1px dashed #2c3543;
-             font-size: 12.5px; line-height: 1.7; color: #cbd5e1; }
-  .rs-foot b { color: #f87171; }
-  .rs-foot .ar2 { color: #34d399; font-weight: 700; }
+  .rs-y.top { color: #dc2626; }
+  .rs-y.bot { color: #16a34a; top: auto; bottom: 15px; }
+  .rs-x { font-size: 9.5px; color: #9ca3af; margin-top: 3px; text-align: right; }
+  .rs-foot { margin-top: 11px; padding-top: 9px; border-top: 1px dashed #e5e7eb;
+             font-size: 12.5px; line-height: 1.7; color: #374151; }
+  .rs-foot b { color: #dc2626; }
+  .rs-foot .ar2 { color: #16a34a; font-weight: 700; }
 
   /* ===== ⑤ 轮动研判 · 行业配置观点 ===== */
   #notes-card .card-title { justify-content: flex-start; }
@@ -786,7 +786,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.18-3';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.18-4';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -902,7 +902,7 @@ function tipHTML(title, lines){
 
 /* ---- 风格 RS 迷你折线（内联 SVG，无依赖，自动随容器宽度缩放）----
    基期 100 的上下各留余量；100 处画一条虚线参考线，红色为「右侧占优」、绿色为「左侧占优」。 */
-function rsSvg(series, color, idx){
+function rsSvg(series, color, idx, base){
   const W=240, H=62, PADT=5, PADB=13;
   const s=(series||[]).map(Number).filter(v=>isFinite(v));
   if(s.length<2) return '<svg viewBox="0 0 '+W+' '+H+'"></svg>';
@@ -920,9 +920,9 @@ function rsSvg(series, color, idx){
   const showBase = yb>PADT-1 && yb<H-PADB+1;
   return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'
     +'<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1">'
-    +'<stop offset="0" stop-color="'+color+'" stop-opacity=".26"/>'
+    +'<stop offset="0" stop-color="'+color+'" stop-opacity=".20"/>'
     +'<stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'
-    +(showBase?'<line x1="0" y1="'+yb+'" x2="'+W+'" y2="'+yb+'" stroke="#3a4455" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>':'')
+    +(showBase?'<line x1="0" y1="'+yb+'" x2="'+W+'" y2="'+yb+'" stroke="'+(base||'#d1d5db')+'" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>':'')
     +'<polygon points="'+area+'" fill="url(#'+id+')"/>'
     +'<polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="1.9" '
     +'stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>'
@@ -1059,7 +1059,7 @@ function renderMacro(){
       sb.innerHTML=rs.map((r,i)=>{
         const up=(r.trend&&r.trend.dir)==='up';
         // 右侧（成长/消费）走强 → 红；左侧走强 → 绿（A股涨红跌绿惯例落到「谁占优」上）
-        const line=up?'#f87171':'#4ade80';
+        const line=up?'#dc2626':'#16a34a';
         const verdict=(up?r.right:r.left)+'占优';
         const ltag=r.left_tag||r.left, rtag=r.right_tag||r.right;
         return `<div class="rs-box">
@@ -1070,7 +1070,7 @@ function renderMacro(){
           <div class="rs-chart">
             <div class="rs-y top">${esc(rtag)}</div>
             <div class="rs-y bot">${esc(ltag)}</div>
-            ${rsSvg(r.series,line,i)}
+            ${rsSvg(r.series,line,i,'#d1d5db')}
           </div>
           <div class="rs-x">${(r.labels&&r.labels[0])||''} → ${(r.labels&&r.labels[r.labels.length-1])||''}</div>
         </div>`;
