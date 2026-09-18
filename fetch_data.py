@@ -2191,6 +2191,8 @@ def main():
     ap.add_argument('--days', type=int, default=20,
                     help='回溯交易日数量（东财涨停池仅保留最近约15个交易日）')
     ap.add_argument('--tag-limit', type=int, default=40, help='单次标注个股数量上限')
+    ap.add_argument('--no-macro', action='store_true',
+                    help='跳过「必看」页大盘宏观面板（macro.py）；默认盘后一并生成')
     args = ap.parse_args()
 
     t0 = time.time()
@@ -2198,14 +2200,14 @@ def main():
     print('A股短线仪表盘 · 数据采集  %s' % datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     print('=' * 60)
 
-    print('\n[1/7] 获取交易日...')
+    print('\n[1/8] 获取交易日...')
     days = fetch_trade_days(args.days)
     if not days:
         print('  ❌ 交易日获取失败，终止')
         return
     print('  交易日 %d 个：%s ~ %s' % (len(days), days[0], days[-1]))
 
-    print('\n[2/7] 抓取历史涨停池...')
+    print('\n[2/8] 抓取历史涨停池...')
     # 并发抓取（4 线程）→ 对空结果顺序补抓一次（并发可能触发限流，保证不漏交易日）
     with ThreadPoolExecutor(max_workers=4) as ex:
         pairs = list(ex.map(lambda d: (d, fetch_zt_pool(d.replace('-', ''))), days))
@@ -2227,7 +2229,7 @@ def main():
     dt_hist = {d: p for d, p in dt_pairs if p}
     print('  跌停池：近 %d 个交易日，有跌停的 %d 天' % (len(dt_days), len(dt_hist)))
 
-    print('\n[3/7] 抓取指数 / 板块 / 新闻 / 量能...')
+    print('\n[3/8] 抓取指数 / 板块 / 新闻 / 量能...')
     # 四项互不依赖 → 并行抓取（原先串行，网络抖动时最耗时）
     with ThreadPoolExecutor(max_workers=4) as ex:
         f_idx = ex.submit(fetch_index)
@@ -2261,7 +2263,7 @@ def main():
               % ('沿用上次 %d 日' % len(mv) if mv else '无数据'))
 
     # 3 日榜：同花顺榜页无 3日/5日 列 → 按板块指数日K自算（见 fetch_board_rank）
-    print('\n[4/7] 生成 3 日榜...')
+    print('\n[4/8] 生成 3 日榜...')
     today = days[-1]
     board_3d = sorted([b for b in board if b.get('d3') is not None],
                       key=lambda x: -(x.get('d3') or 0))[:10]
@@ -2306,7 +2308,7 @@ def main():
                   'fill_board_kline.py' % (_smp['day'][-1].split(',')[0], _today))
 
     # ---- 梯队折线图数据 ----
-    print('\n[5/7] 构建梯队折线数据...')
+    print('\n[5/8] 构建梯队折线数据...')
     series = build_ladder(zt_hist, days)
     print('  梯队数据点 %d 个' % len(series))
 
@@ -2332,7 +2334,7 @@ def main():
     print('  今日跌停 %d 只（已标注题材）' % len(dt_today))
 
     # ---- 节点判定 ----
-    print('\n[6/7] 节点判定...')
+    print('\n[6/8] 节点判定...')
     # 涨停原因索引：必须在节点票标注**之前**整批预热（同花顺口径，替代原东财新闻搜索）
     build_reason_index(days[-12:])
     raw_nodes = detect_nodes(zt_hist, [d for d in days if d in zt_hist])
@@ -2538,9 +2540,9 @@ def main():
         print('  已清理 %d 个失效节点（节点内已无连板票，本波未走出来）' % dropped2)
 
     # ---- 推荐：优先节点票 + 当日 trigger 票（连板中的最高标） ----
-    # [7/7] 候选池 / 次日推荐：已移交「盘前竞价任务(premarket.py, 每交易日 9:25 后)」刷新。
+    # [8/8] 候选池 / 次日推荐：已移交「盘前竞价任务(premarket.py, 每交易日 9:25 后)」刷新。
     # 盘后只沿用上一版结果，避免盘后重算把当日实战口径覆盖掉。
-    print('\n[7/7] 候选池 / 次日推荐：已移交盘前竞价任务刷新，此处沿用上一版')
+    print('\n[8/8] 候选池 / 次日推荐：已移交盘前竞价任务刷新，此处沿用上一版')
     _prev = load_json(DATA_JSON, {}) or {}
     cands = _prev.get('candidates') or []
     reco = _prev.get('recommend')
@@ -2639,6 +2641,16 @@ def main():
     save_js(os.path.join(BASE, 'data.js'), data)
     print('\n✅ 完成，耗时 %.1fs' % (time.time() - t0))
     print('   输出：data.json / data.js / nodes.json / board_history.json')
+
+    # ---- 「必看」页大盘宏观面板（macro.py）----
+    # 与主流程一体：盘后跑完主体数据后，顺手刷新 macro 键；--no-macro 可跳过。
+    if not args.no_macro:
+        print('\n[7/8] 刷新「必看」页大盘宏观面板（macro.py）...')
+        try:
+            import macro as _macro
+            _macro.run(quiet=True)
+        except Exception as _e:
+            print('  ⚠️ macro.py 失败（不影响主体数据）：%s' % _e)
 
 
 if __name__ == '__main__':

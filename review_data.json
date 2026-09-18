@@ -1,1193 +1,1272 @@
 {
-  "date": "2026-09-16",
+  "date": "2026-09-18",
   "source": "eastmoney_public_api",
   "indices": [
     {
       "name": "上证指数",
       "code": "000001",
-      "price": 3891.6,
-      "chg": 0.71,
-      "amount_yi": 8711.41,
-      "up": 1650,
-      "down": 608,
-      "flat": 92
+      "price": 3911.87,
+      "chg": 0.94,
+      "amount_yi": 9941.69,
+      "up": 1756,
+      "down": 519,
+      "flat": 77
     },
     {
       "name": "深证成指",
       "code": "399001",
-      "price": 13454.74,
-      "chg": 1.26,
-      "amount_yi": 9679.81,
-      "up": 2285,
-      "down": 541,
-      "flat": 107
+      "price": 13640.87,
+      "chg": 1.72,
+      "amount_yi": 10829.31,
+      "up": 2224,
+      "down": 611,
+      "flat": 99
     },
     {
       "name": "创业板指",
       "code": "399006",
-      "price": 3311.47,
-      "chg": 1.96,
-      "amount_yi": 4649.75,
-      "up": 1206,
-      "down": 174,
-      "flat": 25
+      "price": 3372.68,
+      "chg": 2.25,
+      "amount_yi": 5254.01,
+      "up": 1134,
+      "down": 236,
+      "flat": 36
     },
     {
       "name": "科创50",
       "code": "000688",
-      "price": 1616.19,
-      "chg": 4.14,
-      "amount_yi": 954.62,
-      "up": 40,
-      "down": 8,
-      "flat": 2
+      "price": 1652.63,
+      "chg": 2.88,
+      "amount_yi": 1176.53,
+      "up": 48,
+      "down": 2,
+      "flat": 0
     },
     {
       "name": "北证50",
       "code": "899050",
-      "price": 1040.29,
-      "chg": 1.15,
-      "amount_yi": 134.9,
-      "up": 282,
-      "down": 55,
-      "flat": 7
+      "price": 1044.34,
+      "chg": 1.79,
+      "amount_yi": 160.53,
+      "up": 297,
+      "down": 43,
+      "flat": 4
     },
     {
       "name": "沪深300",
       "code": "000300",
-      "price": 4480.27,
-      "chg": 0.68,
-      "amount_yi": 4764.52,
-      "up": 139,
-      "down": 147,
-      "flat": 11
+      "price": 4507.39,
+      "chg": 1.06,
+      "amount_yi": 5376.99,
+      "up": 210,
+      "down": 82,
+      "flat": 5
     },
     {
       "name": "中证500",
       "code": "000905",
-      "price": 7683.47,
-      "chg": 1.61,
-      "amount_yi": 3295.34,
-      "up": 300,
-      "down": 177,
-      "flat": 22
+      "price": 7799.61,
+      "chg": 1.89,
+      "amount_yi": 3704.58,
+      "up": 401,
+      "down": 88,
+      "flat": 10
     },
     {
       "name": "中证1000",
       "code": "000852",
-      "price": 7587.43,
-      "chg": 2.01,
-      "amount_yi": 3982.51,
-      "up": 712,
-      "down": 255,
+      "price": 7687.59,
+      "chg": 1.84,
+      "amount_yi": 4301.97,
+      "up": 789,
+      "down": 178,
       "flat": 32
     }
   ],
   "amount_hist": {},
   "amount_today": {
-    "sh_yi": 8711.41,
-    "sz_yi": 9679.81,
-    "total_yi": 18391.22,
-    "prev_date": "2026-09-15",
-    "prev_yi": 16127.2,
-    "delta_yi": 2264.02,
-    "delta_pct": 14.04
+    "sh_yi": 9941.69,
+    "sz_yi": 10829.31,
+    "total_yi": 20771.0,
+    "prev_date": "2026-09-17",
+    "prev_yi": 18231.3,
+    "delta_yi": 2539.7,
+    "delta_pct": 13.93
   },
   "board_flow": [
     {
       "kind": "行业",
       "name": "电子",
       "code": "BK1201",
-      "pct": 3.8,
-      "zjlryi": 227.03,
-      "up": 490,
-      "down": 26,
-      "leader": "西陇科学",
+      "pct": 2.81,
+      "zjlryi": 198.54,
+      "up": 465,
+      "down": 49,
+      "leader": "远 望 谷",
       "leader_pct": 10.02
     },
     {
       "kind": "行业",
       "name": "半导体",
       "code": "BK1036",
-      "pct": 4.82,
-      "zjlryi": 136.51,
-      "up": 184,
-      "down": 1,
-      "leader": "中晶科技",
-      "leader_pct": 10.01
-    },
-    {
-      "kind": "行业",
-      "name": "通信设备",
-      "code": "BK0448",
-      "pct": 3.2,
-      "zjlryi": 106.34,
-      "up": 83,
-      "down": 8,
-      "leader": "中瓷电子",
-      "leader_pct": 10.0
-    },
-    {
-      "kind": "行业",
-      "name": "通信",
-      "code": "BK1215",
-      "pct": 2.56,
-      "zjlryi": 105.44,
-      "up": 105,
-      "down": 22,
-      "leader": "中瓷电子",
-      "leader_pct": 10.0
-    },
-    {
-      "kind": "行业",
-      "name": "通信网络设备及器件",
-      "code": "BK1591",
-      "pct": 4.11,
-      "zjlryi": 72.68,
-      "up": 35,
-      "down": 2,
-      "leader": "光迅科技",
-      "leader_pct": 10.0
-    },
-    {
-      "kind": "行业",
-      "name": "半导体材料",
-      "code": "BK1325",
-      "pct": 6.14,
-      "zjlryi": 39.36,
-      "up": 31,
-      "down": 0,
-      "leader": "中晶科技",
-      "leader_pct": 10.01
-    },
-    {
-      "kind": "行业",
-      "name": "半导体设备",
-      "code": "BK1326",
-      "pct": 5.03,
-      "zjlryi": 38.91,
-      "up": 25,
-      "down": 0,
-      "leader": "晶升股份",
-      "leader_pct": 19.99
-    },
-    {
-      "kind": "行业",
-      "name": "通信线缆及配套",
-      "code": "BK1592",
-      "pct": 3.86,
-      "zjlryi": 28.62,
-      "up": 11,
-      "down": 2,
-      "leader": "华脉科技",
+      "pct": 4.35,
+      "zjlryi": 182.2,
+      "up": 182,
+      "down": 4,
+      "leader": "博通集成",
       "leader_pct": 10.0
     },
     {
       "kind": "行业",
       "name": "数字芯片设计",
       "code": "BK1331",
-      "pct": 3.87,
-      "zjlryi": 28.28,
+      "pct": 4.68,
+      "zjlryi": 75.35,
       "up": 53,
-      "down": 0,
-      "leader": "安凯微",
-      "leader_pct": 15.1
-    },
-    {
-      "kind": "行业",
-      "name": "机械设备",
-      "code": "BK1205",
-      "pct": 1.74,
-      "zjlryi": 28.11,
-      "up": 528,
-      "down": 81,
-      "leader": "电光科技",
-      "leader_pct": 9.98
-    },
-    {
-      "kind": "行业",
-      "name": "电子化学品Ⅲ",
-      "code": "BK1332",
-      "pct": 4.06,
-      "zjlryi": 26.16,
-      "up": 36,
       "down": 1,
-      "leader": "西陇科学",
+      "leader": "诚邦股份",
       "leader_pct": 10.02
     },
     {
       "kind": "行业",
-      "name": "电子化学品Ⅱ",
-      "code": "BK1039",
-      "pct": 4.06,
-      "zjlryi": 26.16,
-      "up": 36,
-      "down": 1,
-      "leader": "西陇科学",
-      "leader_pct": 10.02
-    },
-    {
-      "kind": "行业",
-      "name": "元件",
-      "code": "BK0459",
-      "pct": 3.17,
-      "zjlryi": 24.93,
-      "up": 56,
-      "down": 11,
-      "leader": "澳弘电子",
-      "leader_pct": 10.0
-    },
-    {
-      "kind": "行业",
-      "name": "印制电路板",
-      "code": "BK1340",
-      "pct": 3.74,
-      "zjlryi": 19.08,
-      "up": 41,
-      "down": 7,
-      "leader": "澳弘电子",
-      "leader_pct": 10.0
-    },
-    {
-      "kind": "行业",
-      "name": "有色金属",
-      "code": "BK0478",
-      "pct": 1.91,
-      "zjlryi": 17.48,
-      "up": 131,
-      "down": 12,
-      "leader": "和胜股份",
-      "leader_pct": 9.98
-    },
-    {
-      "kind": "行业",
-      "name": "消费电子零部件及组装",
-      "code": "BK1338",
-      "pct": 2.65,
-      "zjlryi": 15.61,
-      "up": 81,
-      "down": 5,
-      "leader": "致尚科技",
-      "leader_pct": 20.0
-    },
-    {
-      "kind": "行业",
-      "name": "专用设备",
-      "code": "BK0910",
-      "pct": 1.58,
-      "zjlryi": 15.17,
-      "up": 172,
-      "down": 29,
-      "leader": "电光科技",
-      "leader_pct": 9.98
-    },
-    {
-      "kind": "行业",
-      "name": "光学光电子",
-      "code": "BK1038",
-      "pct": 3.45,
-      "zjlryi": 14.6,
-      "up": 93,
-      "down": 4,
-      "leader": "实益达",
-      "leader_pct": 10.07
-    },
-    {
-      "kind": "行业",
-      "name": "消费电子",
-      "code": "BK1037",
-      "pct": 2.54,
-      "zjlryi": 14.47,
-      "up": 91,
-      "down": 6,
-      "leader": "致尚科技",
-      "leader_pct": 20.0
-    },
-    {
-      "kind": "行业",
-      "name": "其他专用设备",
-      "code": "BK1405",
-      "pct": 2.03,
-      "zjlryi": 11.67,
-      "up": 78,
-      "down": 10,
-      "leader": "威派格",
-      "leader_pct": 10.08
-    },
-    {
-      "kind": "行业",
-      "name": "其他电子Ⅲ",
-      "code": "BK1336",
-      "pct": 3.96,
-      "zjlryi": 10.36,
-      "up": 30,
-      "down": 3,
-      "leader": "盈方微",
-      "leader_pct": 9.94
-    },
-    {
-      "kind": "行业",
-      "name": "其他电子Ⅱ",
-      "code": "BK1223",
-      "pct": 3.96,
-      "zjlryi": 10.36,
-      "up": 30,
-      "down": 3,
-      "leader": "盈方微",
-      "leader_pct": 9.94
-    },
-    {
-      "kind": "行业",
-      "name": "自动化设备",
-      "code": "BK1237",
-      "pct": 2.46,
-      "zjlryi": 10.36,
-      "up": 88,
-      "down": 7,
-      "leader": "北自科技",
-      "leader_pct": 10.01
-    },
-    {
-      "kind": "行业",
-      "name": "基础化工",
-      "code": "BK1206",
-      "pct": 1.77,
-      "zjlryi": 9.67,
-      "up": 374,
-      "down": 72,
-      "leader": "龙星科技",
-      "leader_pct": 10.08
-    },
-    {
-      "kind": "行业",
-      "name": "贵金属",
-      "code": "BK0732",
-      "pct": 3.83,
-      "zjlryi": 9.14,
-      "up": 13,
-      "down": 0,
-      "leader": "盛达资源",
-      "leader_pct": 6.88
-    },
-    {
-      "kind": "行业",
-      "name": "集成电路制造",
-      "code": "BK1329",
-      "pct": 4.76,
-      "zjlryi": 9.04,
-      "up": 9,
-      "down": 0,
-      "leader": "赛微电子",
-      "leader_pct": 5.69
-    },
-    {
-      "kind": "行业",
-      "name": "面板",
-      "code": "BK1335",
-      "pct": 2.38,
-      "zjlryi": 8.82,
-      "up": 39,
+      "name": "通信网络设备及器件",
+      "code": "BK1591",
+      "pct": 2.86,
+      "zjlryi": 67.53,
+      "up": 35,
       "down": 2,
-      "leader": "秋田微",
-      "leader_pct": 12.39
+      "leader": "阿莱德",
+      "leader_pct": 13.03
     },
     {
       "kind": "行业",
       "name": "集成电路封测",
       "code": "BK1328",
-      "pct": 4.46,
-      "zjlryi": 8.53,
+      "pct": 4.43,
+      "zjlryi": 50.83,
       "up": 13,
       "down": 0,
-      "leader": "伟测科技",
-      "leader_pct": 7.09
+      "leader": "华天科技",
+      "leader_pct": 10.01
     },
     {
       "kind": "行业",
-      "name": "其他小金属",
-      "code": "BK1624",
-      "pct": 1.61,
-      "zjlryi": 8.21,
-      "up": 13,
+      "name": "通信设备",
+      "code": "BK0448",
+      "pct": 2.15,
+      "zjlryi": 46.28,
+      "up": 79,
+      "down": 12,
+      "leader": "共进股份",
+      "leader_pct": 10.03
+    },
+    {
+      "kind": "行业",
+      "name": "通信",
+      "code": "BK1215",
+      "pct": 1.81,
+      "zjlryi": 46.0,
+      "up": 106,
+      "down": 23,
+      "leader": "共进股份",
+      "leader_pct": 10.03
+    },
+    {
+      "kind": "行业",
+      "name": "机械设备",
+      "code": "BK1205",
+      "pct": 1.93,
+      "zjlryi": 39.58,
+      "up": 519,
+      "down": 94,
+      "leader": "航天动力",
+      "leader_pct": 10.0
+    },
+    {
+      "kind": "行业",
+      "name": "电力设备",
+      "code": "BK1200",
+      "pct": 2.1,
+      "zjlryi": 33.12,
+      "up": 369,
+      "down": 41,
+      "leader": "中电鑫龙",
+      "leader_pct": 10.02
+    },
+    {
+      "kind": "行业",
+      "name": "计算机",
+      "code": "BK1207",
+      "pct": 1.9,
+      "zjlryi": 31.75,
+      "up": 301,
+      "down": 49,
+      "leader": "海量数据",
+      "leader_pct": 10.04
+    },
+    {
+      "kind": "行业",
+      "name": "有色金属",
+      "code": "BK0478",
+      "pct": 1.54,
+      "zjlryi": 23.03,
+      "up": 127,
+      "down": 17,
+      "leader": "春光集团",
+      "leader_pct": 8.5
+    },
+    {
+      "kind": "行业",
+      "name": "光学光电子",
+      "code": "BK1038",
+      "pct": 1.84,
+      "zjlryi": 21.72,
+      "up": 85,
+      "down": 9,
+      "leader": "惠科股份",
+      "leader_pct": 10.02
+    },
+    {
+      "kind": "行业",
+      "name": "非银金融",
+      "code": "BK1203",
+      "pct": 1.43,
+      "zjlryi": 20.61,
+      "up": 75,
+      "down": 1,
+      "leader": "华鑫股份",
+      "leader_pct": 9.98
+    },
+    {
+      "kind": "行业",
+      "name": "消费电子",
+      "code": "BK1037",
+      "pct": 1.83,
+      "zjlryi": 19.04,
+      "up": 82,
+      "down": 15,
+      "leader": "科森科技",
+      "leader_pct": 10.0
+    },
+    {
+      "kind": "行业",
+      "name": "消费电子零部件及组装",
+      "code": "BK1338",
+      "pct": 1.85,
+      "zjlryi": 18.95,
+      "up": 73,
+      "down": 13,
+      "leader": "科森科技",
+      "leader_pct": 10.0
+    },
+    {
+      "kind": "行业",
+      "name": "半导体设备",
+      "code": "BK1326",
+      "pct": 4.83,
+      "zjlryi": 18.2,
+      "up": 23,
       "down": 2,
-      "leader": "东方锆业",
-      "leader_pct": 5.69
+      "leader": "托伦斯",
+      "leader_pct": 20.0
     },
     {
       "kind": "行业",
-      "name": "林业Ⅲ",
-      "code": "BK1502",
-      "pct": 5.97,
-      "zjlryi": 8.09,
-      "up": 4,
+      "name": "房地产",
+      "code": "BK1202",
+      "pct": 2.02,
+      "zjlryi": 17.11,
+      "up": 88,
+      "down": 12,
+      "leader": "绿地控股",
+      "leader_pct": 9.85
+    },
+    {
+      "kind": "行业",
+      "name": "工业金属",
+      "code": "BK1287",
+      "pct": 1.2,
+      "zjlryi": 16.4,
+      "up": 52,
+      "down": 6,
+      "leader": "白银有色",
+      "leader_pct": 3.8
+    },
+    {
+      "kind": "行业",
+      "name": "房地产开发",
+      "code": "BK0451",
+      "pct": 2.12,
+      "zjlryi": 15.8,
+      "up": 77,
+      "down": 8,
+      "leader": "绿地控股",
+      "leader_pct": 9.85
+    },
+    {
+      "kind": "行业",
+      "name": "电网设备",
+      "code": "BK0457",
+      "pct": 2.0,
+      "zjlryi": 15.71,
+      "up": 130,
+      "down": 13,
+      "leader": "中电鑫龙",
+      "leader_pct": 10.02
+    },
+    {
+      "kind": "行业",
+      "name": "医药生物",
+      "code": "BK1216",
+      "pct": 1.36,
+      "zjlryi": 15.22,
+      "up": 389,
+      "down": 103,
+      "leader": "南华生物",
+      "leader_pct": 10.0
+    },
+    {
+      "kind": "行业",
+      "name": "通用设备",
+      "code": "BK0545",
+      "pct": 2.25,
+      "zjlryi": 14.55,
+      "up": 224,
+      "down": 31,
+      "leader": "航天动力",
+      "leader_pct": 10.0
+    },
+    {
+      "kind": "行业",
+      "name": "铜",
+      "code": "BK1615",
+      "pct": 1.86,
+      "zjlryi": 13.98,
+      "up": 17,
       "down": 0,
-      "leader": "平潭发展",
-      "leader_pct": 9.97
+      "leader": "白银有色",
+      "leader_pct": 3.8
+    },
+    {
+      "kind": "行业",
+      "name": "住宅开发",
+      "code": "BK1346",
+      "pct": 2.24,
+      "zjlryi": 13.06,
+      "up": 55,
+      "down": 6,
+      "leader": "绿地控股",
+      "leader_pct": 9.85
+    },
+    {
+      "kind": "行业",
+      "name": "计算机设备",
+      "code": "BK0735",
+      "pct": 1.88,
+      "zjlryi": 13.01,
+      "up": 78,
+      "down": 10,
+      "leader": "浩瀚深度",
+      "leader_pct": 20.02
+    },
+    {
+      "kind": "行业",
+      "name": "半导体材料",
+      "code": "BK1325",
+      "pct": 3.11,
+      "zjlryi": 12.85,
+      "up": 31,
+      "down": 0,
+      "leader": "华海诚科",
+      "leader_pct": 6.24
+    },
+    {
+      "kind": "行业",
+      "name": "IT服务Ⅲ",
+      "code": "BK1444",
+      "pct": 1.9,
+      "zjlryi": 12.81,
+      "up": 111,
+      "down": 21,
+      "leader": "海量数据",
+      "leader_pct": 10.04
+    },
+    {
+      "kind": "行业",
+      "name": "IT服务Ⅱ",
+      "code": "BK1238",
+      "pct": 1.9,
+      "zjlryi": 12.81,
+      "up": 111,
+      "down": 21,
+      "leader": "海量数据",
+      "leader_pct": 10.04
+    },
+    {
+      "kind": "行业",
+      "name": "自动化设备",
+      "code": "BK1237",
+      "pct": 2.03,
+      "zjlryi": 12.61,
+      "up": 87,
+      "down": 7,
+      "leader": "智云股份",
+      "leader_pct": 11.17
+    },
+    {
+      "kind": "行业",
+      "name": "集成电路制造",
+      "code": "BK1329",
+      "pct": 4.59,
+      "zjlryi": 12.4,
+      "up": 9,
+      "down": 0,
+      "leader": "盛合晶微",
+      "leader_pct": 7.11
     },
     {
       "kind": "概念",
       "name": "融资融券",
       "code": "BK0596",
-      "pct": 1.43,
-      "zjlryi": 287.45,
-      "up": 2860,
-      "down": 878,
-      "leader": "黑猫股份",
-      "leader_pct": 9.98
+      "pct": 1.73,
+      "zjlryi": 383.5,
+      "up": 3109,
+      "down": 660,
+      "leader": "经纬股份",
+      "leader_pct": 20.0
     },
     {
       "kind": "概念",
-      "name": "通信技术",
-      "code": "BK1650",
-      "pct": 3.04,
-      "zjlryi": 223.03,
-      "up": 345,
-      "down": 33,
-      "leader": "露笑科技",
+      "name": "MSCI中国",
+      "code": "BK0821",
+      "pct": 1.47,
+      "zjlryi": 280.91,
+      "up": 437,
+      "down": 119,
+      "leader": "华天科技",
+      "leader_pct": 10.01
+    },
+    {
+      "kind": "概念",
+      "name": "深股通",
+      "code": "BK0804",
+      "pct": 1.61,
+      "zjlryi": 245.57,
+      "up": 1495,
+      "down": 327,
+      "leader": "百通能源",
+      "leader_pct": 9.99
+    },
+    {
+      "kind": "概念",
+      "name": "国产芯片",
+      "code": "BK0891",
+      "pct": 2.87,
+      "zjlryi": 229.91,
+      "up": 394,
+      "down": 40,
+      "leader": "远 望 谷",
+      "leader_pct": 10.02
+    },
+    {
+      "kind": "概念",
+      "name": "富时罗素",
+      "code": "BK0867",
+      "pct": 1.09,
+      "zjlryi": 213.59,
+      "up": 937,
+      "down": 284,
+      "leader": "福龙马",
       "leader_pct": 10.03
     },
     {
       "kind": "概念",
       "name": "半导体概念",
       "code": "BK0917",
-      "pct": 3.57,
-      "zjlryi": 218.28,
-      "up": 509,
-      "down": 27,
-      "leader": "露笑科技",
-      "leader_pct": 10.03
-    },
-    {
-      "kind": "概念",
-      "name": "科技风格",
-      "code": "BK1713",
-      "pct": 2.97,
-      "zjlryi": 199.08,
-      "up": 87,
-      "down": 13,
-      "leader": "光迅科技",
-      "leader_pct": 10.0
-    },
-    {
-      "kind": "概念",
-      "name": "国产芯片",
-      "code": "BK0891",
-      "pct": 3.06,
-      "zjlryi": 194.69,
-      "up": 390,
-      "down": 42,
-      "leader": "中晶科技",
-      "leader_pct": 10.01
-    },
-    {
-      "kind": "概念",
-      "name": "5G概念",
-      "code": "BK0714",
-      "pct": 2.79,
-      "zjlryi": 193.83,
-      "up": 293,
-      "down": 30,
-      "leader": "露笑科技",
-      "leader_pct": 10.03
-    },
-    {
-      "kind": "概念",
-      "name": "2026中报预增",
-      "code": "BK1749",
-      "pct": 1.96,
-      "zjlryi": 188.24,
-      "up": 470,
-      "down": 97,
-      "leader": "中晶科技",
-      "leader_pct": 10.01
-    },
-    {
-      "kind": "概念",
-      "name": "富时罗素",
-      "code": "BK0867",
-      "pct": 0.69,
-      "zjlryi": 179.5,
-      "up": 763,
-      "down": 433,
-      "leader": "露笑科技",
-      "leader_pct": 10.03
-    },
-    {
-      "kind": "概念",
-      "name": "百元股",
-      "code": "BK1059",
-      "pct": 3.41,
-      "zjlryi": 177.75,
-      "up": 181,
-      "down": 28,
-      "leader": "中瓷电子",
-      "leader_pct": 10.0
-    },
-    {
-      "kind": "概念",
-      "name": "MSCI中国",
-      "code": "BK0821",
-      "pct": 0.82,
-      "zjlryi": 172.19,
-      "up": 324,
-      "down": 224,
-      "leader": "永鼎股份",
-      "leader_pct": 10.0
-    },
-    {
-      "kind": "概念",
-      "name": "基金重仓",
-      "code": "BK0536",
-      "pct": 1.83,
-      "zjlryi": 163.41,
-      "up": 232,
-      "down": 106,
-      "leader": "三夫户外",
-      "leader_pct": 10.03
-    },
-    {
-      "kind": "概念",
-      "name": "深股通",
-      "code": "BK0804",
-      "pct": 1.47,
-      "zjlryi": 159.18,
-      "up": 1412,
-      "down": 402,
-      "leader": "黑猫股份",
-      "leader_pct": 9.98
-    },
-    {
-      "kind": "概念",
-      "name": "CPO概念",
-      "code": "BK1128",
-      "pct": 4.41,
-      "zjlryi": 157.2,
-      "up": 90,
-      "down": 3,
-      "leader": "永鼎股份",
-      "leader_pct": 10.0
-    },
-    {
-      "kind": "概念",
-      "name": "大盘成长",
-      "code": "BK1665",
-      "pct": 1.93,
-      "zjlryi": 148.04,
-      "up": 74,
-      "down": 26,
-      "leader": "光迅科技",
-      "leader_pct": 10.0
-    },
-    {
-      "kind": "概念",
-      "name": "光通信模块",
-      "code": "BK1136",
-      "pct": 4.14,
-      "zjlryi": 142.44,
-      "up": 108,
-      "down": 8,
-      "leader": "中瓷电子",
-      "leader_pct": 10.0
-    },
-    {
-      "kind": "概念",
-      "name": "沪股通",
-      "code": "BK0707",
-      "pct": 1.19,
-      "zjlryi": 133.13,
-      "up": 1083,
-      "down": 486,
-      "leader": "内蒙新华",
-      "leader_pct": 9.97
-    },
-    {
-      "kind": "概念",
-      "name": "存储芯片",
-      "code": "BK1137",
-      "pct": 4.21,
-      "zjlryi": 132.11,
-      "up": 139,
-      "down": 3,
-      "leader": "盈方微",
-      "leader_pct": 9.94
-    },
-    {
-      "kind": "概念",
-      "name": "大盘股",
-      "code": "BK1663",
-      "pct": 0.65,
-      "zjlryi": 117.2,
-      "up": 156,
-      "down": 135,
-      "leader": "光迅科技",
-      "leader_pct": 10.0
-    },
-    {
-      "kind": "概念",
-      "name": "标准普尔",
-      "code": "BK0879",
-      "pct": 0.48,
-      "zjlryi": 116.36,
-      "up": 572,
-      "down": 401,
-      "leader": "合众思壮",
-      "leader_pct": 9.97
-    },
-    {
-      "kind": "概念",
-      "name": "华为概念",
-      "code": "BK0854",
-      "pct": 1.84,
-      "zjlryi": 115.09,
-      "up": 604,
-      "down": 130,
-      "leader": "中瓷电子",
-      "leader_pct": 10.0
-    },
-    {
-      "kind": "概念",
-      "name": "高市净率",
-      "code": "BK1722",
-      "pct": 2.88,
-      "zjlryi": 114.81,
-      "up": 182,
-      "down": 16,
-      "leader": "盈方微",
-      "leader_pct": 9.94
-    },
-    {
-      "kind": "概念",
-      "name": "中盘股",
-      "code": "BK1664",
-      "pct": 1.22,
-      "zjlryi": 100.31,
-      "up": 323,
-      "down": 155,
-      "leader": "中瓷电子",
-      "leader_pct": 10.0
+      "pct": 3.07,
+      "zjlryi": 207.28,
+      "up": 486,
+      "down": 49,
+      "leader": "肯特催化",
+      "leader_pct": 9.99
     },
     {
       "kind": "概念",
       "name": "深成500",
       "code": "BK0568",
-      "pct": 0.95,
-      "zjlryi": 97.63,
-      "up": 319,
-      "down": 158,
-      "leader": "露笑科技",
+      "pct": 1.4,
+      "zjlryi": 196.3,
+      "up": 395,
+      "down": 94,
+      "leader": "华天科技",
+      "leader_pct": 10.01
+    },
+    {
+      "kind": "概念",
+      "name": "科技风格",
+      "code": "BK1713",
+      "pct": 2.9,
+      "zjlryi": 184.83,
+      "up": 91,
+      "down": 8,
+      "leader": "惠科股份",
+      "leader_pct": 10.02
+    },
+    {
+      "kind": "概念",
+      "name": "大盘股",
+      "code": "BK1663",
+      "pct": 1.24,
+      "zjlryi": 177.61,
+      "up": 216,
+      "down": 78,
+      "leader": "长电科技",
+      "leader_pct": 7.75
+    },
+    {
+      "kind": "概念",
+      "name": "百元股",
+      "code": "BK1059",
+      "pct": 3.17,
+      "zjlryi": 160.19,
+      "up": 192,
+      "down": 25,
+      "leader": "托伦斯",
+      "leader_pct": 20.0
+    },
+    {
+      "kind": "概念",
+      "name": "HS300_",
+      "code": "BK0500",
+      "pct": 1.05,
+      "zjlryi": 148.06,
+      "up": 210,
+      "down": 82,
+      "leader": "万  科Ａ",
+      "leader_pct": 9.93
+    },
+    {
+      "kind": "概念",
+      "name": "基金重仓",
+      "code": "BK0536",
+      "pct": 2.14,
+      "zjlryi": 145.26,
+      "up": 280,
+      "down": 60,
+      "leader": "华峰测控",
+      "leader_pct": 14.36
+    },
+    {
+      "kind": "概念",
+      "name": "标准普尔",
+      "code": "BK0879",
+      "pct": 0.92,
+      "zjlryi": 145.14,
+      "up": 731,
+      "down": 270,
+      "leader": "福龙马",
       "leader_pct": 10.03
     },
     {
       "kind": "概念",
-      "name": "数据中心",
-      "code": "BK0922",
-      "pct": 1.82,
-      "zjlryi": 95.96,
-      "up": 254,
-      "down": 60,
-      "leader": "华脉科技",
-      "leader_pct": 10.0
+      "name": "CPO概念",
+      "code": "BK1128",
+      "pct": 2.48,
+      "zjlryi": 141.91,
+      "up": 85,
+      "down": 9,
+      "leader": "华天科技",
+      "leader_pct": 10.01
+    },
+    {
+      "kind": "概念",
+      "name": "2026中报预增",
+      "code": "BK1749",
+      "pct": 1.75,
+      "zjlryi": 136.79,
+      "up": 471,
+      "down": 93,
+      "leader": "中电鑫龙",
+      "leader_pct": 10.02
+    },
+    {
+      "kind": "概念",
+      "name": "存储芯片",
+      "code": "BK1137",
+      "pct": 3.33,
+      "zjlryi": 134.12,
+      "up": 132,
+      "down": 10,
+      "leader": "诚邦股份",
+      "leader_pct": 10.02
+    },
+    {
+      "kind": "概念",
+      "name": "沪股通",
+      "code": "BK0707",
+      "pct": 1.58,
+      "zjlryi": 131.54,
+      "up": 1269,
+      "down": 327,
+      "leader": "福龙马",
+      "leader_pct": 10.03
+    },
+    {
+      "kind": "概念",
+      "name": "中盘股",
+      "code": "BK1664",
+      "pct": 1.8,
+      "zjlryi": 124.76,
+      "up": 418,
+      "down": 72,
+      "leader": "华天科技",
+      "leader_pct": 10.01
+    },
+    {
+      "kind": "概念",
+      "name": "物联网",
+      "code": "BK0554",
+      "pct": 1.9,
+      "zjlryi": 122.69,
+      "up": 312,
+      "down": 64,
+      "leader": "经纬股份",
+      "leader_pct": 20.0
+    },
+    {
+      "kind": "概念",
+      "name": "大盘成长",
+      "code": "BK1665",
+      "pct": 2.39,
+      "zjlryi": 122.6,
+      "up": 91,
+      "down": 8,
+      "leader": "中科飞测",
+      "leader_pct": 7.71
+    },
+    {
+      "kind": "概念",
+      "name": "人工智能",
+      "code": "BK0800",
+      "pct": 1.76,
+      "zjlryi": 117.12,
+      "up": 591,
+      "down": 139,
+      "leader": "经纬股份",
+      "leader_pct": 20.0
+    },
+    {
+      "kind": "概念",
+      "name": "通信技术",
+      "code": "BK1650",
+      "pct": 1.85,
+      "zjlryi": 104.81,
+      "up": 318,
+      "down": 61,
+      "leader": "中电鑫龙",
+      "leader_pct": 10.02
     },
     {
       "kind": "概念",
       "name": "中证500",
       "code": "BK0701",
-      "pct": 0.87,
-      "zjlryi": 94.06,
-      "up": 300,
-      "down": 177,
-      "leader": "中瓷电子",
+      "pct": 1.47,
+      "zjlryi": 103.19,
+      "up": 401,
+      "down": 88,
+      "leader": "华天科技",
+      "leader_pct": 10.01
+    },
+    {
+      "kind": "概念",
+      "name": "消费电子概念",
+      "code": "BK1646",
+      "pct": 2.48,
+      "zjlryi": 102.75,
+      "up": 180,
+      "down": 32,
+      "leader": "博通集成",
       "leader_pct": 10.0
     },
     {
       "kind": "概念",
-      "name": "专精特新",
-      "code": "BK1005",
-      "pct": 2.22,
-      "zjlryi": 92.6,
-      "up": 1102,
-      "down": 137,
-      "leader": "龙星科技",
-      "leader_pct": 10.08
-    },
-    {
-      "kind": "概念",
-      "name": "中盘成长",
-      "code": "BK1669",
-      "pct": 2.37,
-      "zjlryi": 92.13,
-      "up": 154,
-      "down": 33,
-      "leader": "中瓷电子",
-      "leader_pct": 10.0
-    },
-    {
-      "kind": "概念",
-      "name": "中芯概念",
-      "code": "BK0935",
-      "pct": 4.38,
-      "zjlryi": 90.85,
-      "up": 66,
-      "down": 1,
-      "leader": "有研新材",
-      "leader_pct": 9.99
-    },
-    {
-      "kind": "概念",
-      "name": "光纤概念",
-      "code": "BK1660",
-      "pct": 3.71,
-      "zjlryi": 85.61,
-      "up": 70,
-      "down": 10,
-      "leader": "华脉科技",
-      "leader_pct": 10.0
+      "name": "深证100R",
+      "code": "BK0743",
+      "pct": 1.35,
+      "zjlryi": 98.12,
+      "up": 79,
+      "down": 20,
+      "leader": "万  科Ａ",
+      "leader_pct": 9.93
     },
     {
       "kind": "概念",
       "name": "先进封装",
       "code": "BK1101",
-      "pct": 3.84,
-      "zjlryi": 77.98,
-      "up": 84,
-      "down": 3,
-      "leader": "实益达",
-      "leader_pct": 10.07
+      "pct": 3.57,
+      "zjlryi": 93.87,
+      "up": 82,
+      "down": 7,
+      "leader": "华天科技",
+      "leader_pct": 10.01
+    },
+    {
+      "kind": "概念",
+      "name": "机构重仓",
+      "code": "BK0552",
+      "pct": 1.51,
+      "zjlryi": 92.06,
+      "up": 793,
+      "down": 254,
+      "leader": "南华生物",
+      "leader_pct": 10.0
+    },
+    {
+      "kind": "概念",
+      "name": "数据中心",
+      "code": "BK0922",
+      "pct": 2.01,
+      "zjlryi": 91.8,
+      "up": 278,
+      "down": 43,
+      "leader": "中电鑫龙",
+      "leader_pct": 10.02
+    },
+    {
+      "kind": "概念",
+      "name": "高市净率",
+      "code": "BK1722",
+      "pct": 2.0,
+      "zjlryi": 89.77,
+      "up": 156,
+      "down": 39,
+      "leader": "华塑控股",
+      "leader_pct": 9.91
+    },
+    {
+      "kind": "概念",
+      "name": "AH股",
+      "code": "BK0499",
+      "pct": 1.18,
+      "zjlryi": 86.23,
+      "up": 135,
+      "down": 59,
+      "leader": "新华文轩",
+      "leader_pct": 9.97
     }
   ],
   "stock_flow": [
     {
-      "code": "002281",
-      "name": "光迅科技",
-      "price": 185.21,
-      "chg": 10.0,
-      "zjlryi": 20.32
-    },
-    {
-      "code": "600105",
-      "name": "永鼎股份",
-      "price": 45.22,
-      "chg": 10.0,
-      "zjlryi": 18.65
+      "code": "002185",
+      "name": "华天科技",
+      "price": 18.03,
+      "chg": 10.01,
+      "zjlryi": 26.35
     },
     {
       "code": "300308",
       "name": "中际旭创",
-      "price": 907.8,
-      "chg": 5.07,
-      "zjlryi": 14.02
+      "price": 926.43,
+      "chg": 3.4,
+      "zjlryi": 16.64
     },
     {
-      "code": "688012",
-      "name": "中微公司",
-      "price": 352.6,
-      "chg": 6.65,
-      "zjlryi": 9.99
-    },
-    {
-      "code": "002371",
-      "name": "北方华创",
-      "price": 662.89,
-      "chg": 3.88,
-      "zjlryi": 9.37
+      "code": "603986",
+      "name": "兆易创新",
+      "price": 388.18,
+      "chg": 4.95,
+      "zjlryi": 15.59
     },
     {
       "code": "300502",
       "name": "新易盛",
-      "price": 423.69,
-      "chg": 6.72,
-      "zjlryi": 9.2
+      "price": 445.0,
+      "chg": 4.87,
+      "zjlryi": 15.19
     },
     {
-      "code": "600206",
-      "name": "有研新材",
-      "price": 51.63,
-      "chg": 9.99,
-      "zjlryi": 9.09
+      "code": "600584",
+      "name": "长电科技",
+      "price": 73.0,
+      "chg": 7.75,
+      "zjlryi": 13.58
     },
     {
-      "code": "002384",
-      "name": "东山精密",
-      "price": 192.0,
-      "chg": 5.02,
-      "zjlryi": 8.66
+      "code": "002475",
+      "name": "立讯精密",
+      "price": 54.1,
+      "chg": 3.78,
+      "zjlryi": 7.85
     },
     {
-      "code": "002396",
-      "name": "星网锐捷",
-      "price": 38.83,
-      "chg": 10.0,
-      "zjlryi": 8.57
+      "code": "300394",
+      "name": "天孚通信",
+      "price": 284.66,
+      "chg": 2.52,
+      "zjlryi": 7.68
     },
     {
-      "code": "688008",
-      "name": "澜起科技",
-      "price": 199.89,
-      "chg": 6.42,
-      "zjlryi": 8.25
+      "code": "300223",
+      "name": "君正股份",
+      "price": 142.97,
+      "chg": 5.86,
+      "zjlryi": 7.32
     },
     {
-      "code": "600487",
-      "name": "亨通光电",
-      "price": 65.4,
-      "chg": 4.77,
-      "zjlryi": 8.13
+      "code": "002156",
+      "name": "通富微电",
+      "price": 61.38,
+      "chg": 5.26,
+      "zjlryi": 7.05
     },
     {
-      "code": "000592",
-      "name": "平潭发展",
-      "price": 8.71,
-      "chg": 9.97,
-      "zjlryi": 7.82
+      "code": "688825",
+      "name": "长鑫科技",
+      "price": 55.54,
+      "chg": 3.87,
+      "zjlryi": 7.01
     },
     {
-      "code": "601208",
-      "name": "东材科技",
-      "price": 54.31,
-      "chg": 10.01,
-      "zjlryi": 7.48
+      "code": "601138",
+      "name": "工业富联",
+      "price": 62.71,
+      "chg": 2.35,
+      "zjlryi": 6.82
     },
     {
-      "code": "600183",
-      "name": "生益科技",
-      "price": 154.48,
-      "chg": 2.82,
-      "zjlryi": 7.13
+      "code": "688521",
+      "name": "芯原股份",
+      "price": 205.18,
+      "chg": 4.63,
+      "zjlryi": 6.66
     },
     {
-      "code": "002428",
-      "name": "云南锗业",
-      "price": 94.59,
-      "chg": 4.79,
-      "zjlryi": 6.65
+      "code": "000938",
+      "name": "紫光股份",
+      "price": 33.95,
+      "chg": 3.51,
+      "zjlryi": 6.37
+    },
+    {
+      "code": "002281",
+      "name": "光迅科技",
+      "price": 195.4,
+      "chg": 2.19,
+      "zjlryi": 6.29
+    },
+    {
+      "code": "688048",
+      "name": "长光华芯",
+      "price": 342.0,
+      "chg": 4.24,
+      "zjlryi": 5.9
     }
   ],
   "losers": [
     {
-      "code": "002212",
-      "name": "天融信",
-      "price": 6.99,
-      "chg": -10.04,
-      "turnover": 3.93,
-      "amount_yi": 3.21
-    },
-    {
-      "code": "000978",
-      "name": "桂林旅游",
-      "price": 8.79,
+      "code": "002528",
+      "name": "*ST英飞",
+      "price": 6.46,
       "chg": -10.03,
-      "turnover": 3.41,
-      "amount_yi": 1.4
+      "turnover": 6.48,
+      "amount_yi": 4.48
     },
     {
-      "code": "601086",
-      "name": "国芳集团",
-      "price": 14.57,
-      "chg": -10.01,
-      "turnover": 7.18,
-      "amount_yi": 6.98
+      "code": "002360",
+      "name": "ST同德",
+      "price": 5.33,
+      "chg": -8.58,
+      "turnover": 6.11,
+      "amount_yi": 1.02
     },
     {
-      "code": "002912",
-      "name": "中新赛克",
-      "price": 25.61,
-      "chg": -9.98,
-      "turnover": 11.98,
-      "amount_yi": 5.0
+      "code": "603880",
+      "name": "南卫股份",
+      "price": 8.88,
+      "chg": -8.55,
+      "turnover": 9.09,
+      "amount_yi": 2.36
     },
     {
-      "code": "605577",
-      "name": "龙版传媒",
-      "price": 13.64,
-      "chg": -9.79,
-      "turnover": 10.74,
-      "amount_yi": 6.62
+      "code": "301030",
+      "name": "*ST仕净",
+      "price": 6.48,
+      "chg": -8.22,
+      "turnover": 9.87,
+      "amount_yi": 1.33
     },
     {
-      "code": "000981",
-      "name": "山子高科",
-      "price": 2.74,
-      "chg": -9.27,
-      "turnover": 11.37,
-      "amount_yi": 29.88
+      "code": "300741",
+      "name": "华宝股份",
+      "price": 25.15,
+      "chg": -7.43,
+      "turnover": 6.59,
+      "amount_yi": 10.25
     },
     {
-      "code": "688244",
-      "name": "永信至诚",
-      "price": 15.4,
-      "chg": -9.25,
-      "turnover": 9.82,
-      "amount_yi": 2.32
+      "code": "900925",
+      "name": "机电Ｂ股",
+      "price": 1.252,
+      "chg": -6.71,
+      "turnover": 1.46,
+      "amount_yi": 0.04
     },
     {
-      "code": "600712",
-      "name": "南宁百货",
-      "price": 4.96,
-      "chg": -8.66,
-      "turnover": 14.49,
-      "amount_yi": 3.91
-    },
-    {
-      "code": "603136",
-      "name": "天目湖",
-      "price": 8.9,
-      "chg": -8.53,
-      "turnover": 14.34,
-      "amount_yi": 3.46
-    },
-    {
-      "code": "600865",
-      "name": "百大集团",
-      "price": 10.29,
-      "chg": -8.37,
-      "turnover": 14.73,
-      "amount_yi": 5.71
-    },
-    {
-      "code": "600792",
-      "name": "云煤能源",
-      "price": 4.85,
-      "chg": -8.32,
-      "turnover": 15.58,
-      "amount_yi": 8.55
-    },
-    {
-      "code": "301003",
-      "name": "江苏博云",
-      "price": 52.8,
-      "chg": -8.09,
-      "turnover": 8.66,
-      "amount_yi": 3.56
-    },
-    {
-      "code": "000868",
-      "name": "安凯客车",
-      "price": 3.69,
-      "chg": -7.75,
-      "turnover": 8.63,
-      "amount_yi": 2.99
-    },
-    {
-      "code": "688790",
-      "name": "昂瑞微-UW",
-      "price": 93.51,
-      "chg": -7.42,
-      "turnover": 33.24,
-      "amount_yi": 5.82
-    },
-    {
-      "code": "600127",
-      "name": "金健米业",
-      "price": 11.84,
-      "chg": -7.14,
-      "turnover": 37.36,
-      "amount_yi": 28.42
-    },
-    {
-      "code": "000759",
-      "name": "中百集团",
-      "price": 6.27,
-      "chg": -7.11,
-      "turnover": 28.15,
-      "amount_yi": 11.61
-    },
-    {
-      "code": "003002",
-      "name": "壶化股份",
-      "price": 16.84,
-      "chg": -6.91,
-      "turnover": 6.92,
-      "amount_yi": 2.16
-    },
-    {
-      "code": "600031",
-      "name": "三一重工",
-      "price": 18.18,
-      "chg": -6.72,
-      "turnover": 2.93,
-      "amount_yi": 44.51
-    },
-    {
-      "code": "002790",
-      "name": "瑞尔特",
-      "price": 7.06,
-      "chg": -6.37,
-      "turnover": 26.08,
-      "amount_yi": 4.83
-    },
-    {
-      "code": "601100",
-      "name": "恒立液压",
-      "price": 92.6,
-      "chg": -6.28,
-      "turnover": 2.13,
-      "amount_yi": 26.43
-    }
-  ],
-  "dt_pool": [
-    {
-      "code": "601086",
-      "name": "国芳集团",
-      "price": 14.57,
-      "chg": -10.01,
-      "amount_yi": 6.98,
-      "lbc": null
-    },
-    {
-      "code": "002912",
-      "name": "中新赛克",
-      "price": 25.61,
-      "chg": -9.98,
-      "amount_yi": 5.0,
-      "lbc": null
-    },
-    {
-      "code": "000978",
-      "name": "桂林旅游",
-      "price": 8.79,
-      "chg": -10.03,
-      "amount_yi": 1.4,
-      "lbc": null
-    },
-    {
-      "code": "002212",
-      "name": "天融信",
-      "price": 6.99,
-      "chg": -10.04,
-      "amount_yi": 3.21,
-      "lbc": null
-    }
-  ],
-  "zb_pool": [
-    {
-      "code": "601218",
-      "name": "吉鑫科技",
-      "price": 5.22,
-      "chg": 0.77,
-      "lbc": null,
-      "amount_yi": 13.09
+      "code": "300313",
+      "name": "天山生物",
+      "price": 13.08,
+      "chg": -6.64,
+      "turnover": 16.43,
+      "amount_yi": 4.25
     },
     {
       "code": "002531",
       "name": "天顺风能",
-      "price": 7.82,
-      "chg": 0.13,
-      "lbc": null,
-      "amount_yi": 22.15
+      "price": 7.71,
+      "chg": -5.63,
+      "turnover": 11.05,
+      "amount_yi": 15.33
     },
     {
-      "code": "301300",
-      "name": "远翔新材",
-      "price": 36.36,
-      "chg": 13.73,
-      "lbc": null,
-      "amount_yi": 1.22
+      "code": "603378",
+      "name": "*ST亚士",
+      "price": 5.67,
+      "chg": -5.5,
+      "turnover": 3.67,
+      "amount_yi": 0.91
     },
     {
-      "code": "002218",
-      "name": "拓日新能",
-      "price": 4.42,
-      "chg": 5.74,
-      "lbc": null,
-      "amount_yi": 9.85
+      "code": "300575",
+      "name": "中旗股份",
+      "price": 6.01,
+      "chg": -5.35,
+      "turnover": 10.11,
+      "amount_yi": 2.11
     },
     {
-      "code": "002222",
-      "name": "福晶科技",
-      "price": 68.59,
-      "chg": 8.08,
-      "lbc": null,
-      "amount_yi": 24.33
+      "code": "000610",
+      "name": "*ST西旅",
+      "price": 8.22,
+      "chg": -5.3,
+      "turnover": 5.17,
+      "amount_yi": 1.04
     },
     {
-      "code": "001306",
-      "name": "夏厦精密",
-      "price": 53.95,
-      "chg": 3.69,
-      "lbc": null,
-      "amount_yi": 1.02
+      "code": "900915",
+      "name": "ST中路B",
+      "price": 0.277,
+      "chg": -5.14,
+      "turnover": 0.87,
+      "amount_yi": 0.0
     },
     {
-      "code": "603038",
-      "name": "华立股份",
-      "price": 16.46,
-      "chg": 8.15,
-      "lbc": null,
-      "amount_yi": 2.08
+      "code": "000048",
+      "name": "京基智农",
+      "price": 18.47,
+      "chg": -4.94,
+      "turnover": 6.32,
+      "amount_yi": 6.13
     },
     {
-      "code": "001211",
-      "name": "双枪科技",
-      "price": 24.23,
-      "chg": 8.51,
-      "lbc": null,
-      "amount_yi": 1.68
+      "code": "688004",
+      "name": "博汇科技",
+      "price": 35.27,
+      "chg": -4.93,
+      "turnover": 18.0,
+      "amount_yi": 5.24
     },
     {
-      "code": "001288",
-      "name": "运机集团",
-      "price": 30.65,
-      "chg": 8.5,
-      "lbc": null,
-      "amount_yi": 2.79
+      "code": "600165",
+      "name": "宁科生物",
+      "price": 3.24,
+      "chg": -4.71,
+      "turnover": 3.34,
+      "amount_yi": 0.8
     },
     {
-      "code": "600667",
-      "name": "太极实业",
-      "price": 20.23,
-      "chg": 6.98,
-      "lbc": null,
-      "amount_yi": 70.51
+      "code": "600176",
+      "name": "中国巨石",
+      "price": 45.02,
+      "chg": -4.52,
+      "turnover": 9.89,
+      "amount_yi": 177.5
     },
     {
-      "code": "603269",
-      "name": "海鸥股份",
-      "price": 25.65,
-      "chg": 7.59,
+      "code": "002824",
+      "name": "和胜股份",
+      "price": 28.37,
+      "chg": -4.41,
+      "turnover": 17.35,
+      "amount_yi": 11.24
+    },
+    {
+      "code": "301628",
+      "name": "强达电路",
+      "price": 115.0,
+      "chg": -4.25,
+      "turnover": 18.28,
+      "amount_yi": 6.19
+    },
+    {
+      "code": "603266",
+      "name": "天龙股份",
+      "price": 17.13,
+      "chg": -4.19,
+      "turnover": 6.05,
+      "amount_yi": 2.07
+    },
+    {
+      "code": "002321",
+      "name": "华英农业",
+      "price": 2.09,
+      "chg": -4.13,
+      "turnover": 4.96,
+      "amount_yi": 2.2
+    }
+  ],
+  "dt_pool": [],
+  "zb_pool": [
+    {
+      "code": "002080",
+      "name": "中材科技",
+      "price": 60.22,
+      "chg": 2.61,
       "lbc": null,
-      "amount_yi": 9.85
+      "amount_yi": 68.73
+    },
+    {
+      "code": "003026",
+      "name": "中晶科技",
+      "price": 37.2,
+      "chg": 0.54,
+      "lbc": null,
+      "amount_yi": 22.26
+    },
+    {
+      "code": "000710",
+      "name": "贝瑞基因",
+      "price": 9.05,
+      "chg": 5.97,
+      "lbc": null,
+      "amount_yi": 3.48
+    },
+    {
+      "code": "002693",
+      "name": "双成药业",
+      "price": 9.22,
+      "chg": 3.48,
+      "lbc": null,
+      "amount_yi": 4.07
+    },
+    {
+      "code": "000920",
+      "name": "沃顿科技",
+      "price": 13.16,
+      "chg": 4.2,
+      "lbc": null,
+      "amount_yi": 7.61
+    },
+    {
+      "code": "600156",
+      "name": "华升股份",
+      "price": 8.95,
+      "chg": 5.05,
+      "lbc": null,
+      "amount_yi": 2.61
+    },
+    {
+      "code": "002902",
+      "name": "铭普光磁",
+      "price": 31.2,
+      "chg": 7.0,
+      "lbc": null,
+      "amount_yi": 20.58
+    },
+    {
+      "code": "002735",
+      "name": "王子新材",
+      "price": 12.95,
+      "chg": 7.38,
+      "lbc": null,
+      "amount_yi": 8.1
+    },
+    {
+      "code": "000993",
+      "name": "闽东电力",
+      "price": 19.6,
+      "chg": 9.07,
+      "lbc": null,
+      "amount_yi": 20.88
+    },
+    {
+      "code": "002172",
+      "name": "澳洋健康",
+      "price": 5.28,
+      "chg": 4.97,
+      "lbc": null,
+      "amount_yi": 13.47
+    },
+    {
+      "code": "301080",
+      "name": "百普赛斯",
+      "price": 109.48,
+      "chg": 10.27,
+      "lbc": null,
+      "amount_yi": 22.5
+    },
+    {
+      "code": "600163",
+      "name": "中闽能源",
+      "price": 6.18,
+      "chg": 4.22,
+      "lbc": null,
+      "amount_yi": 10.35
+    },
+    {
+      "code": "301230",
+      "name": "泓博医药",
+      "price": 35.21,
+      "chg": 10.76,
+      "lbc": null,
+      "amount_yi": 13.31
+    },
+    {
+      "code": "002724",
+      "name": "海洋王",
+      "price": 7.13,
+      "chg": 4.39,
+      "lbc": null,
+      "amount_yi": 3.8
+    },
+    {
+      "code": "600059",
+      "name": "古越龙山",
+      "price": 10.7,
+      "chg": 8.63,
+      "lbc": null,
+      "amount_yi": 11.59
+    },
+    {
+      "code": "603177",
+      "name": "德创环保",
+      "price": 11.34,
+      "chg": 7.9,
+      "lbc": null,
+      "amount_yi": 1.13
+    },
+    {
+      "code": "600712",
+      "name": "南宁百货",
+      "price": 5.35,
+      "chg": 5.73,
+      "lbc": null,
+      "amount_yi": 3.85
+    },
+    {
+      "code": "300836",
+      "name": "佰奥智能",
+      "price": 62.6,
+      "chg": 19.42,
+      "lbc": null,
+      "amount_yi": 4.99
+    },
+    {
+      "code": "002767",
+      "name": "先锋电子",
+      "price": 18.27,
+      "chg": 3.63,
+      "lbc": null,
+      "amount_yi": 0.97
+    },
+    {
+      "code": "002685",
+      "name": "华东重机",
+      "price": 5.66,
+      "chg": 6.59,
+      "lbc": null,
+      "amount_yi": 5.22
+    },
+    {
+      "code": "002631",
+      "name": "德尔未来",
+      "price": 13.23,
+      "chg": 9.98,
+      "lbc": null,
+      "amount_yi": 12.62
+    },
+    {
+      "code": "688261",
+      "name": "东微半导",
+      "price": 81.37,
+      "chg": 15.16,
+      "lbc": null,
+      "amount_yi": 13.04
+    },
+    {
+      "code": "601369",
+      "name": "陕鼓动力",
+      "price": 9.02,
+      "chg": 7.38,
+      "lbc": null,
+      "amount_yi": 3.68
+    },
+    {
+      "code": "603679",
+      "name": "华体科技",
+      "price": 25.6,
+      "chg": 8.47,
+      "lbc": null,
+      "amount_yi": 4.17
+    },
+    {
+      "code": "601155",
+      "name": "新城控股",
+      "price": 12.24,
+      "chg": 9.87,
+      "lbc": null,
+      "amount_yi": 4.73
     }
   ],
   "ytd_boards": [
     {
       "code": "BK0816",
       "name": "昨日连板",
-      "pct": 2.91
+      "pct": 2.12
     },
     {
       "code": "BK1051",
       "name": "昨日连板_含一字",
-      "pct": 3.51
+      "pct": 3.88
     },
     {
       "code": "BK0815",
       "name": "昨日涨停",
-      "pct": 3.65
+      "pct": 1.96
     },
     {
       "code": "BK1050",
       "name": "昨日涨停_含一字",
-      "pct": 3.65
+      "pct": 2.5
     },
     {
       "code": "BK1630",
       "name": "昨日首板",
-      "pct": 3.84
+      "pct": 2.6
     },
     {
       "code": "BK1645",
       "name": "昨日打二板以上表现",
-      "pct": 2.85
+      "pct": 4.03
     },
     {
       "code": "BK1631",
       "name": "昨日炸板",
-      "pct": 0.05
+      "pct": -0.5
     },
     {
       "code": "BK0817",
       "name": "昨日触板",
-      "pct": -0.08
+      "pct": -0.31
     }
   ]
 }

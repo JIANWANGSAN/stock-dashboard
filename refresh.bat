@@ -23,11 +23,14 @@ echo   Refresh A-share dashboard data
 echo   Python: %PY%
 echo ============================================
 echo.
-echo [1/2] fetch_data.py ...
+echo [1/3] fetch_data.py ...（已内置 macro.py：盘后一并刷新「必看」页宏观面板）
 "%PY%" fetch_data.py
 echo.
-echo [2/2] enrich_tags.py ...
+echo [2/3] enrich_tags.py ...
 "%PY%" enrich_tags.py
+echo.
+echo [3/3] module4.py ...
+"%PY%" module4.py
 echo.
 echo ============================================
 echo   Done. Open index.html to view.
