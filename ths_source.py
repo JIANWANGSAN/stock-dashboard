@@ -855,12 +855,20 @@ def board_ref(ths_code):
 
 
 # ════════════════════════ ⑱ 板块资金流榜（行业/概念，一站式）════════════════════════
-# `data.10jqka.com.cn/funds/<gn|hy>zjl/` 的 ajax 分页表一次给全：
+# `data.10jqka.com.cn/funds/<gn|hy>zjl/` 的表格一次给全：
 #   序号 | 名称 | 指数点位 | 涨跌幅% | 流入(亿) | 流出(亿) | 净额(亿) | 公司家数 | 领涨股 | 领涨股涨跌幅% | 当前价
-# 字段与东财板块榜(f3/f62/f104/f128/f136)一一对应，且**公司家数=成分股总数**（与 realhead 的 37 字段同值），
+# 字段与东财板块榜(f3/f62/f104/f128/f136)一一对应，且**公司家数=成分股总数**，
 # 是「板块榜」最省事、最稳的替代源（概念约 8 页、行业约 2 页，共 ~430 行）。
-_FUND_URL = ('http://data.10jqka.com.cn/funds/%szjl/field/zdf/order/desc/page/%d/ajax/1/')
-_FUND_REF = 'http://data.10jqka.com.cn/funds/gnzjl/'
+#
+# ⚠️ 2026-09-18 实测：`.../page/N/ajax/1/` 这条 ajax 分页路径**改为 401 Unauthorized**
+#    （需登录 cookie），但**列表页本体仍可匿名 GET**：
+#      https://data.10jqka.com.cn/funds/hyzjl/            → 第 1 页 50 行
+#      https://data.10jqka.com.cn/funds/hyzjl/page/2/     → 第 2 页 40 行
+#    故改用列表页 + `/page/N/` 翻页（**必须 HTTPS**，HTTP 版会被跳转/401）。
+#    行业共 90 个（50+40）、概念约 430 个 → `pages` 按需传 2 / 9。
+_FUND_URL = 'https://data.10jqka.com.cn/funds/%szjl/'
+_FUND_PAGE_URL = 'https://data.10jqka.com.cn/funds/%szjl/page/%d/'
+_FUND_REF = 'https://data.10jqka.com.cn/funds/gnzjl/'
 
 
 def _fund_rows(h):
@@ -868,7 +876,8 @@ def _fund_rows(h):
     for r in re.findall(r'<tr[^>]*>(.*?)</tr>', h, re.S):
         c = [re.sub(r'<[^>]+>', '', x).replace('&nbsp;', '').strip()
              for x in re.findall(r'<t[dh][^>]*>(.*?)</t[dh]>', r, re.S)]
-        if len(c) >= 11 and c[0].isdigit():
+        # 列表页表头是 <th>，数据行是 <td>；用「首列是数字」过滤表头
+        if len(c) >= 8 and c[0].isdigit():
             out.append(c)
     return out
 
@@ -878,11 +887,13 @@ def fetch_fund_rank(kind='gn', pages=8, max_workers=6, silent=True):
 
     返回 [{name, pct, amount_yi, net_in_yi, stock_total, leader, leader_pct, index_val, kind}]
     —— 按当日涨跌幅降序（页面即按 zdf 排好，此处不改序）。
+    ⚠️ 单位：**流入/流出/净额均为「亿元」**（列表页表头即标 (亿)），`net_in_yi` 因此名副其实。
     """
     from concurrent.futures import ThreadPoolExecutor
 
     def _one(p):
-        h = ths_get(_FUND_URL % (kind, p), enc='gbk', silent=silent, ref=_FUND_REF)
+        u = _FUND_URL % kind if p == 1 else _FUND_PAGE_URL % (kind, p)
+        h = ths_get(u, enc='gbk', silent=silent, ref=_FUND_REF)
         return _fund_rows(h or '')
 
     rows, seen = [], set()
