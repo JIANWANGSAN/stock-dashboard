@@ -859,16 +859,27 @@ function showTip(html, anchor){
   el.innerHTML=html;
   el.classList.add('on');
   _tipAnchor=anchor;
-  // 定位：优先贴元素上方；上方放不下则放下方；水平方向夹在视口内
-  const r=anchor.getBoundingClientRect();
-  const w=el.offsetWidth||220, h=el.offsetHeight||60, vw=window.innerWidth, vh=window.innerHeight;
-  let top=r.top-h-8, below=false;
-  if(top<6){ top=r.bottom+8; below=true; }
-  let left=r.left+r.width/2-w/2;
-  left=Math.max(6, Math.min(left, vw-w-6));
-  if(top+h>vh-6) top=Math.max(6, vh-h-6);
-  el.style.top=top+'px'; el.style.left=left+'px';
-  el.dataset.below=below?'1':'0';
+  // 定位：优先贴元素上方；上方放不下则放下方；水平方向夹在视口内。
+  // ⚠️ offsetWidth/offsetHeight 在刚写入 innerHTML 的同一帧可能为 0（布局未结算）
+  //   → 先用 0 判空再退到「视口内可见的最小锚定」；下一帧用 rAF 再校正一次。
+  const place=()=>{
+    const r=anchor.getBoundingClientRect();
+    const w=el.offsetWidth||Math.min(240, window.innerWidth-24);
+    const h=el.offsetHeight||60;
+    const vw=window.innerWidth, vh=window.innerHeight;
+    // 顶部空间不够就翻到下方；下方也不够就贴视口内最合适处
+    let top=r.top-h-8, below=false;
+    if(top<6){ top=r.bottom+8; below=true; }
+    if(top+h>vh-6) top=Math.max(6, Math.min(r.top-h-8, vh-h-6));
+    // 水平：以锚点中心对齐，再夹进视口（左右各留 6px）
+    let left=r.left+r.width/2-w/2;
+    left=Math.max(6, Math.min(left, vw-w-6));
+    el.style.top=Math.max(6, top)+'px';
+    el.style.left=left+'px';
+    el.dataset.below=below?'1':'0';
+  };
+  place();
+  if(typeof requestAnimationFrame==='function') requestAnimationFrame(place);   // 布局结算后校正
   if(_tipTimer) clearTimeout(_tipTimer);
   _tipTimer=setTimeout(hideTip, 3500);
   anchor.classList.add('on');
