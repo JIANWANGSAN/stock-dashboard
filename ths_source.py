@@ -369,6 +369,32 @@ def fetch_minute(code, silent=True):
         return []
 
 
+def fetch_minute_auction(code):
+    """当日分时的**集合竞价首根** → `(date_yyyymmdd, 竞价价, 竞价额[元])`；失败 `(None, None, None)`。
+
+    为什么单独抽出来（不直接调 `fetch_minute`）：
+      ① 分时 JSON 顶层带 **`date`**（实测格式 `YYYYMMDD`），而 `fetch_minute` 只取 `data` 把它丢了；
+      ② **必须回传日期** —— 同花顺在盘前 / 非交易日返回的是**上一交易日**的分时，
+         不校验日期就会把昨天的集合竞价当成今天的（原东财版用 trends 行的日期前缀做同一道防线）。
+      ③ 首根 `0930` = 集合竞价，字段序与 `fetch_minute` 一致：时间,现价,该分钟成交额(元),均价,量。
+    """
+    t = ths_get('http://d.10jqka.com.cn/v6/time/hs_%s/last.js' % code,
+                silent=True, ref='http://stockpage.10jqka.com.cn/')
+    if not t:
+        return None, None, None
+    try:
+        node = (json.loads(t[t.index('(') + 1:t.rindex(')')])
+                or {}).get('hs_%s' % code) or {}
+        date = str(node.get('date') or '')
+        first = ((node.get('data') or '').split(';') or [''])[0]
+        p = first.split(',')
+        if len(p) < 3:
+            return date or None, None, None
+        return date or None, float(p[1] or 0), float(p[2] or 0)
+    except Exception:
+        return None, None, None
+
+
 # ════════════════════════ ⑥ 实时快照 ════════════════════════
 def _realhead_key(prefix, code):
     return '%s%s' % (prefix, code)

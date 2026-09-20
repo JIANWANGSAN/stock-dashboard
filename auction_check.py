@@ -6,46 +6,47 @@
   · 结果**直接写回每条候选**：auction_amt_yi / auction_ok / auction_open / auction_pct
   · 口径：竞价额(亿) >= bid_required_yi（= 上板分时量 × 50%）
 
-数据源：东财 push2 快照为主（f46今开 / f47量 / f48额 / f60昨收），腾讯 qt.gtimg.cn 兜底。
+数据源：**腾讯 `qt.gtimg.cn` 快照为主（今开 / 量 / 额 / 昨收），同花顺 `realhead` 兜底**
+   —— 东财已全站停用（push2 快照 / push2his 分时路径均已移除），见 项目约定.md §3.6 / §5 / §9.1。
 
 ⚠️ 只有 9:15~9:30 抓到的量额才是**真竞价额**；其他时段拿到的是开盘后的**累计**成交额，
    不可与硬线比较（故写 data['auction_is_live'] 标记）。
 
 【2026-09-16 补取】任务实际常晚于 9:30 触发（如 9:34），此时快照已是累计口径。
-   补救：用东财分时 trends2 **当日首根（09:30 = 集合竞价）**的成交额还原真竞价额
+   补救：用**同花顺当日分时首根（09:30 = 集合竞价）**的成交额还原真竞价额
    —— 与 fetch_data.fetch_seal_amount 同一口径（首根即集合竞价）。取到则按竞价口径判定，
    写 data['auction_source']='minute_0930' 且 auction_is_live=True；取不到才退回累计口径并标记 false。
+   ⚠️ 同花顺分时**必须校验日期**（盘前返回的是上一交易日），防止把昨天的竞价当今天的。
 """
 import sys, os, json, time
 from datetime import datetime
 
 sys.stdout.reconfigure(encoding='utf-8')
 
+import ths_source as THS
 from fetch_data import (BASE, DATA_JSON, http_get, load_json, save_json, save_js,
                         ThreadPoolExecutor)
 
-EM_FIELDS = 'f43,f44,f45,f46,f47,f48,f60,f71'
 
+def ths_quote(code):
+    """同花顺 realhead 快照兜底。返回 {'open','prev','vol','amt'} 或 None。
 
-def em_quote(secid):
-    """东财实时快照。返回 dict 或 None。"""
-    url = ('https://push2.eastmoney.com/api/qt/stock/get?secid=%s&fields=%s'
-           % (secid, EM_FIELDS))
-    for _ in range(3):
-        t = http_get(url, timeout=8, retry=1, silent=True)
-        if t:
-            try:
-                d = (json.loads(t) or {}).get('data')
-                if d:
-                    return d
-            except Exception:
-                pass
-        time.sleep(0.7)
-    return None
+    ⚠️ 竞价时段「最新价」即竞价成交价 → 映射为 open；成交额取 field 19（单位：元）。
+       非竞价时段的 open 会偏（那是现价而非今开），但调用方在非竞价时段一律会用
+       「分时首根」把 open 覆盖掉（见 run() 的补取分支），故不影响最终口径。
+    """
+    try:
+        r = (THS.fetch_realhead([('hs', code)]) or {}).get(('hs', code)) or {}
+    except Exception:
+        return None
+    if r.get('price') is None:
+        return None
+    return {'open': r.get('price') or 0, 'prev': r.get('prev') or 0,
+            'vol': 0, 'amt': r.get('amount') or 0}
 
 
 def tx_quote(code, market):
-    """腾讯快照兜底（字段：4=昨收 5=今开 6=量(手) 37=额(万元)）。"""
+    """腾讯快照（字段：4=昨收 5=今开 6=量(手) 37=额(万元)）。"""
     mp = 'sh' if int(market or 0) == 1 else 'sz'
     t = http_get('https://qt.gtimg.cn/q=%s%s' % (mp, code), timeout=8, retry=1, silent=True)
     if not t:
@@ -60,32 +61,17 @@ def tx_quote(code, market):
         return None
 
 
-def trends_first_bar(code, market, date_str):
-    """当日分时首根（09:30=集合竞价）→ (竞价成交价, 竞价额[元])；失败返回 (None, None)。
+def ths_first_bar(code, date_str):
+    """同花顺当日分时首根（09:30 = 集合竞价）→ (竞价成交价, 竞价额[元])；失败 (None, None)。
 
-    错过 9:15~9:30 窗口时用它还原真竞价额（东财分时首根即集合竞价，见 fetch_data 口径注释）。
+    ⚠️ **日期不符一律丢弃**：同花顺盘前 / 非交易日返回的是**上一交易日**的分时，
+       不校验就会把昨天的集合竞价当成今天的（原东财版用 trends 行的日期前缀做同一道防线）。
     """
-    secid = '%s.%s' % (market, code)
-    path = ('/api/qt/stock/trends2/get?secid=%s&fields1=f1,f2,f3,f4,f5,f6,f7,f8'
-            '&fields2=f51,f52,f53,f54,f55,f56,f57,f58&iscr=0&ndays=5' % secid)
-    for host in ('push2his.eastmoney.com', '1.push2his.eastmoney.com',
-                 'push2delay.eastmoney.com'):
-        t = http_get('https://%s%s' % (host, path), timeout=10, retry=1, silent=True)
-        if t:
-            try:
-                tr = (json.loads(t).get('data') or {}).get('trends') or []
-            except Exception:
-                tr = []
-            for x in tr:
-                if x.startswith(date_str):
-                    p = x.split(',')
-                    try:
-                        return float(p[2] or 0), float(p[6] or 0)
-                    except Exception:
-                        return None, None
-            return None, None        # 接口正常但无当日数据（未开盘/非交易日）
-        time.sleep(0.6)
-    return None, None
+    d, price, amount = THS.fetch_minute_auction(code)
+    want = (date_str or '').replace('-', '')
+    if not d or not want or d != want:
+        return None, None
+    return price, amount
 
 
 def _mkt(c):
@@ -123,11 +109,10 @@ def run():
 
     def _fetch(c):
         mk = _mkt(c)
-        d = em_quote('%s.%s' % (mk, c['code']))
-        if d and d.get('f48'):
-            return {'open': (d.get('f46') or 0) / 100.0, 'prev': (d.get('f60') or 0) / 100.0,
-                    'vol': (d.get('f47') or 0), 'amt': (d.get('f48') or 0)}
-        return tx_quote(c['code'], mk)
+        q = tx_quote(c['code'], mk)              # ① 腾讯快照（今开 / 量 / 额 / 昨收）
+        if q and q.get('amt'):
+            return q
+        return ths_quote(c['code']) or q         # ② 同花顺 realhead 兜底
 
     with ThreadPoolExecutor(max_workers=6) as ex:
         quotes = list(ex.map(_fetch, picks))
@@ -152,7 +137,7 @@ def run():
     if not is_auction and today > (data.get('date') or ''):
         bars = []                        # 串行 + 慢节奏：分时接口并发易被限流
         for c in picks:
-            bars.append(trends_first_bar(c['code'], _mkt(c), today))
+            bars.append(ths_first_bar(c['code'], today))
             time.sleep(0.25)
         got = 0
         for c, (bop, bamt) in zip(picks, bars):

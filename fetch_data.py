@@ -1163,52 +1163,10 @@ BOARD_SKIP = ('昨日', '近期', '百日', '东方财富', '融资', '沪股通
               'MSCI', '标普', '富时', '创业成份', '深证', '上证', '中证', 'AH股')
 
 
-# 申万一级行业（东财板块代码）——东财 App 的「行业」榜只展示**二级行业**，一级必须排除，
-# 否则「电子 / 电力设备 / 有色金属」这类大行业会混进榜里（2026-09-15 与东财 App 逐条比对得出）。
-L1_BOARD_CODES = {
-    'BK0427',   # 公用事业
-    'BK0433',   # 农林牧渔
-    'BK0436',   # 纺织服饰
-    'BK0437',   # 煤炭
-    'BK0438',   # 食品饮料
-    'BK0456',   # 家用电器
-    'BK0464',   # 石油石化
-    'BK0475',   # 银行Ⅱ（与 BK1283「银行」重复）
-    'BK0478',   # 有色金属
-    'BK0479',   # 钢铁
-    'BK0486',   # 传媒
-    'BK0728',   # 环保
-    'BK1035',   # 美容护理
-    'BK1283',   # 银行
-    # 申万一级连续段 BK1200~BK1217
-    'BK1200', 'BK1201', 'BK1202', 'BK1203', 'BK1204', 'BK1205', 'BK1206',
-    'BK1207', 'BK1208', 'BK1209', 'BK1210', 'BK1211', 'BK1212', 'BK1213',
-    'BK1214', 'BK1215', 'BK1216', 'BK1217',
-}
-
-# 东财「风格类」板块（App 归入「风格」tab，不计入「概念」）——按关键词剔除
-STYLE_BOARD_KW = ('昨日', '反转股', '风格', '重仓', '股通', '融资融券', '转债标的',
-                  '预盈预增', '预亏预减', '高送转', '送转', '次新', '破净', '微盘',
-                  '百元股', '低价股', '高价股', '中字头', '壳资源', '摘帽', 'ST股',
-                  '亏损股', 'AB股', 'AH股', 'B股', 'GDR', 'MSCI', '富时', '标普')
-
-
-def is_l2_industry(code):
-    """东财行业板块代码是否属于「二级行业」。
-
-    东财行业代码段规律（2026-09-15 全量 496 个板块实测归纳）：
-      BK04xx/BK05xx/BK07xx/BK09xx/BK10xx → 二级（老板块）
-      BK1200~BK1217 → 申万一级行业（排除）
-      BK1218~BK1288 → 二级（申万 2021 新分类）
-      BK1289+ / BK13xx~BK17xx → 三级细分 或 东财自建（排除）
-    """
-    if not code or code in L1_BOARD_CODES:
-        return False
-    if code.startswith(('BK04', 'BK05', 'BK07', 'BK09', 'BK10')):
-        return True
-    if code.startswith('BK12'):
-        return 'BK1218' <= code <= 'BK1288'
-    return False
+# ⛔ 已删（2026-09-20）：东财口径的板块筛选死代码 `L1_BOARD_CODES` / `STYLE_BOARD_KW` /
+#    `is_l2_industry()` —— 全站切同花顺后**零调用**（同花顺行业体系 ≠ 东财/申万，这套过滤已废），
+#    按 项目约定.md §9.1 第 10 条清理。**不要再加回来**：同花顺行业名由 `fetch_fund_rank('hy')`
+#    直接给出，不需要按代码段判定层级。
 
 
 def _is_limit_up(code, name, pct):
@@ -1230,31 +1188,106 @@ def _is_limit_up(code, name, pct):
     return p >= 9.8
 
 
+# ---------- 东财 push2 板块成分股（2026-09-20 新增的第 2 处东财依赖，见 项目约定.md §5）----------
+# 为什么加：同花顺「板块成分股页」(q.10jqka.com.cn/{thshy,gn}/detail/.../ajax/1/) 已被
+#   **chameleon JS 反爬拦死** —— 2026-09-20 实测全变体 401（响应体是
+#   `s.thsi.cn/js/chameleon/chameleon.1.7.min.*.js` 挑战脚本），带 Session / UA / Referer /
+#   X-Requested-With 均无效；而 q.10jqka.com.cn 主站 200 正常 → 只有这个 ajax 明细被拦。
+#   → `THS.count_board_zt()` 因此恒返回 None → 板块榜「涨停/全部」的**涨停家数全空**。
+# 为什么选东财 push2：与「跌停个股池 push2ex」同属**未被封的域**，且**不是**被按 IP 封禁的
+#   `push2his` 路径；返回自带 `f3`（涨跌幅）→ 配上面已有的 `_is_limit_up()` 即可得涨停家数。
+#   （a-stock-data skill 的 FAQ 亦独立印证：「同花顺板块接口 2026 年初加反爬 401，东财 push2 是替代」。）
+EM_CLIST_HOSTS = ('push2.eastmoney.com', 'push2delay.eastmoney.com', '82.push2.eastmoney.com')
+
+
+def em_board_zt_count(em_code, page_size=100, max_page=5):
+    """东财板块成分股 → `{zt_count, stock_total, leader, leader_pct}`；失败返回 None。
+
+    与同花顺版 `THS.count_board_zt()` 返回**同构**，可直接互换。`em_code` 形如 `BK1036`。
+
+    ⚠️ `page_size` **必须 ≤100**：东财 clist 的 `pz` 实测封顶 100（传 500 也只回 100），
+       若按「返回条数 < pz 就停」判尾页，用 500 会**只取到第 1 页**（曾踩，成分股数少一半）。
+    注：`zt_count` 只数涨停家数，涨停股涨幅最大 → 恒排在第 1 页最前，故第 1 页已足够；
+        `stock_total` 需要全量翻页才准。
+    """
+    if not em_code:
+        return None
+    rows = []
+    for pn in range(1, max_page + 1):
+        t = None
+        for h in EM_CLIST_HOSTS:
+            t = http_get('https://%s/api/qt/clist/get?pn=%d&pz=%d&po=1&np=1'
+                         '&fltt=2&invt=2&fid=f3&fs=b:%s&fields=f12,f14,f3'
+                         % (h, pn, page_size, em_code), timeout=8, retry=1, silent=True)
+            if t:
+                break
+        if not t:
+            break
+        try:
+            diff = (json.loads(t).get('data') or {}).get('diff') or []
+        except Exception:
+            break
+        if not diff:
+            break
+        rows.extend(diff)
+        if len(diff) < page_size:
+            break
+    if not rows:
+        return None
+    zt, leader, lpc = 0, '', 0.0
+    for it in rows:
+        c, nm = it.get('f12') or '', it.get('f14') or ''
+        pct = it.get('f3')
+        if not c or is_excluded(c, nm):
+            continue
+        if _is_limit_up(c, nm, pct):
+            zt += 1
+        if not leader:
+            leader, lpc = nm, (pct if isinstance(pct, (int, float)) else 0.0)
+    return {'zt_count': zt, 'stock_total': len(rows),
+            'leader': leader, 'leader_pct': lpc}
+
+
 def fetch_board_zt_stats(boards, max_workers=5):
     """给每个板块补「涨停家数 / 成分股总数」（board: {zt_count, stock_total}）。
 
-    数据源：同花顺板块成分股页（**按当日涨跌幅降序**）—— 涨停股必然排在最前，
-    故取第 1 页即可覆盖该板块当日绝大多数涨停股；总家数取页面 `page_info` 推出的真实家数。
+    来源（2026-09-20 起**东财优先**）：
+      ① `em_board_zt_count(em_code)` —— 东财 push2 成分股（自带涨跌幅）。**这是当前唯一可用的来源**，
+         因为同花顺成分股页已被 chameleon 反爬拦死（见 `EM_CLIST_HOSTS` 上方的注释）。
+      ② `THS.count_board_zt(ths_code)` —— 同花顺成分股页。当前恒返回 None（401），
+         **保留不动**：接口哪天恢复即自动降级生效，无需再改代码。
 
-    板块代码口径：`ths_code`（881/885/886xxx）或 `code`（东财BK）经 THS_MAP 转同花顺码。
+    板块代码口径：优先 `em_code`（东财BK），没有才退回 `ths_code`（881/885/886xxx）
+    或 `code` 经 THS_MAP 转同花顺码。
     """
     if not boards:
         return
 
     def _one(b):
-        tc = b.get('ths_code') or ''
-        if not tc:
-            m = THS_MAP.get(b.get('em_code') or b.get('code') or '')
-            tc = m[0] if m else ''
-        if not tc:
-            return
-        try:
-            r = THS.count_board_zt(tc, max_page=1)
-        except Exception:
-            r = None
+        # ① 首选：东财 push2 成分股
+        r = None
+        if b.get('em_code'):
+            try:
+                r = em_board_zt_count(b['em_code'])
+            except Exception:
+                r = None
+        # ② 退路：同花顺成分股页（当前 401 恒 None）
+        if not r:
+            tc = b.get('ths_code') or ''
+            if not tc:
+                m = THS_MAP.get(b.get('em_code') or b.get('code') or '')
+                tc = m[0] if m else ''
+            if tc:
+                try:
+                    r = THS.count_board_zt(tc, max_page=1)
+                except Exception:
+                    r = None
         if not r:
             return
-        b['stock_total'] = r['stock_total']
+        # `stock_total` 沿用原值（同花顺行业榜的「公司家数」，如半导体 188），
+        # 缺失时才用成分股条数补 —— 避免同一语义被两套口径来回覆盖。
+        if not b.get('stock_total'):
+            b['stock_total'] = r['stock_total']
         b['zt_count'] = r['zt_count']
         if r.get('leader') and not b.get('leader'):
             b['leader'] = r['leader']
@@ -2651,6 +2684,14 @@ def main():
         },
         'recommend': reco,
         'candidates': cands,
+        # ---- 盘前竞价任务的标记：15:05 重建 data.json 时必须**原样带过来** ----
+        # 这些字段由 premarket.py / auction_check.py 在 9:26 写入；本函数是**整字典重建**，
+        # 不显式搬运就会丢 → 前端「竞价口径」标注（auction_is_live）会永远拿不到值。
+        # （2026-09-20 修：实测 2026-09-18 的 data.json 里这 4 个键全部缺失，属真 bug）
+        'premarket_updated': _prev.get('premarket_updated'),
+        'auction_updated': _prev.get('auction_updated'),
+        'auction_is_live': _prev.get('auction_is_live'),
+        'auction_source': _prev.get('auction_source'),
         'elnino': elnino_out,    # 厄尔尼诺事件静态主题（置顶于模块3，阶段自动识别）
         'params': {
             'vol_ratio_threshold': VOL_RATIO_THRESHOLD,
