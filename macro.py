@@ -31,29 +31,24 @@ from ths_board_map import THS_MAP
 
 DATA_JS = os.path.join(BASE, 'data.js')
 
-# ── ① 大盘概览：主要指数（大盘/小盘/价值/成长各维度）────────────────────────
+# ── ① 大盘概览：主要指数 ────────────────────────────────────────────────
 # (显示名, 同花顺 zs 码 or None, 腾讯码 or None, 归类)
+# ⚠️ 2026-09-20 用户要求：大盘概览的指数行**只展示 `INDEX_SHOW` 那 4 个**。
+#    仍然保留取数的只有 `上证50` / `中证1000` —— ⑤ 轮动研判的「研判3·风格」**依赖它们**
+#    （`build_notes()` 里的 `value` / `small`），删掉会让**整条研判3不再产出**，故标为「内部专用」。
+#    ⛔ 已删除、**不再取数**（用户点名）：科创50 / 北证50 / 中证500 / 国证2000。**别再往回加**。
 INDEX_SPEC = [
     ('上证指数', 'zs_1A0001', 'sh000001', 'core'),
     ('深证成指', 'zs_399001', 'sz399001', 'core'),
     ('创业板指', 'zs_399006', 'sz399006', 'core'),
-    ('科创50',  'zs_1B0688', 'sh000688', 'core'),
     ('沪深300', 'zs_399300', 'sh000300', 'core'),
-    ('北证50',  None,        'bj899050', 'core'),
-    # 风格轮动专用
+    # ↓ 内部专用：不在大盘概览展示，仅喂 ⑤ 轮动研判「研判3·风格」
     ('上证50',  'zs_1B0016', 'sh000016', 'style'),
-    ('中证500', 'zs_1B0905', 'sh000905', 'style'),
     ('中证1000', None,       'sh000852', 'style'),
-    ('国证2000', 'zs_399303', 'sz399303', 'style'),
 ]
 
-# ── ④ 风格轮动：四组对立维度（左=defensive，右=offensive）────────────────
-STYLE_DIMS = [
-    ('市值风格', '大盘', '沪深300', '小盘', '中证1000'),
-    ('估值风格', '价值', '上证50',  '成长', '创业板指'),
-    ('板块属性', '主板', '上证指数', '科创', '科创50'),
-    ('弹性/情绪', '深市主板', '深证成指', '北证/小盘', '国证2000'),
-]
+# 大盘概览「指数行」实际展示的白名单（顺序 = 展示顺序）
+INDEX_SHOW = ('上证指数', '深证成指', '创业板指', '沪深300')
 
 # ── ④b 风格轮动 · 相对强弱（近 20 日 RS 折线）──────────────────────────────
 # (标题, 左标签, 左同花顺码, 右标签, 右同花顺码)
@@ -189,22 +184,11 @@ def fetch_fund():
     return hy, gn
 
 
-def build_style(indices):
-    """④ 风格轮动：四组对立维度的涨跌幅差。"""
-    m = {i['name']: i for i in indices}
-    out = []
-    for dim, ln, lcode, rn, rcode in STYLE_DIMS:
-        L, R = m.get(lcode) or {}, m.get(rcode) or {}
-        lp, rp = L.get('pct'), R.get('pct')
-        if lp is None or rp is None:
-            continue
-        out.append({
-            'dim': dim,
-            'left': {'label': ln, 'name': lcode, 'pct': lp},
-            'right': {'label': rn, 'name': rcode, 'pct': rp},
-            'spread': round(rp - lp, 2),          # >0 = 右侧（进攻）占优
-        })
-    return out
+# ⛔ 已删（2026-09-20）：`STYLE_DIMS` 与 `build_style()`（旧版「风格轮动·双向条形」`macro.style`）。
+#    删除理由：① 前端 2026-09-18 已换成 RS 折线（`macro.style_rs`，用的是指数日K自算，与本函数无关）；
+#    ② **全仓 grep 无任何消费方**（index.html 无 `m.style`，各 py 脚本也不读），是纯死输出；
+#    ③ 它引用 科创50 / 国证2000 —— 这两个指数已按用户要求停止取数，函数留着必然产出残缺数据。
+#    **不要再恢复**。
 
 
 def build_style_rs():
@@ -527,9 +511,6 @@ def run(quiet=False):
              ('%.0f%%' % ((stat.get('zt_rate') or 0) * 100)) if stat.get('zt_rate') else '—',
              stat.get('trade_status') or ''))
 
-    style = build_style(indices)
-    print('[风格] %d 组维度' % len(style))
-
     style_rs = build_style_rs()
     print('[风格RS] %d 组 20 日相对强弱' % len(style_rs))
 
@@ -541,7 +522,9 @@ def run(quiet=False):
         'date': datetime.now().strftime('%Y-%m-%d'),
         'session': stat.get('trade_status') or '盘中',
         'src': '同花顺（iFinD 同源）',
-        'indices': indices,
+        # ⚠️ 大盘概览只下发 `INDEX_SHOW` 白名单内的指数；`indices` 全量仍供 build_notes 内部使用。
+        #    ⛔ 旧版 `'style'` 键（风格轮动双向条形）已删 —— 见 build_style 处的说明，别再往回加。
+        'indices': [i for i in indices if i.get('name') in INDEX_SHOW],
         'amount_yi': hs_amount,
         'breadth': breadth,
         'mood': {
@@ -566,7 +549,6 @@ def run(quiet=False):
         },
         'concept_in': [{'name': b['name'], 'pct': b['pct'], 'net_in_yi': b['net_in_yi'],
                         'leader': b['leader']} for b in gn_in],
-        'style': style,
         'style_rs': style_rs,
         'style_rs_note': build_style_conclusion(style_rs),
         'notes': notes,
