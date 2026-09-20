@@ -46,9 +46,8 @@
   .content { flex: 1; overflow-y: auto; padding: 22px 28px; }
   .panel { display: none; }
   .panel.active { display: block; }
-  .panel-head { margin-bottom: 16px; }
-  .panel-head h2 { font-size: 20px; font-weight: 700; }
-  .panel-head .sub { font-size: 12px; color: #6b7280; margin-top: 4px; }
+  /* ⛔ 已删（2026-09-20）：`.panel-head` / `.panel-head h2` / `.panel-head .sub` 三条规则 ——
+     对应的三个面板顶部导语条已按用户要求删除，此处为随之清掉的死 CSS。**不要再加回来**。 */
   /* 沪深量能（必看·置顶） */
   #mv-card .mv-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
   #mv-card .mv-title { font-size: 15px; font-weight: 700; color: #111827; }
@@ -374,9 +373,7 @@
     /* 内容区域：内部滚动，并给底部 tab 栏(52+安全区) + 信息条(24) 留出空间 */
     .content{ flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
               padding: 10px 11px calc(52px + env(safe-area-inset-bottom, 0px) + 24px); }
-    .panel-head{ margin-bottom: 9px; }
-    .panel-head h2{ font-size: 17px; }
-    .panel-head .sub{ font-size: 11.5px; line-height: 1.5; }
+    /* ⛔ 已删（2026-09-20）：`.panel-head*` 三条（导语条已删，死 CSS 一并清掉） */
     /* 卡片：缩 padding、缩 margin */
     .card{ padding: 11px 12px; margin-bottom: 10px; border-radius: 8px; }
     .card-title{ font-size: 13.5px; margin-bottom: 8px; gap: 6px; }
@@ -448,9 +445,7 @@
     .footer-tag{ font-size: 10.5px; padding: 0 6px; }
     .content{ padding: 8px 9px calc(52px + env(safe-area-inset-bottom, 0px) + 24px); }
     .card{ padding: 10px; margin-bottom: 8px; }
-    .panel-head{ margin-bottom: 7px; }
-    .panel-head h2{ font-size: 15.5px; }
-    .panel-head .sub{ font-size: 10.5px; }
+    /* ⛔ 已删（2026-09-20）：`.panel-head*` 三条（导语条已删，死 CSS 一并清掉） */
     .card-title{ font-size: 12.5px; margin-bottom: 6px; }
     .card-title .tag{ font-size: 10px; padding: 1px 5px; }
     #mv-card .mv-title{ font-size: 14px; }
@@ -657,9 +652,9 @@
 
     <!-- 模块2 -->
     <div class="panel" id="panel-ladder" data-page-node-id="4l1bp0vKx6YDy6R8iGIOio">
-      <div class="panel-head" data-page-node-id="5WoYpzvUFtzzFhwUzLuf0t">
-        <div class="sub" data-page-node-id="GzlsKBRwqHHws2d6uZVO3O">次日连板推荐 → 连板候选池（含竞价硬线与合格判定）→ 连板高度梯队 → 节点票池</div>
-      </div>
+      <!-- ⛔ 已删（2026-09-20）：面板顶部流程导语条 `.panel-head > .sub`
+           （原文「次日连板推荐 → 连板候选池（含竞价硬线与合格判定）→ 连板高度梯队 → 节点票池」）。
+           梯队 / 板块 / 均线三处都有，用户要求全部删除。**不要再加回来**，也不要用别的形式把这段说明放回去。 -->
       <div class="card" data-page-node-id="JSgkXOoWUp4leNA9Wfbt15">
         <div class="card-title" data-page-node-id="DrUDTouhoYuh29fTFYfNOH">我的想法 · 次日连板推荐</div>
         <div id="reco-box" data-page-node-id="WRAS1X0j8u5jbuiRqjtZCQ"></div>
@@ -692,9 +687,9 @@
 
     <!-- 模块3 -->
     <div class="panel" id="panel-boards" data-page-node-id="U2xpMFmCTxJljlad4pfv9w">
-      <div class="panel-head" data-page-node-id="I2MCCZtiUy8YyT9DBOofj7">
-        <div class="sub" data-page-node-id="X6qmChTtjLCN2k3fxnoa37">行业口径与<b>东方财富 App 一致</b>（申万二级行业，已剔除一级与三级细分）；<span class="star" data-page-node-id="bpMB6sd1pLOk8cF91Hcvyg">★</span> 为「当日 TOP10」与「3日 TOP10」重合（持续性最强方向）</div>
-      </div>
+      <!-- ⛔ 已删（2026-09-20）：顶部导语条 `.panel-head > .sub`
+           （原文「行业口径与东方财富 App 一致（申万二级行业…）★ 为两榜重合」）。
+           内容本身也已过期（§3.8：行业口径已切同花顺、东财 App 那套已废）。**不要再加**。 -->
       <div class="card" id="elnino-card" style="background:linear-gradient(135deg,#fff7ed,#ffedd5);border-left:4px solid #ea580c;" data-page-node-id="eLnInOo1234567890abcdeFG">
         <div class="card-title" data-page-node-id="eLT1tleAaaaabbbbbbccccc">
           <span style="font-size:18px;">🌊</span>
@@ -727,9 +722,8 @@
 
     <!-- 模块4 -->
     <div class="panel" id="panel-m4" data-page-node-id="FJ1dKlo5JHQMM9c0H8Fm6u">
-      <div class="panel-head" data-page-node-id="GqJHR8tIaJArm7WBZyBL1Q">
-        <div class="sub" data-page-node-id="I0tgUHbBcvZTAczfnEJhYR">从「两榜重合板块」成分股中，筛选 <b data-page-node-id="OGpuP91R9GPJa635NWcO1Z">MA5&gt;MA10&gt;MA20（多头排列）且三线斜率向上、差值扩大（向上发散）且收盘价站上MA20</b> 的票；每日增量更新，符合进、不符出</div>
-      </div>
+      <!-- ⛔ 已删（2026-09-20）：顶部导语条 `.panel-head > .sub`
+           （原文「从两榜重合板块成分股中筛选 MA5>MA10>MA20 …」）。**不要再加**。 -->
       <div class="card" data-page-node-id="SO2gqZizgJrfnpowaTIGbA">
         <div class="card-title" data-page-node-id="voqgQICcrmBxHjJfwEQrJX">动态股票池 <span class="tag" id="m4-stat" data-page-node-id="Lmsyh7zLS2PghVUeLM1jAw">—</span></div>
         <div id="m4-overlap" class="summary" style="margin-bottom:12px;" data-page-node-id="StMX0GVIOHktWSXsClhAbd"></div>
@@ -780,7 +774,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.18-6';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.20-1';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 

@@ -4,7 +4,8 @@
 
 逻辑：
   1. 取模块3「两榜重合板块」（board_daily ∩ board_3d，即带★的持续性方向）
-  2. 取这些板块的成分股（主源：东方财富板块成分股；兜底：本池已有涨停/连板票按题材匹配）
+  2. 取这些板块的成分股（成分股来源依次：① 妙想缓存 → ② 东财板块成分股 `clist` →
+     ③ 兜底：本池已有涨停/连板票按题材匹配）
   3. 对每只成分股拉日K（腾讯源，稳定），算 MA5/MA10/MA20，筛选：
         - MA5 > MA10 > MA20            （多头排列，顺序正确）
         - MA5_t>MA5_{t-1} 且 MA10_t>MA10_{t-1} 且 MA20_t>MA20_{t-1}  （三线斜率向上）
@@ -26,6 +27,11 @@ from em_boards import (EM_HOSTS, em_get, norm_board, build_em_board_map, match_e
 
 MODULE4_POOL = os.path.join(BASE, 'module4_pool.json')
 KLINE_CACHE  = os.path.join(BASE, '.module4_kline_cache.json')
+
+# 东财 clist 分页参数：`pz` **实测封顶 100**（传更大也只回 100）→ 想拿全量成分股必须按 100 翻页。
+# 8 页 = 上限 800 只，足够覆盖最大的板块（实测 军工 430 / 商业航天 507 / 数据中心 657）。
+_EM_PAGE_SIZE = 100
+_EM_MAX_PAGE  = 8
 
 # 妙想（东方财富连接器）成分股缓存：{日期: {妙想板块名: [[code,name], ...]}}
 # 由每日自动化运行时 AI 调用 mx_index_block_finance_data 填充，Python 侧只读
@@ -76,11 +82,17 @@ def load_mx_members(board_name, date_str=None):
 
 
 def fetch_board_members_em(code):
-    """东财板块成分股 → [(stock_code, stock_name), ...]"""
+    """东财板块成分股 → [(stock_code, stock_name), ...]
+
+    ⚠️ `pz` **必须 ≤100**：东财 clist 的 `pz` 实测封顶 100（传 500 也只回 100），
+       原写法 `pz=500` + 「返回条数 < 500 即尾页」→ **永远只取到第 1 页**（每板块只有 100 只成分股）。
+       2026-09-20 修正（与 `fetch_data.em_board_zt_count` 同源问题，见 项目约定.md §9.2 第 10 条）。
+    """
     out = []
-    for pn in range(1, 6):
-        path = ('/api/qt/clist/get?pn=%d&pz=500&po=1&np=1'
-                '&fltt=2&invt=2&fid=f3&fs=b:%s&fields=f12,f14' % (pn, code))
+    for pn in range(1, _EM_MAX_PAGE + 1):
+        path = ('/api/qt/clist/get?pn=%d&pz=%d&po=1&np=1'
+                '&fltt=2&invt=2&fid=f3&fs=b:%s&fields=f12,f14'
+                % (pn, _EM_PAGE_SIZE, code))
         t = em_get(path)
         if not t:
             break
@@ -96,7 +108,7 @@ def fetch_board_members_em(code):
             nm = it.get('f14')
             if c and nm:
                 out.append((c, nm))
-        if len(diff) < 500:
+        if len(diff) < _EM_PAGE_SIZE:
             break
         time.sleep(0.15)
     return out

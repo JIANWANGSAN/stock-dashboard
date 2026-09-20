@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """竞价合格判定（并入「连板候选池」，不再单独出卡）。
 
-由 premarket.py 在每交易日 9:25 集合竞价结束后调用：
+由 premarket.py 在每交易日 **9:26**（集合竞价 9:25 定格之后）调用：
   · 对 data.json 的 candidates（含 recommend）逐只抓集合竞价快照
   · 结果**直接写回每条候选**：auction_amt_yi / auction_ok / auction_open / auction_pct
   · 口径：竞价额(亿) >= bid_required_yi（= 上板分时量 × 50%）
