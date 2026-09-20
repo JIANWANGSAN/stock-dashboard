@@ -63,8 +63,8 @@
   .card { background: #fff; border-radius: 10px; padding: 18px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
   .card-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
   .card-title .tag { font-size: 11px; font-weight: 500; color: #6b7280; background: #f3f4f6; padding: 2px 8px; border-radius: 10px; }
-  /* 板块表「主力净流入」列（模块3 复用） */
-  .bp-cap { font-size: 12px; color: #6b7280; margin-bottom: 7px; font-weight: 600; }
+  /* ⛔ 已删（2026-09-20）：`.bp-cap`（板块表「主力净流入」列）—— 该列只存在于「产业板块·当日 TOP10」表，
+     整张表已不在前端展示，三档样式（桌面/平板/手机）一并清掉。不要再加。 */
   .up { color: #e11d48; } .down { color: #059669; } .flat { color: #6b7280; }
 
   /* ================= 必看 · 大盘宏观面板（金融终端风） ================= */
@@ -261,22 +261,21 @@
   th { color: #6b7280; font-weight: 600; background: #f8fafc; font-size: 12px; }
   tr:hover td { background: #f8fafc; }
   /* 模块3 板块表：固定布局，列宽按比例分配，始终对齐 */
-  #board-daily-box table, #board-3d-box table{ table-layout: fixed; }
-  #board-daily-box table .bp-rank{ width: 7%; text-align: center; color:#9ca3af; }
-  #board-daily-box table .bp-name{ width: 21%; text-align: left; }
-  #board-daily-box table .bp-pct{ width: 13%; text-align: right; font-weight: 600; }
-  #board-daily-box table .bp-up{ width: 12%; text-align: center; }
-  #board-daily-box table .bp-leader{ width: 27%; text-align: left; }
-  #board-daily-box table .bp-cap{ width: 20%; text-align: right; }
-  /* 产业板块 · 3日表列宽 */
+  /* ⛔ 已删（2026-09-20）：`#board-daily-box`（产业板块·当日 TOP10 表）的列宽规则。
+     整张表已不在前端展示；`table-layout: fixed` 由下面 `#board-3d-box` 那条覆盖。**不要再加**。 */
+  /* 产业板块 · 3日表列宽
+     ⚠️ 各列宽度**必须合计 100%** —— 改前是 9+50+26+15+22=122%，溢出后被浏览器按比例压缩，
+        把最后一列「涨停/全部」挤到 1 个字宽、`0/188` 竖着折行（2026-09-20 修正）。
+     列宽只在 nth-child 这一处指定；class 只留对齐与颜色，**不要再重复定宽**（两处来源必然打架）。 */
   #board-3d-box table{ table-layout: fixed; }
-  #board-3d-box table .bp-rank{ width: 8%; text-align: center; color: #9ca3af; }
-  #board-3d-box table .bp-name2{ width: 30%; text-align: left; }
-  #board-3d-box table .bp-up{ width: 22%; text-align: center; }
-  #board-3d-box table th:nth-child(1), #board-3d-box table td:nth-child(1){ width: 9%; text-align:center; color:#9ca3af; }
-  #board-3d-box table th:nth-child(2), #board-3d-box table td:nth-child(2){ width: 50%; text-align: left; }
-  #board-3d-box table th:nth-child(3), #board-3d-box table td:nth-child(3){ width: 26%; text-align: right; font-weight:600; }
-  #board-3d-box table th:nth-child(4), #board-3d-box table td:nth-child(4){ width: 15%; text-align: center; }
+  #board-3d-box table .bp-rank{ text-align: center; color: #9ca3af; }
+  #board-3d-box table .bp-name2{ text-align: left; }
+  #board-3d-box table .bp-up{ text-align: center; }
+  #board-3d-box table th:nth-child(1), #board-3d-box table td:nth-child(1){ width: 8%;  text-align: center; color:#9ca3af; }
+  #board-3d-box table th:nth-child(2), #board-3d-box table td:nth-child(2){ width: 34%; text-align: left; }
+  #board-3d-box table th:nth-child(3), #board-3d-box table td:nth-child(3){ width: 20%; text-align: right; font-weight: 600; }
+  #board-3d-box table th:nth-child(4), #board-3d-box table td:nth-child(4){ width: 16%; text-align: right; }
+  #board-3d-box table th:nth-child(5), #board-3d-box table td:nth-child(5){ width: 22%; text-align: center; }
   /* 模块2 连板候选池：固定布局，列宽按比例分配，始终对齐（已删序号列） */
   #cand-box table{ table-layout: fixed; }
   #cand-box table .c2-name{ width: 12%; text-align: left; }
@@ -350,7 +349,6 @@
     .card{ padding: 11px 12px; margin-bottom: 10px; border-radius: 8px; }
     .card-title{ font-size: 13.5px; margin-bottom: 8px; gap: 6px; }
     .card-title .tag{ font-size: 10.5px; padding: 1px 6px; }
-    .bp-cap{ margin-bottom: 5px; }
     /* 推荐卡 */
     .reco{ padding: 13px 14px; margin-bottom: 10px; border-radius: 10px; }
     .reco h3{ font-size: 14.5px; margin-bottom: 8px; }
@@ -408,7 +406,6 @@
     #mv-card #mv-date{ font-size: 12px; }
     #mv-chart{ height: 185px; }
     #mv-card .mv-tips{ font-size: 10.5px; }
-    .bp-cap{ font-size: 10.5px; }
     .stock-row{ font-size: 11.5px; }
     .stock-row .py, .stock-row .rg{ font-size: 10px; }
     .cpt{ font-size: 10px; }
@@ -449,9 +446,9 @@
     .eln-stage .desc{ font-size: 10.5px; }
     .eln-stage .prod{ font-size: 10px; }
     .eln-sec{ padding: 7px 8px; }
-    /* 模块3板块表：手机端自适应铺满，不横滑，文字换行，列严格对齐 */
-    #board-daily-box table, #board-3d-box table{ display: table; width: 100%; table-layout: fixed; overflow: visible; white-space: normal; }
-    #board-daily-box table th, #board-daily-box table td,
+    /* 模块3板块表：手机端自适应铺满，不横滑，文字换行，列严格对齐
+       （⛔ 2026-09-20 起只剩 3日表 `#board-3d-box`，当日表已不在前端展示） */
+    #board-3d-box table{ display: table; width: 100%; table-layout: fixed; overflow: visible; white-space: normal; }
     #board-3d-box table th, #board-3d-box table td{ white-space: normal; word-break: break-word; padding: 5px 3px; font-size: 10.5px; }
     /* 模块2 连板候选池：手机端自适应铺满，不横滑，文字换行，列严格对齐 */
     #cand-box table{ display: table; width: 100%; table-layout: fixed; overflow: visible; white-space: normal; }
@@ -646,10 +643,9 @@
            （原文「行业口径与东方财富 App 一致（申万二级行业…）★ 为两榜重合」）。
            内容本身也已过期（§3.8：行业口径已切同花顺、东财 App 那套已废）。**不要再加**。 -->
       <!-- ⛔ 已删（2026-09-20）：厄尔尼诺整块功能（后端 + 前端）已按用户要求删除。**不要再加回来**。 -->
-      <div class="card" data-page-node-id="nAHDMA9XDV2B5gGeIxr8PU">
-        <div class="card-title" data-page-node-id="IlTgunoITa0aRTkTXT5Q7i">产业板块 · 当日 TOP10 <span class="tag" id="d-uptime" data-page-node-id="qISCVDN8THBO8cpUlEKgP4">—</span></div>
-        <div id="board-daily-box" data-page-node-id="Jg0q7lcJ9dkSxnijuqtAHR"></div>
-      </div>
+      <!-- ⛔ 已删（2026-09-20）：「产业板块 · 当日 TOP10」整张表（含卡片标题里的 `#d-uptime`）。
+           用户要求不要在前端显示。⚠️ 只删了**展示**：`data.sector_daily` 仍在产出，
+           3日表的 ★ 与下方「小结·主线 vs 脉冲」都要靠它算，别顺手把数据也删了。**不要再加回来**。 -->
       <div class="card" data-page-node-id="FxZ2tpDkjoo6eaNXFMCBX4">
         <div class="card-title" data-page-node-id="9vvy48VDKBkKYFPJNIPwiL">产业板块 · 3日 TOP10 <span class="tag" id="d-3dnote" data-page-node-id="NKVHSzQP2OHOlw97y1ZI8i">—</span></div>
         <div id="board-3d-box" data-page-node-id="6lv64vJewbFig4NuU0LPI7"></div>
@@ -714,7 +710,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.20-2';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.20-3';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -1368,29 +1364,17 @@ function pctCell(v, extra){
 }
 function renderBoards(){
   // 「产业板块」= 用户指定的 28 个板块清单（后端 SECTOR_WATCH 映射到东财板块代码取数）
-  const daily=(D.sector_daily||[]).slice(0,10);       // 产业板块 · 当日 TOP10
-  const d3=(D.sector_3d||[]).slice(0,10);             // 产业板块 · 3日 TOP10
-  document.getElementById('d-uptime').textContent=D.date+' 收盘 · 共'+(D.sector_daily||[]).length+'个板块';
+  const daily=(D.sector_daily||[]).slice(0,10);       // 产业板块 · 当日榜（**不再展示**，仅供 ②的★ 与 ③小结 计算）
+  const d3=(D.sector_3d||[]).slice(0,10);             // 产业板块 · 3日 TOP10（唯一展示的表）
   document.getElementById('d-3dnote').textContent='3日涨幅';
   // ★ = 「当日 TOP10」与「3日 TOP10」重合（短期与中期都强 → 持续性最强方向）
   const d3names=new Set(d3.map(b=>b.name));
-  const leadCell=b=>`<td class="bp-leader">${esc(b.leader||'-')}${b.leader_pct?` ${b.leader_pct>0?'+':''}${b.leader_pct.toFixed(2)}%`:''}</td>`;
   const ztCell=b=>{
     const t=b.stock_total||0, z=b.zt_count||0;
     if(!t) return '<td class="bp-up">—</td>';
     return `<td class="bp-up">${z?`<b class="up">${z}</b>`:'0'}/${t}</td>`;
   };
-  // ① 产业板块 · 当日
-  document.getElementById('board-daily-box').innerHTML = daily.length?`<table>
-    <thead><tr><th class="bp-rank">#</th><th class="bp-name">板块</th><th class="bp-pct">当日</th><th class="bp-up">涨停/全部</th><th class="bp-leader">领涨股</th><th class="bp-cap">主力净流入</th></tr></thead>
-    <tbody>${daily.map((b,i)=>`<tr>
-      <td class="rank-no bp-rank">${i+1}</td>
-      <td class="bp-name">${d3names.has(b.name)?'<span class="star">★</span> ':''}${bklink(b)}</td>
-      ${pctCell(b.pct,'bp-pct')}
-      ${ztCell(b)}
-      ${leadCell(b)}
-      <td class="bp-cap">${((b.zljlr_wan||0)/1e4).toFixed(2)}亿</td></tr>`).join('')}</tbody></table>`
-    :'<div class="empty">无板块数据</div>';
+  // ① 产业板块 · 当日 —— ⛔ 已删（2026-09-20，用户要求不在前端显示），卡片与渲染色一并移除。
   // ② 产业板块 · 3日
   const d1names=new Set(daily.map(b=>b.name));
   document.getElementById('board-3d-box').innerHTML = d3.length?`<table>

@@ -74,6 +74,13 @@ async function shoot(page, tag, panel, label, w, h) {
         elninoFn: typeof renderElNino,
         // data.js 里的 elnino 键要等下一次 15:05 刷新才消失，故仅作参考不判失败
         elninoKeyInData: (typeof D !== 'undefined' && D) ? ('elnino' in D) : null,
+        // 「产业板块 · 当日 TOP10」整表已删（2026-09-20）；3日表与小结必须还在
+        boardDailyBox: !!document.getElementById('board-daily-box'),
+        dUptime: !!document.getElementById('d-uptime'),
+        board3dBox: !!document.getElementById('board-3d-box'),
+        boardSummary: !!document.getElementById('board-summary'),
+        // ⚠️ 这类 DOM 读取必须写在 evaluate 内，不能拿到 Node 作用域用（会 ReferenceError: document is not defined）
+        hasStar: /★/.test(document.body.innerText),
         macroIndexCount: m && m.indices ? m.indices.length : -1,
         macroIndexNames: m && m.indices ? m.indices.map(i => i.name) : [],
         hasStyleKey: !!(m && m.style),
@@ -88,6 +95,11 @@ async function shoot(page, tag, panel, label, w, h) {
     ok('厄尔尼诺卡片 #elnino-card 已不存在', !chk.elninoCard);
     ok('renderElNino 函数已删除', chk.elninoFn === 'undefined');
     if (chk.elninoKeyInData) console.log("  · 提示：data.js 里仍有 'elnino' 键（旧版数据，下次 15:05 刷新后消失）");
+    ok('「产业板块·当日 TOP10」整表已不存在（#board-daily-box / #d-uptime）',
+       !chk.boardDailyBox && !chk.dUptime);
+    ok('「产业板块·3日 TOP10」表仍在', chk.board3dBox);
+    ok('「小结·主线 vs 脉冲」仍在', chk.boardSummary);
+    ok('★ 重合机制仍生效（3日表里应有 ★）', chk.hasStar);
     ok('macro.indices 只有 4 条', chk.macroIndexCount === 4);
     ok('indices = 上证指数/深证成指/创业板指/沪深300',
        JSON.stringify(chk.macroIndexNames) === JSON.stringify(['上证指数', '深证成指', '创业板指', '沪深300']));
