@@ -19,7 +19,7 @@ eval(h.match(/<script(?![^>]*src)[^>]*>([\s\S]*?)<\/script>/)[1]);
 
 try{ init(); console.log('OK  init() 全流程通过'); }catch(e){ console.log('FAIL init(): '+e.message); process.exit(1); }
 
-const fns=['renderMarketVolume','renderMacro','renderNodes','renderReco','renderCandidates','renderElNino','renderBoards','renderModule4','renderDtLadder','renderChart'];
+const fns=['renderMarketVolume','renderMacro','renderNodes','renderReco','renderCandidates','renderBoards','renderModule4','renderDtLadder','renderChart'];
 for(const f of fns){
   try{ if(typeof eval(f)==='function'){ eval(f+'()'); console.log('  OK   '+f+'()'); } else console.log('  --   '+f+' 已移除'); }
   catch(e){ console.log('  FAIL '+f+'(): '+e.message); }

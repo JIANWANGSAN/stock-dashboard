@@ -12,7 +12,7 @@ A股短线仪表盘 - 数据采集 / 节点判定 / 推荐计算
     board_history.json 板块每日涨幅累积（用于3日累计榜）
 """
 
-import sys, os, json, time, re, argparse, copy, threading
+import sys, os, json, time, re, argparse, threading
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 
@@ -62,7 +62,7 @@ SEAL_OVERRIDE = {
 
 # ============ 全局剔除规则（北交所 / 科创板 / ST）============
 # 用户要求：所有股票池一律不收集 北交所、科创板、ST 票。
-# 在 fetch_zt_pool() 源头过滤，下游（节点/候选/厄尔尼诺/模块4）自动生效。
+# 在 fetch_zt_pool() 源头过滤，下游（节点/候选/模块4）自动生效。
 def is_excluded(code, name=''):
     """返回 True 表示该票需要剔除（北交所 / 科创板 / ST）"""
     c = str(code or '')
@@ -247,166 +247,7 @@ INDUSTRY_BLOCK = set('''
 机械设备 其他 其他行业 未分类
 '''.split())
 
-# ============ 厄尔尼诺事件轮动（静态主题模块）============
-# 数据来源：NOAA 2026-08 + 用户提供的轮动逻辑图 + 2018 历史回放
-# 当前阶段 current_stage 由 calc_elnino_stage() 依据当日连板梯队自动判定
-# （规则：某条线龙头股出现 ≥4 连板 → 该线激活；取连板最高的线高亮）。
-# 若当日无 ≥4 连板龙头，则回退到 default_stage 手动兜底值。
-EL_NINO_DATA = {
-    'updated': '2026-09',
-    'intensity': '1950 年以来最强（NOAA 2026-08）',
-    'probability': '秋季发生概率 > 50% / 69%',
-    'default_stage': 1,            # 无 ≥4 连板激活时的兜底阶段（首阶段·糖橡胶）
-    'current_stage': 1,            # 运行时被 calc_elnino_stage() 覆写
-    'current_stage_label': '第①阶段·热带软商品（糖/橡胶）',
-    'auto_rule': '某条线龙头股出现 ≥4 连板 → 自动高亮该线（连板越高优先级越高）',
-    'stages': [
-        {
-            'idx': 1,
-            'title': '第一条线·热带软商品（防主线）',
-            'highlight': False,
-            'desc': '产区集中于赤道带（印度、泰国、印尼、马来、巴西），厄尔尼诺→干旱/暴风雨→供给受冲击；弹性最大、最先发动。',
-            'products': ['白糖', '天然橡胶', '棕榈油', '棉花', '咖啡', '可可', '种业'],
-            'sectors': [
-                {'name': '制糖', 'leaders': [
-                    {'code': '000911', 'name': '南宁糖业', 'pinyin': 'NNTY',
-                     'reason': '广西国资委控股 · 国内糖业老牌龙头'},
-                    {'code': '600737', 'name': '中粮糖业', 'pinyin': 'ZLTY',
-                     'reason': '中粮系 · 国内最大原糖进口商'},
-                    {'code': '000833', 'name': '粤桂股份', 'pinyin': 'YGGF',
-                     'reason': '广东国资 · 糖业+硫铁矿双主业'},
-                    {'code': '600251', 'name': '冠农股份', 'pinyin': 'GNGF',
-                     'reason': '新疆建设兵团糖业'}
-                ]},
-                {'name': '橡胶种植加工', 'leaders': [
-                    {'code': '601118', 'name': '海南橡胶', 'pinyin': 'HNXJ',
-                     'reason': '海垦集团 · 国内最大橡胶种植企业'}
-                ]},
-                {'name': '油脂油料', 'leaders': [
-                    {'code': '300999', 'name': '金龙鱼', 'pinyin': 'JLY',
-                     'reason': '益海嘉里 · 国内食用油龙头 / 棕榈油'},
-                    {'code': '002637', 'name': '赞宇科技', 'pinyin': 'ZYKJ',
-                     'reason': '棕榈油加工 + 表面活性剂龙头'},
-                    {'code': '000505', 'name': '京粮控股', 'pinyin': 'JLK',
-                     'reason': '京粮集团 · 油脂加工'}
-                ]},
-                {'name': '棉花·种植业', 'leaders': [
-                    {'code': '601339', 'name': '百隆东方', 'pinyin': 'BLDF',
-                     'reason': '国内大型棉纺 · 棉花涨价直接受益'},
-                    {'code': '600598', 'name': '北大荒', 'pinyin': 'BDH',
-                     'reason': '黑龙江农垦 · 种植业龙头（防御属性）'},
-                    {'code': '601952', 'name': '苏垦农发', 'pinyin': 'SKNF',
-                     'reason': '江苏农垦 · 大宗农产品种植'}
-                ]},
-                {'name': '种业（优先级提升 · 半月持续）', 'leaders': [
-                    {'code': '002041', 'name': '登海种业', 'pinyin': 'DHZY',
-                     'reason': '玉米种子龙头 · 粮食安全+厄尔尼诺减产双逻辑'},
-                    {'code': '000998', 'name': '隆平高科', 'pinyin': 'LPGK',
-                     'reason': '水稻/玉米种业龙头'},
-                    {'code': '600313', 'name': '农发种业', 'pinyin': 'NFZY',
-                     'reason': '农发集团 · 国资种业平台'}
-                ]},
-                {'name': '粮食·米业（本波先锋）', 'leaders': [
-                    {'code': '600127', 'name': '金健米业', 'pinyin': 'JJMY',
-                     'reason': '湖南粮食集团控股 · 国内米业龙头 · 本波粮食线先锋（4连板开启）'}
-                ]}
-            ]
-        },
-        {
-            'idx': 2,
-            'title': '第二条线·高温线（火电与煤炭）',
-            'highlight': False,
-            'desc': '极端高温→居民+工业用电需求拉升→火电利用小时数走高→2014/2016 复刻链（电力板块独立行情）。',
-            'products': ['电力（火电）', '动力煤'],
-            'sectors': [
-                {'name': '火电', 'leaders': [
-                    {'code': '600011', 'name': '华能国际', 'pinyin': 'HNGJ',
-                     'reason': '国内最大火电运营商'},
-                    {'code': '600027', 'name': '华电国际', 'pinyin': 'HDGJ',
-                     'reason': '华电集团旗下火电平台'},
-                    {'code': '601991', 'name': '大唐发电', 'pinyin': 'DTFD',
-                     'reason': '大唐集团旗下火电平台'},
-                    {'code': '600795', 'name': '国电电力', 'pinyin': 'GDDL',
-                     'reason': '国电集团核心上市平台'}
-                ]},
-                {'name': '动力煤', 'leaders': [
-                    {'code': '601088', 'name': '中国神华', 'pinyin': 'ZGSH',
-                     'reason': '煤电一体化龙头 · 高温煤炭首选'},
-                    {'code': '601225', 'name': '陕西煤业', 'pinyin': 'SXMY',
-                     'reason': '陕煤集团 · 优质动力煤'},
-                    {'code': '600188', 'name': '兖矿能源', 'pinyin': 'YKNY',
-                     'reason': '山东能源旗下 · 动力煤主力'}
-                ]}
-            ]
-        },
-        {
-            'idx': 3,
-            'title': '第三条线·航运物流（优先级提升 · 半月持续）',
-            'highlight': False,
-            'desc': '厄尔尼诺→全球降水带偏移 / 南美主要河道水位异常→航运周期与物流扰动，事件驱动型、防御转强。',
-            'products': ['航运', '物流'],
-            'sectors': [
-                {'name': '航运', 'leaders': [
-                    {'code': '601919', 'name': '中远海控', 'pinyin': 'ZYHK',
-                     'reason': '全球集运龙头 · 雨季影响海运周期'},
-                    {'code': '601872', 'name': '招商轮船', 'pinyin': 'ZSSL',
-                     'reason': '招商局旗下 · 干散/油运综合船队'}
-                ]}
-            ]
-        },
-        {
-            'idx': 4,
-            'title': '第四条线·有色金属（事件扰动）',
-            'highlight': False,
-            'desc': '铜/镍/锡/锌 — 极端气候影响矿区运营+物流风险，事件驱动型脉冲，逻辑弱于①②③。',
-            'products': ['铜', '镍', '锡', '锌'],
-            'sectors': [
-                {'name': '工业金属·铜', 'leaders': [
-                    {'code': '601899', 'name': '紫金矿业', 'pinyin': 'ZJKY',
-                     'reason': '全球铜矿龙头'},
-                    {'code': '600362', 'name': '江西铜业', 'pinyin': 'JXTY',
-                     'reason': '国内最大铜冶炼'}
-                ]},
-                {'name': '能源金属·镍', 'leaders': [
-                    {'code': '603799', 'name': '华友钴业', 'pinyin': 'HYGY',
-                     'reason': '镍/钴一体化龙头'},
-                    {'code': '300919', 'name': '中伟股份', 'pinyin': 'ZWGF',
-                     'reason': '三元前驱体全球龙头'}
-                ]},
-                {'name': '小金属·锡/锌', 'leaders': [
-                    {'code': '000960', 'name': '锡业股份', 'pinyin': 'XYGF',
-                     'reason': '全球锡/铟双龙头'},
-                    {'code': '000060', 'name': '中金岭南', 'pinyin': 'ZJLN',
-                     'reason': '铅锌冶炼龙头'}
-                ]}
-            ]
-        }
-    ],
-    'history_2018': [
-        {'period': '2018.04-05', 'theme': '糖业板块（首阶段复刻）',
-         'leaders': '南宁糖业、保龄宝', 'note': '糖价上行 + 厄尔尼诺减产预期'},
-        {'period': '2018.06-07', 'theme': '种业/农业',
-         'leaders': '登海种业、隆平高科', 'note': '干旱减产 → 粮食安全题材扩散'},
-        {'period': '2018.07-08', 'theme': '电力/煤炭（高温复刻）',
-         'leaders': '中国神华、华能国际、长江电力', 'note': '用电峰值 · 火电利用小时数走高'},
-        {'period': '2018.09-10', 'theme': '有色/稀土（事件扰动复刻）',
-         'leaders': '北方稀土、广晟有色、紫金矿业', 'note': '供给担忧 + 稀土打黑叠加'}
-    ]
-}
-
-# 题材关键词映射：把涨停池里的"新龙头"按 industry/name 匹配到对应线。
-# 用于轮动发生时自动发现"不在静态名单里 / 新崛起的情绪龙"并收录。
-EL_NINO_THEME_KW = {
-    1: ['农产品', '种植', '农业', '橡胶', '粮油', '饲料', '糖', '棉', '种业',
-        '米业', '粮食', '农垦', '氮肥', '钾肥', '磷肥', '渔业', '白糖'],
-    2: ['电力', '火电', '发电', '热电', '供电', '煤炭', '煤', '能源', '煤电'],
-    3: ['航运', '海运', '港口', '物流', '运输', '集运', '干散', '油运'],
-    4: ['有色', '金属', '铜', '铝', '镍', '锡', '锌', '铅', '黄金', '稀土',
-        '矿业', '采掘', '钴', '锂', '小金属'],
-}
-# 新龙头收录阈值：连板 >= 该值才自动收录（贴合"4连板带队主升"规律；
-# 设为 3 可更早捕捉刚冒头的情绪龙，按需下调）
-ELNINO_NEW_LEADER_MIN_LBC = 3
+# ⛔ 已删（2026-09-20）：厄尔尼诺整块功能（后端 + 前端）已按用户要求删除。**不要再加回来**。
 
 UT = '7eea3edcaed734bea9cbfc24409ed989'
 UA = {
@@ -512,153 +353,7 @@ def save_js(path, obj):
         f.write(';\n')
 
 
-# ============ 厄尔尼诺当前阶段自动识别 ============
-# 规则：当日涨停池(zt_pool)中，某条线对应龙头股出现 ≥4 连板 → 该线"激活"；
-#       取连板最高的激活线作为当前高亮阶段。无激活线则回退 default_stage。
-# 依据：连板梯队是短线持续性的硬信号，4 连板是题材从脉冲走向主线的分水岭。
-def calc_elnino_stage(zt_pool, elnino, threshold=4, dyn=None):
-    """判定当前激活的厄尔尼诺细分线。
-
-    dyn: {idx: [{'code','name'}, ...]} —— 「动态收录」的新崛起龙头。
-         必须与静态名单**合并**参与判定，否则名单外的新龙头即使升到 4 连板也无法激活该线
-         （例：闽东电力 000993 连板 4，但不在第2阶段静态名单里 → 曾导致该线被判为未激活）。
-    """
-    # code -> 当日最高连板数
-    code_lbc = {}
-    for s in (zt_pool or []):
-        c = s.get('code')
-        if c:
-            code_lbc[c] = max(code_lbc.get(c, 0), s.get('lbc', 0))
-    # 每条线最高连板 + 触发股（连板最高的龙头）
-    best = {}       # idx -> 最高连板
-    trigger = {}    # idx -> {'code','name','lbc'} 触发该线高亮的龙头股
-    for stg in elnino['stages']:
-        mx = 0
-        trig = None
-        leaders = []
-        for sc in stg.get('sectors', []):
-            leaders.extend(sc.get('leaders', []) or [])
-        # 叠加「动态收录」的新龙头（JSON 键为字符串，兼容 str/int）
-        d = dyn or {}
-        for l in (d.get(str(stg['idx'])) or d.get(stg['idx']) or []):
-            if isinstance(l, dict) and l.get('code'):
-                leaders.append(l)
-        for l in leaders:
-            v = code_lbc.get(l.get('code'), 0)
-            if v > mx:
-                mx = v
-                trig = {'code': l.get('code'), 'name': l.get('name'), 'lbc': v}
-        best[stg['idx']] = mx
-        trigger[stg['idx']] = trig
-    # 激活线：连板 >= 阈值
-    active = [i for i, v in best.items() if v >= threshold]
-    if not active:
-        return None, 0, best, trigger   # 无激活，回退默认
-    # 取连板最高的线；并列时取 idx 最小（主线优先）
-    top = max(active, key=lambda i: (best[i], -i))
-    return top, best[top], best, trigger
-
-
-# ============ 厄尔尼诺轮动切换检测（跨交易日缓存）============
-# 思路：每次跑全量把"当前激活线"写入缓存；下一交易日若激活线变化，
-# 即判定为"换细分/换方向"，前端第一时间高亮 🔄 轮动切换。
-ELNINO_CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            '.elnino_stage_cache.json')
-
-
-def load_elnino_cache():
-    try:
-        with open(ELNINO_CACHE, encoding='utf-8') as f:
-            return json.load(f).get('stage')
-    except Exception:
-        return None
-
-
-def save_elnino_cache(stage):
-    try:
-        with open(ELNINO_CACHE, 'w', encoding='utf-8') as f:
-            json.dump({'stage': stage,
-                       'updated': datetime.now().strftime('%Y-%m-%d')},
-                      f, ensure_ascii=False)
-    except Exception:
-        pass
-
-
-# ============ 厄尔尼诺新龙头自动发现 + 收录 ============
-# 轮动发生时，静态名单之外可能冒出新龙头 / 新情绪龙。
-# 这里扫描当日涨停池：连板 >= 阈值 且 题材关键词命中某条线 且 不在已收录名单中
-# → 自动写入 .elnino_dynamic_leaders.json，并合并进该线展示，做到"第一时间收录"。
-ELNINO_DYN = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                          '.elnino_dynamic_leaders.json')
-
-
-def _match_elnino_line(stock, kwmap):
-    hay = ((stock.get('industry') or '') + ' ' + (stock.get('name') or ''))
-    for idx, kws in kwmap.items():
-        for kw in kws:
-            if kw in hay:
-                return idx
-    return None
-
-
-def discover_elnino_leaders(zt_pool, elnino, kwmap, dyn_path, add_threshold):
-    # 已收录代码（静态名单 + 已动态收录），避免重复
-    curated = {stg['idx']: set() for stg in elnino['stages']}
-    for stg in elnino['stages']:
-        for sc in stg.get('sectors', []):
-            for l in sc.get('leaders', []):
-                curated[stg['idx']].add(l['code'])
-    dyn = {}
-    try:
-        with open(dyn_path, encoding='utf-8') as f:
-            dyn = json.load(f) or {}
-    except Exception:
-        dyn = {}
-    for k, arr in dyn.items():
-        curated.setdefault(int(k), set()).update(e.get('code') for e in arr)
-    today = datetime.now().strftime('%Y-%m-%d')
-    new_added = []
-    for s in (zt_pool or []):
-        lbc = s.get('lbc', 0)
-        if lbc < add_threshold:
-            continue
-        idx = _match_elnino_line(s, kwmap)
-        if not idx:
-            continue
-        code = s.get('code')
-        if not code or code in curated.get(idx, set()):
-            continue
-        entry = {
-            'code': code,
-            'name': s.get('name', ''),
-            'pinyin': '',
-            'reason': '轮动自动收录·%s·%d连板·新晋龙头/情绪龙' % (today, lbc),
-            'first_seen': today,
-            'boards': lbc,
-        }
-        dyn.setdefault(str(idx), []).append(entry)
-        curated[idx].add(code)
-        new_added.append(entry)
-    try:
-        with open(dyn_path, 'w', encoding='utf-8') as f:
-            json.dump(dyn, f, ensure_ascii=False, indent=2)
-    except Exception:
-        pass
-    return dyn, new_added
-
-
-def merge_elnino_dynamic(elnino_out, dyn):
-    """把动态收录的新龙头合并进各线（追加『新晋龙头』板块）"""
-    for stg in elnino_out['stages']:
-        arr = dyn.get(str(stg['idx']))
-        if arr:
-            stg.setdefault('sectors', []).append({
-                'name': '新晋龙头（轮动自动收录）',
-                'leaders': arr,
-                'auto': True,
-            })
-
-
+# ⛔ 已删（2026-09-20）：厄尔尼诺整块功能（后端 + 前端）已按用户要求删除。**不要再加回来**。
 # ============ 1. 交易日列表 ============
 def fetch_trade_days(limit=90):
     """交易日列表：主源腾讯日K，备源同花顺上证指数日K，
@@ -2602,53 +2297,7 @@ def main():
     print('  沿用上一版：候选 %d 只%s'
           % (len(cands), ('，首选 ' + reco['name']) if reco else ''))
 
-    # 厄尔尼诺当前阶段自动识别（基于当日连板梯队：≥4 连板龙头 → 激活该线）
-    elnino_out = copy.deepcopy(EL_NINO_DATA)
-    # 先收录「新崛起龙头」→ 再判定激活线：
-    # 这样当日刚晋级到阈值的新龙头（不在静态名单里）也能立刻激活对应线
-    dyn, new_leaders = discover_elnino_leaders(
-        today_pool, EL_NINO_DATA, EL_NINO_THEME_KW,
-        ELNINO_DYN, ELNINO_NEW_LEADER_MIN_LBC)
-
-    auto_idx, auto_lbc, _best, _trig = calc_elnino_stage(today_pool, EL_NINO_DATA,
-                                                         threshold=4, dyn=dyn)
-    if auto_idx:
-        elnino_out['current_stage'] = auto_idx
-        elnino_out['stage_auto'] = True
-        elnino_out['stage_auto_lbc'] = auto_lbc
-        trig = _trig.get(auto_idx)
-        if trig:
-            elnino_out['stage_auto_trigger'] = trig   # 触发该线高亮的龙头股
-        print('\n[厄尔尼诺] 自动识别第 %d 阶段（%d 连板激活 · 触发：%s）：%s'
-              % (auto_idx, auto_lbc, (trig or {}).get('name', '—'),
-                 elnino_out['stages'][auto_idx-1]['title']))
-    else:
-        elnino_out['current_stage'] = EL_NINO_DATA['default_stage']
-        elnino_out['stage_auto'] = False
-        print('\n[厄尔尼诺] 无 ≥4 连板激活线，回退默认第 %d 阶段' % EL_NINO_DATA['default_stage'])
-
-    # 轮动切换检测：与上一交易日激活线对比，第一时间发现"换细分/换方向"
-    prev_stage = load_elnino_cache()
-    rotation = None
-    if auto_idx is not None and prev_stage is not None and auto_idx != prev_stage:
-        rotation = {
-            'from': prev_stage,
-            'from_label': EL_NINO_DATA['stages'][prev_stage-1]['title'],
-            'to': auto_idx,
-            'to_label': EL_NINO_DATA['stages'][auto_idx-1]['title'],
-            'trigger': elnino_out.get('stage_auto_trigger'),
-        }
-        print('\n[厄尔尼诺] 🔄 轮动切换检测：第 %d 阶段 → 第 %d 阶段（触发：%s）'
-              % (prev_stage, auto_idx, (rotation['trigger'] or {}).get('name', '—')))
-    elnino_out['rotation'] = rotation
-    # 缓存当前激活线（无激活则保留上一次，避免误判为"切换"）
-    save_elnino_cache(auto_idx if auto_idx is not None else prev_stage)
-
-    # 动态收录的新龙头合并进展示（收录已在「判定激活线」之前完成，避免二次写入）
-    merge_elnino_dynamic(elnino_out, dyn)
-    if new_leaders:
-        print('\n[厄尔尼诺] 自动收录新龙头：' + '，'.join(
-            '%s(%s)%d板' % (e['name'], e['code'], e['boards']) for e in new_leaders))
+    # ⛔ 已删（2026-09-20）：厄尔尼诺整块功能（后端 + 前端）已按用户要求删除。**不要再加回来**。
 
     # ---- 板块K线可用性：同花顺口径下以 ths_code 为准（em_code 仅用于前端 bklink 桥接） ----
     def _k_ok(_b):
@@ -2692,7 +2341,6 @@ def main():
         'auction_updated': _prev.get('auction_updated'),
         'auction_is_live': _prev.get('auction_is_live'),
         'auction_source': _prev.get('auction_source'),
-        'elnino': elnino_out,    # 厄尔尼诺事件静态主题（置顶于模块3，阶段自动识别）
         'params': {
             'vol_ratio_threshold': VOL_RATIO_THRESHOLD,
             'breakout_lookback': BREAKOUT_LOOKBACK,

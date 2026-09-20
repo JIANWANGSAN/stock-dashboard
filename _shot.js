@@ -69,6 +69,11 @@ async function shoot(page, tag, panel, label, w, h) {
           (n, id) => n + document.querySelectorAll('#' + id + ' > .sub').length, 0),
         // 只认带箭头的原句，避免误伤合法文案（如卡片标题「我的想法 · 次日连板推荐」）
         staleFlowText: /连板候选池（含竞价硬线与合格判定）\s*→/.test(document.body.innerText),
+        // 厄尔尼诺整块已删（2026-09-20）——下面两条是代码侧事实，与 data.js 版本无关
+        elninoCard: !!document.getElementById('elnino-card'),
+        elninoFn: typeof renderElNino,
+        // data.js 里的 elnino 键要等下一次 15:05 刷新才消失，故仅作参考不判失败
+        elninoKeyInData: (typeof D !== 'undefined' && D) ? ('elnino' in D) : null,
         macroIndexCount: m && m.indices ? m.indices.length : -1,
         macroIndexNames: m && m.indices ? m.indices.map(i => i.name) : [],
         hasStyleKey: !!(m && m.style),
@@ -80,6 +85,9 @@ async function shoot(page, tag, panel, label, w, h) {
     ok('`.panel-head` 数量 = 0（三条导语条已删除）', chk.panelHeadCount === 0);
     ok('三个面板顶部无 `.sub` 残留', chk.panelTopSubCount === 0);
     ok('正文无原流程导语', !chk.staleFlowText);
+    ok('厄尔尼诺卡片 #elnino-card 已不存在', !chk.elninoCard);
+    ok('renderElNino 函数已删除', chk.elninoFn === 'undefined');
+    if (chk.elninoKeyInData) console.log("  · 提示：data.js 里仍有 'elnino' 键（旧版数据，下次 15:05 刷新后消失）");
     ok('macro.indices 只有 4 条', chk.macroIndexCount === 4);
     ok('indices = 上证指数/深证成指/创业板指/沪深300',
        JSON.stringify(chk.macroIndexNames) === JSON.stringify(['上证指数', '深证成指', '创业板指', '沪深300']));

@@ -299,35 +299,7 @@
   .empty { color: #9ca3af; font-size: 13px; padding: 20px; text-align: center; }
   .legend { font-size: 12px; color: #6b7280; line-height: 1.8; }
   .legend code { background: #f3f4f6; padding: 1px 6px; border-radius: 4px; }
-  /* 厄尔尼诺阶段卡片 */
-  .eln-stage { background: #fff; border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; border: 1px solid #fed7aa; transition: all .2s; }
-  .eln-stage.cur { background: linear-gradient(135deg,#fef3c7,#fde68a); border: 2px solid #ea580c; box-shadow: 0 2px 8px rgba(234,88,12,.15); }
-  .eln-stage .head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
-  .eln-stage .idx { background: #fed7aa; color: #9a3412; font-weight: 700; padding: 2px 10px; border-radius: 12px; font-size: 12px; }
-  .eln-stage.cur .idx { background: #dc2626; color: #fff; }
-  .eln-stage .title { font-weight: 700; font-size: 15px; color: #9a3412; }
-  .eln-stage.cur .title { color: #7c2d12; }
-  .eln-stage .desc { font-size: 12px; color: #78350f; line-height: 1.7; margin-bottom: 10px; }
-  .eln-stage .products { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-  .eln-stage .prod { font-size: 11px; background: #ffedd5; color: #9a3412; padding: 2px 8px; border-radius: 10px; }
-  .eln-stage.cur .prod { background: #f59e0b; color: #fff; }
-  .eln-stage .sec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
-  .eln-sec { background: rgba(255,255,255,.7); border-radius: 8px; padding: 8px 10px; }
-  .eln-sec.auto { background: #fff7ed; border: 1.5px dashed #f59e0b; }
-  .auto-badge { font-size: 10px; font-weight: 700; color: #fff; background: #f59e0b; padding: 1px 6px; border-radius: 10px; vertical-align: middle; }
-  .eln-stage.cur .eln-sec { background: rgba(255,255,255,.85); }
-  .eln-sec .sn { font-size: 12px; font-weight: 700; color: #9a3412; margin-bottom: 6px; border-bottom: 1px dashed #fdba74; padding-bottom: 4px; }
-  .eln-lead-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 4px 0; font-size: 12.5px; line-height: 1.5; }
-  .eln-lead-row .nm { font-weight: 700; color: #1f2937; }
-  .eln-lead-row .cd { font-family: ui-monospace, monospace; font-size: 10px; color: #6b7280; background: #fef3c7; padding: 1px 5px; border-radius: 3px; }
-  .eln-lead-row .rs { color: #6b7280; font-size: 11.5px; }
-  /* 2018 历史链 */
-  .h18-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px dashed #fed7aa; }
-  .h18-row:last-child { border-bottom: none; }
-  .h18-row .pd { background: #9a3412; color: #fff; font-family: ui-monospace, monospace; font-size: 11px; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
-  .h18-row .tt { font-weight: 700; color: #9a3412; min-width: 200px; }
-  .h18-row .ld { color: #7c2d12; font-weight: 600; }
-  .h18-row .nt { color: #a16207; font-size: 11px; }
+  /* ⛔ 已删（2026-09-20）：厄尔尼诺整块功能（后端 + 前端）已按用户要求删除。**不要再加回来**。 */
 
   /* ============ 手机 / 平板适配（≤900px）============ */
   @media (max-width: 900px){
@@ -403,24 +375,7 @@
     .st-boards{ font-size: 11px; }
     .focus-bar{ padding: 6px 10px; font-size: 11.5px; margin-bottom: 8px; gap: 6px; }
     .hl-legend{ font-size: 10.5px; line-height: 1.85; margin-bottom: 8px; }
-    /* 厄尔尼诺 */
-    .eln-stage{ padding: 10px 12px; margin-bottom: 10px; border-radius: 8px; }
-    .eln-stage .title{ font-size: 13.5px; }
-    .eln-stage .idx{ font-size: 11px; padding: 1px 8px; }
-    .eln-stage .desc{ font-size: 11px; line-height: 1.55; margin-bottom: 8px; }
-    .eln-stage .products{ gap: 4px; margin-bottom: 8px; }
-    .eln-stage .prod{ font-size: 10.5px; padding: 1px 7px; }
-    .eln-stage .sec-grid{ grid-template-columns: 1fr; gap: 6px; }
-    .eln-stage .head{ gap: 6px; }
-    .eln-sec{ padding: 7px 9px; }
-    .eln-sec .sn{ font-size: 11.5px; margin-bottom: 5px; }
-    .eln-lead-row{ font-size: 12px; padding: 3px 0; gap: 5px; }
-    .auto-badge{ font-size: 9.5px; padding: 0 5px; }
-    #elnino-card .card-title{ font-size: 14px; }
-    /* 历史链 */
-    .h18-row{ flex-wrap: wrap; gap: 4px; padding: 5px 0; line-height: 1.6; }
-    .h18-row .tt{ min-width: 0; font-size: 12px; }
-    .h18-row .pd{ font-size: 10.5px; padding: 1px 7px; }
+    /* ⛔ 已删（2026-09-20）：厄尔尼诺整块功能（后端 + 前端）已按用户要求删除。**不要再加回来**。 */
     /* 图表 */
     #echart-ladder{ height: 240px; }
     #echart-dt{ height: 240px; }
@@ -690,22 +645,7 @@
       <!-- ⛔ 已删（2026-09-20）：顶部导语条 `.panel-head > .sub`
            （原文「行业口径与东方财富 App 一致（申万二级行业…）★ 为两榜重合」）。
            内容本身也已过期（§3.8：行业口径已切同花顺、东财 App 那套已废）。**不要再加**。 -->
-      <div class="card" id="elnino-card" style="background:linear-gradient(135deg,#fff7ed,#ffedd5);border-left:4px solid #ea580c;" data-page-node-id="eLnInOo1234567890abcdeFG">
-        <div class="card-title" data-page-node-id="eLT1tleAaaaabbbbbbccccc">
-          <span style="font-size:18px;">🌊</span>
-          厄尔尼诺事件 · 主题轮动地图
-          <span class="tag" id="elnino-meta" style="background:#fed7aa;color:#9a3412;">—</span>
-          <span class="tag" id="elnino-stage" style="background:#dc2626;color:#fff;font-weight:700;">—</span>
-        </div>
-        <div id="elnino-rotation" style="display:none;margin:0 0 10px;padding:10px 14px;border-radius:8px;background:linear-gradient(135deg,#fef3c7,#fde68a);border:2px solid #f59e0b;color:#92400e;font-weight:700;box-shadow:0 2px 10px rgba(245,158,11,.3);"></div>
-        <div class="sub" id="elnino-desc" style="margin-bottom:8px;color:#9a3412;"></div>
-        <div class="sub" id="elnino-rule" style="margin-bottom:12px;font-size:11px;color:#a16207;background:#fffbeb;padding:6px 10px;border-radius:6px;border:1px dashed #fcd34d;"></div>
-        <div id="elnino-stages" data-page-node-id="elnino-stages-box"></div>
-        <div style="margin-top:14px;border-top:1px dashed #fdba74;padding-top:12px;">
-          <div class="card-title" style="font-size:13px;color:#9a3412;margin-bottom:8px;">📚 2018 年厄尔尼诺（弱）轮动路径复刻 · 阶段参考</div>
-          <div id="elnino-history" class="sub" style="font-size:12px;line-height:1.7;"></div>
-        </div>
-      </div>
+      <!-- ⛔ 已删（2026-09-20）：厄尔尼诺整块功能（后端 + 前端）已按用户要求删除。**不要再加回来**。 -->
       <div class="card" data-page-node-id="nAHDMA9XDV2B5gGeIxr8PU">
         <div class="card-title" data-page-node-id="IlTgunoITa0aRTkTXT5Q7i">产业板块 · 当日 TOP10 <span class="tag" id="d-uptime" data-page-node-id="qISCVDN8THBO8cpUlEKgP4">—</span></div>
         <div id="board-daily-box" data-page-node-id="Jg0q7lcJ9dkSxnijuqtAHR"></div>
@@ -774,7 +714,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.20-1';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.20-2';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -789,7 +729,6 @@ function init(){
   renderNodes();
   renderReco();
   renderCandidates();
-  renderElNino();
   renderBoards();
   renderModule4();
   renderDtLadder();
@@ -1412,71 +1351,7 @@ function renderCandidates(){
     }).join('')}</tbody></table>`;
 }
 
-/* ---- 厄尔尼诺主题轮动 ---- */
-function renderElNino(){
-  const E = D.elnino;
-  const card = document.getElementById('elnino-card');
-  if(!E){ card.style.display='none'; return; }
-  const cur = E.stages.find(s=>s.idx===E.current_stage) || E.stages[0];
-  document.getElementById('elnino-meta').textContent = '强度：'+E.intensity+' · '+E.probability;
-  const stg = document.getElementById('elnino-stage');
-  if(E.stage_auto){
-    const trig = E.stage_auto_trigger;
-    const tg = trig ? (esc(trig.name)+' '+trig.lbc+'连板') : (E.stage_auto_lbc+'连板');
-    stg.textContent = '🔥 自动识别 · 第'+E.current_stage+'阶段（'+tg+'激活）';
-    stg.style.background = '#16a34a';   // 自动识别用绿，区别手动红
-  }else{
-    stg.textContent = '⚡ '+E.current_stage_label+'（手动兜底）';
-    stg.style.background = '#dc2626';
-  }
-  // 轮动切换横幅：检测到激活线从上一交易日切换到新方向时第一时间提示
-  const rot = document.getElementById('elnino-rotation');
-  if(E.rotation){
-    const r = E.rotation;
-    const tg = r.trigger ? (esc(r.trigger.name)+'（'+r.trigger.lbc+'连板）') : '';
-    rot.innerHTML = '🔄 <b>轮动切换警报</b>：已从「'+esc(r.from_label)+'」切换到「'+esc(r.to_label)+'」　|　新方向触发股：'+tg;
-    rot.style.display = 'block';
-  }else{
-    rot.style.display = 'none';
-  }
-  document.getElementById('elnino-desc').textContent = cur.desc;
-  document.getElementById('elnino-rule').textContent = '🎯 阶段判定规则：'+E.auto_rule;
-  // 阶段卡片（高亮当前阶段）
-  const stages = E.stages.map(s=>{
-    const cur = s.idx === E.current_stage;
-    const sec = (s.sectors||[]).map(sc=>{
-      const leaders = (sc.leaders||[]).map(l=>
-        `<div class="eln-lead-row">
-          <span class="nm">${esc(l.name)}</span>
-          <span class="cd">${esc(l.code)}</span>
-          <span class="rs">${esc(l.reason)}</span>
-        </div>`).join('');
-      const autoBadge = sc.auto ? ' <span class="auto-badge">自动收录</span>' : '';
-      return `<div class="eln-sec${sc.auto?' auto':''}"><div class="sn">${esc(sc.name)}${autoBadge}</div>${leaders}</div>`;
-    }).join('');
-    const prods = (s.products||[]).map(p=>`<span class="prod">${esc(p)}</span>`).join('');
-    return `<div class="eln-stage ${cur?'cur':''}">
-      <div class="head">
-        <span class="idx">${cur?'当前':'第'+s.idx}</span>
-        <span class="title">${cur?'🔥 ':''}${esc(s.title)}</span>
-        ${cur?'<span class="tag" style="background:#dc2626;color:#fff;">本阶段重点</span>':''}
-      </div>
-      <div class="desc">${esc(s.desc)}</div>
-      <div class="products">${prods}</div>
-      <div class="sec-grid">${sec}</div>
-    </div>`;
-  }).join('');
-  document.getElementById('elnino-stages').innerHTML = stages;
-  // 2018 历史复刻
-  const his = (E.history_2018||[]).map(h=>
-    `<div class="h18-row">
-      <span class="pd">${esc(h.period)}</span>
-      <span class="tt">${esc(h.theme)}</span>
-      <span class="ld">龙头：${esc(h.leaders)}</span>
-      <span class="nt">${esc(h.note)}</span>
-    </div>`).join('');
-  document.getElementById('elnino-history').innerHTML = his || '<span class="empty">暂无</span>';
-}
+/* ⛔ 已删（2026-09-20）：厄尔尼诺整块功能（后端 + 前端）已按用户要求删除。**不要再加回来**。 */
 
 /* ---- 模块3 板块 ---- */
 /* 板块名 → 可点击（点击打开「板块K线」弹层：日K/周K + MA5/10/20）
