@@ -35,7 +35,7 @@
   330329=涨停统计
   → 响应里另有结构化键名（无需码）：code/name/latest/change_rate/turnover/
     turnover_rate/order_amount/currency_value/sum_market_value/reason_type/
-    high_days(「6天6板」)/high_days_value(hex: 高8位=天数, 低16位=板数)/
+    high_days(「8天5板」)/high_days_value(hex: **高 16 位＝板数 M，低 16 位＝天数 N**，即 (M<<16)|N)/
     change_tag(FIRST_LIMIT|LIMIT_BACK|…)/is_again_limit/market_id(17=沪 33=深)/is_new
 
 三、THS 唯一缺口
@@ -182,6 +182,17 @@ def fetch_zt_pool(date_yyyymmdd):
                                 s.get('reason_type') or '',
                                 s.get('reason_info') or '')
 
+    # 连板数映射表：**唯一致命口径** —— 取同花顺「连板梯队」接口 `continuous_limit_up`
+    #   （`fetch_lianban_ladder()`，返回 [{height, stocks:[{code,name,market}]}]）。
+    # 为什么不从涨停池自己算：涨停池只有 `high_days`「N天M板」和它的 hex 值，M 是**N 天内的涨停次数**、
+    #   **含中间断板**，N ≠ M 时就不是连板数。实测 09-07/08/09/14 四天用 M 当连板数会把最高板抬高 1~2 档。
+    #   `change_tag='LIMIT_BACK'` 的票（断板回封）尤其容易踩 —— 众泰汽车 09-17「8天5板」根本不是连板梯队成员。
+    #   连板梯队接口不返回 height < 2 的组，故「不在表里」＝当日涨停不属于连续段＝首板/断板反包，记 1。
+    ladder_map = {}
+    for _g in (fetch_lianban_ladder(date_yyyymmdd) or []):
+        for _st in (_g.get('stocks') or []):
+            ladder_map[_st['code']] = _g['height']
+
     out = []
     for s in info:
         code = s.get('code') or ''
@@ -189,13 +200,20 @@ def fetch_zt_pool(date_yyyymmdd):
         if not code or is_excluded(code, name):
             continue
         fst, lst, cnum, rtype, rinfo = seal_time.get(code, (None, None, None, '', ''))
-        # 连板数：优先 high_days_value（hex 低16位=板数），退回 block_top 的 continue_num
+        # 连板数（连续涨停高度）
         lbc = 0
-        hdv = s.get('high_days_value')
-        if isinstance(hdv, int) and hdv:
-            lbc = hdv & 0xFFFF
-        if not lbc and cnum:
-            lbc = int(cnum)
+        if ladder_map:
+            lbc = int(ladder_map.get(code) or 1)
+        else:
+            # ⚠️ 退路：连板梯队接口整个取不到时（网络/接口变更），只能用 high_days_value 的**高 16 位**
+            #   （=「N天M板」的 M，含断板 → 会**高于**真实连板数），或 block_top 的 continue_num。
+            #   宁可近似也不要让梯队全空；正常路径不会走到这里。
+            #   编码实测 `(板数 M << 16) | 天数 N`：8天5板=0x50008 / 6天3板=0x30006 / 4天2板=0x20004。
+            hdv = s.get('high_days_value')
+            if isinstance(hdv, int) and hdv:
+                lbc = hdv >> 16
+            if not lbc and cnum:
+                lbc = int(cnum)
         if not lbc:
             lbc = _parse_high_days(s.get('high_days'))
         fbt = _ts_to_hhmmss(fst)

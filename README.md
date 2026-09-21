@@ -54,6 +54,7 @@
 | `push_api.py` | `git push` 被网络阻断时的兜底推送（走 `api.github.com`，自动对齐本地与远端 SHA）|
 | `_smoke_init.js` | 前端**桩件冒烟**：模拟 DOM 跑 `init()` 与各 `render*()`（改前端后必跑）|
 | `_shot.js` | 前端**视觉验收**：playwright-core + 系统 Edge 逐面板截图 + 结构断言，产物落 `.shots/`（改前端后必跑，见 `项目约定.md` §9.3）|
+| `check_ladder.py` | **连板梯队回归检查**：自建梯队 vs 同花顺 `continuous_limit_up` 逐日对账（改连板数相关代码后必跑，见 `项目约定.md` §9.2 第 12 条）|
 | `_tags_dump.py` | 盘后复盘 B 段的**正式工具**：给涨停/炸板/跌停池补概念标签（**可直接复用，别重复创建**）|
 
 ---
