@@ -201,26 +201,40 @@ async function shoot(page, tag, panel, label, w, h) {
     if (chk.bbHasData > 0) {
       ok(`高标跟踪已渲染（${chk.bbGroups} 个题材组 / ${chk.bbRows} 只）`,
          chk.bbGroups > 0 && chk.bbRows > 0);
-      // 汇总条 = 后端 stats（纯展示，不再按本机显示行做二次统计）
       const st = await page.evaluate(() => ({
         sum: (document.getElementById('bb-sum') || {}).textContent || '',
         rows: document.querySelectorAll('#bigboards-box .bb-row').length,
+        ld: document.querySelectorAll('#bigboards-box .bb-row.ld').length,
         st: (D.bigboards && D.bigboards.stats) || null,
       }));
       const e = st.st || {};
-      ok(`汇总条与后端 stats 一致（共 ${e.total} 只 / 跟踪中 ${e.tracking} / 跌停 ${e.limit_down}）`,
-         st.st != null
-         && st.sum.indexOf('共 ' + e.total + ' 只') >= 0
-         && st.sum.indexOf('跟踪中 ' + e.tracking) >= 0
-         && st.sum.indexOf('跌停 ' + e.limit_down) >= 0);
-      ok(`汇总条声明的总只数与实际渲染行数一致（${e.total} vs ${st.rows}）`, e.total === st.rows);
-      // 跌停票必须仍在列表里（只是带 ld 样式），不是被删掉 —— 这正是「不再跟踪 ≠ 永久排除」
-      const ld = await page.evaluate(() => document.querySelectorAll('#bigboards-box .bb-row.ld').length);
-      ok(`跌停票仍在列表中打标（${ld} 只 .bb-row.ld == stats.limit_down ${e.limit_down}）`,
-         ld === e.limit_down);
+      // ⛔ 2026-09-21 晚：跌停票（「不再跟踪」）**不再显示** —— 卡片里只留跟踪中的票。
+      ok('高标跟踪【不再显示跌停票】（' + st.ld + ' 行 .bb-row.ld）', st.ld === 0);
+      // 实际渲染行数 == stats.tracking（不再等于 total）
+      ok(`卡片实际显示行数 == stats.tracking（${st.rows} vs ${e.tracking}）`, st.rows === e.tracking);
+      ok(`汇总条报「跟踪中 N 只」且与 stats.tracking 一致（${e.tracking}）`,
+         st.sum.indexOf('跟踪中 ' + e.tracking + ' 只') >= 0
+         && st.sum.indexOf('跟踪中 ' + e.tracking) >= 0);
+      ok(`汇总条附注跌停只数（stats.limit_down = ${e.limit_down}）`,
+         e.limit_down === 0
+           ? !/已跌停/.test(st.sum)
+           : st.sum.indexOf('另有 ' + e.limit_down + ' 只已跌停') >= 0);
+      ok('汇总条不再报「共 N 只」（改为只报跟踪中只数）', !/共 \d+ 只/.test(st.sum));
       // localStorage 里不应再有任何高标跟踪相关的键
       const lsKeys = await page.evaluate(() => Object.keys(localStorage).filter(k => /bb_deleted|bigboard/i.test(k)));
       ok(`localStorage 已无高标跟踪黑名单键（实测 ${JSON.stringify(lsKeys)}）`, lsKeys.length === 0);
+      // ⚠️ 数据层必须仍是全量（含跌停票）—— 「只不显示」绝不能退化成「从数据里删」
+      const dataIntact = await page.evaluate(() => {
+        const gs = (D.bigboards && D.bigboards.groups) || [];
+        let total = 0, ld = 0;
+        gs.forEach(g => (g.stocks || []).forEach(s => { total++; if (s.status === 'limit_down') ld++; }));
+        return { total, ld, statsTotal: (D.bigboards.stats || {}).total };
+      });
+      ok(`数据层仍为全量（含跌停票）：groups 内 ${dataIntact.total} 只 / 其中跌停 ${dataIntact.ld}`
+         + ` == stats.total ${dataIntact.statsTotal}`,
+         dataIntact.total === dataIntact.statsTotal
+         && dataIntact.ld === e.limit_down
+         && (e.limit_down === 0 || dataIntact.ld > 0));
     } else {
       console.log('  · 提示：data.js 暂无 bigboards 数据（旧数据），跳过渲染断言');
     }

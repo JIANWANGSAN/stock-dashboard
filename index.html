@@ -747,7 +747,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.21-4';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.21-5';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -1412,43 +1412,53 @@ function pctCell(v, extra){
 // ============ 高标跟踪（近半月 ≥4 连板）============
 // 数据来自后端 `bigboards`（`fetch_data.py` → `bigboards.py`）；前端**只做展示，无任何交互**。
 // ⛔ 2026-09-21 用户要求删除「删除按钮」与整套前端删除机制（localStorage 黑名单 / 确认弹窗 / 事件委托）。
-//    理由：不再跟踪的票由后端 `bigboards_hidden.json` 黑名单**直接排除**，前端删除是多余的。
 //    **不要以任何理由把 `BB_DEL_KEY` / `bbDeleted` / `bbAddDeleted` / `.bb-del` / `data-bb-del` 加回来。**
+// ⛔ 2026-09-21 晚 用户要求：**「不再跟踪」的票（已跌停）不再显示**（前面全是跌停票太长）。
+//    ⚠️ 「只不显示」≠「从数据里删」。后端 `data.bigboards.groups` 仍是全量（含跌停票），
+//       别处（复盘文本 / 梯队 / 板块涨停家数 / 节点池）**照旧使用全量**，绝不能改成「后端剔除」。
 function renderBigboards(){
   const box=document.getElementById('bigboards-box');
   if(!box) return;
   const note=document.getElementById('bb-note'), sum=document.getElementById('bb-sum');
   const bb=(typeof D!=='undefined' && D && D.bigboards)||null;
-  if(!bb || !(bb.groups||[]).length){
+  if(!bb){
     box.innerHTML='<div class="bb-empty">暂无数据（等待 15:05 盘后任务产出）</div>';
     if(sum) sum.textContent='';
     if(note) note.textContent='—';
     return;
   }
-  const groups=bb.groups||[];
-  const shown=groups.reduce((n,g)=>n+(g.stocks||[]).length, 0);
-  if(note) note.textContent='近 '+bb.days+' 个交易日';
   const st=bb.stats||{};
+  // 只显示「跟踪中」（未跌停）的票；跌停票在数据里保留但不渲染
+  const groups=(bb.groups||[]).map(g=>({
+    theme:g.theme, stocks:(g.stocks||[]).filter(s=>s.status!=='limit_down')
+  })).filter(g=>g.stocks.length);
+  const shown=groups.reduce((n,g)=>n+g.stocks.length, 0);
+  if(note) note.textContent='近 '+bb.days+' 个交易日';
+  // 汇总条：总数报「跟踪中」的只数（与卡片实际显示一致）；跌停票仅以计数形式提示，不占版面
+  const tracking=(st.tracking!=null?st.tracking:shown);
+  const ldN=(st.limit_down||0);
   if(sum) sum.innerHTML=String(bb.date_from||'').slice(5)+' ~ '+String(bb.date_to||'').slice(5)
-    +' · 共 '+(st.total!=null?st.total:shown)+' 只（跟踪中 <b class="up">'+(st.tracking||0)
-    +'</b> · 跌停 <b class="down">'+(st.limit_down||0)+'</b>）';
+    +' · 跟踪中 <b class="up">'+tracking+'</b> 只'
+    +(ldN?('（另有 '+ldN+' 只已跌停，不再跟踪）'):'');
+  if(!shown){
+    box.innerHTML='<div class="bb-empty">暂无跟踪中的高标（近 '+bb.days+' 个交易日无 ≥'
+      +bb.min_lbc+' 连板活口）</div>';
+    return;
+  }
   box.innerHTML=groups.map(g=>`
     <div class="bb-group">
-      <div class="bb-theme"><i></i>${esc(g.theme)}<span class="n">${(g.stocks||[]).length}只</span></div>
-      ${(g.stocks||[]).map(s=>{
-        const ld=(s.status==='limit_down');
-        const detail=(ld ? ('跌停 '+String(s.ld_date||'').slice(5)
-                            +(s.ld_chg!=null?(' ('+Number(s.ld_chg).toFixed(2)+'%)'):''))
-                         : '跟踪中（尚未跌停）')
+      <div class="bb-theme"><i></i>${esc(g.theme)}<span class="n">${g.stocks.length}只</span></div>
+      ${g.stocks.map(s=>{
+        const detail='跟踪中（尚未跌停）'
           +' · 最高'+s.max_lbc+'板 · 首达 '+(s.first_big||'—')+' · 末涨停 '+(s.last_zt||'—')
           +' · 涨停原因：'+((s.concepts||[]).join('、')||'—');
-        return `<div class="bb-row${ld?' ld':''}">
+        return `<div class="bb-row">
           <span class="bb-name">${esc(s.name)}</span>
           <span class="bb-code">${esc(s.code)}</span>
           <span class="bb-meta">
             <span class="bb-lb">${s.max_lbc}板</span>
-            <span class="bb-badge ${ld?'ld':'on'}" data-tip-title="${esc(s.name)}"
-                  data-tip="${esc(detail)}">${ld?'跌停 '+String(s.ld_date||'').slice(5):'跟踪中'}</span>
+            <span class="bb-badge on" data-tip-title="${esc(s.name)}"
+                  data-tip="${esc(detail)}">跟踪中</span>
           </span>
         </div>`;}).join('')}
     </div>`).join('');
