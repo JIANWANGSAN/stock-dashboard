@@ -80,6 +80,12 @@
   .kpi { background: #f9fafb; border: 1px solid #eef0f4; border-radius: 8px; padding: 7px 13px; min-width: 92px; }
   .kpi .k { font-size: 11px; color: #6b7280; }
   .kpi .v { font-size: 15.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  /* 仓位闸门（用户 2026-09-21 指定）：封板率<75% 且 跌停>10 → 「空仓」
+     只有触发态才着色 —— 用红＝风险警示，与 KPI 行既有的「涨停红/跌停绿」语义不冲突
+     （不给「可参与」配绿色，避免与「绿=跌」的 A 股习惯混淆）。 */
+  .kpi.judge-empty { background: #fef2f2; border-color: #fecaca; }
+  .kpi.judge-empty .v { color: #dc2626; }
+  .kpi.judge-empty .k { color: #b91c1c; }
   .mkt-main-h { font-size: 12px; color: #374151; font-weight: 600; margin-bottom: 6px; }
   /* 资金主线一句话概览（顶部完整展示，不再被裁） */
   .ml-note { font-size: 12px; line-height: 1.6; color: #374151; background: #fff7ed;
@@ -710,7 +716,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.20-3';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.21-1';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -899,6 +905,15 @@ function renderMacro(){
   const kpi=document.getElementById('mkt-kpi');
   if(kpi){
     const b=m.breadth||{}, md=m.mood||{}, amt=m.amount_yi;
+    // ---- 仓位闸门（用户 2026-09-21 指定）：封板率 < 75% **且** 跌停 > 10 → 「空仓」----
+    // ⚠️ 必须用**原始比例** md.zt_rate（如 0.7549，界面四舍五入显示成 75%）直接与 0.75 比：
+    //    若先 `Math.round(zt_rate*100)` 再比，0.746（显示 75%）会漏判、0.7549 会误判。
+    //    跌停同理用原始家数 md.dt。
+    // 数据缺失（接口没回来）时给「—」而不是默认「可参与」—— 宁可无结论，也不要给错结论。
+    const ztR = (typeof md.zt_rate==='number') ? md.zt_rate : null;
+    const dtN = (typeof md.dt==='number') ? md.dt : null;
+    const jHas = (ztR!=null && dtN!=null);
+    const jEmpty = jHas && ztR < 0.75 && dtN > 10;
     const cells=[
       {k:'两市成交额', v:amt!=null?Math.round(amt)+'亿':'—', c:''},
       {k:'涨停 / 跌停', v:`<b class="up">${md.zt!=null?md.zt:'—'}</b> / <b class="${(md.dt||0)>0?'down':'flat'}">${md.dt!=null?md.dt:'—'}</b>`, c:''},
@@ -907,8 +922,9 @@ function renderMacro(){
       {k:'上涨行业', v:`<b class="up">${b.up_industry!=null?b.up_industry:'—'}</b>`, c:''},
       {k:'下跌行业', v:`<b class="${(b.down_industry||0)>0?'down':'flat'}">${b.down_industry!=null?b.down_industry:'—'}</b>`, c:''},
       {k:'昨日涨停', v:md.y_zt!=null?md.y_zt:'—', c:''},
+      {k:'仓位建议', v:jHas?(jEmpty?'空仓':'可参与'):'—', c:jEmpty?'judge-empty':''},
     ];
-    kpi.innerHTML=cells.map(x=>`<div class="kpi"><div class="k">${x.k}</div><div class="v">${x.v}</div></div>`).join('');
+    kpi.innerHTML=cells.map(x=>`<div class="kpi${x.c?' '+x.c:''}"><div class="k">${x.k}</div><div class="v">${x.v}</div></div>`).join('');
   }
 
   // ---- 今日资金主线（一句话概览；TOP6 卡条已按用户要求删除）----
