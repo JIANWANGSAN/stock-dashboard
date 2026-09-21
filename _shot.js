@@ -79,8 +79,15 @@ async function shoot(page, tag, panel, label, w, h) {
         dUptime: !!document.getElementById('d-uptime'),
         board3dBox: !!document.getElementById('board-3d-box'),
         boardSummary: !!document.getElementById('board-summary'),
-        // ⚠️ 这类 DOM 读取必须写在 evaluate 内，不能拿到 Node 作用域用（会 ReferenceError: document is not defined）
-        hasStar: /★/.test(document.body.innerText),
+        // ★ = 产业板块「当日 TOP10」∩「3日 TOP10」（两条榜都是 SECTOR_WATCH 同一份清单算的）。
+        // ⚠️ 不要用 /★/ 扫全页正文 —— 两榜恰好不重合时页面合法地显示「暂无」，会假失败。
+        //    这里改成直接按数据算期望值（data.js 换成任意一天都成立）。
+        hasStar: (function () {
+          if (typeof D === 'undefined' || !D) return null;
+          const n1 = new Set((D.sector_daily || []).slice(0, 10).map(b => b.name));
+          const n3 = new Set((D.sector_3d || []).slice(0, 10).map(b => b.name));
+          return [...n1].filter(x => n3.has(x)).length > 0;
+        })(),
         // 高标跟踪（近半月 ≥4 连板）—— 2026-09-21 新增，板块面板置顶
         bbCard: !!document.getElementById('bigboards-card'),
         bbGroups: document.querySelectorAll('#bigboards-box .bb-group').length,
@@ -114,7 +121,17 @@ async function shoot(page, tag, panel, label, w, h) {
        !chk.boardDailyBox && !chk.dUptime);
     ok('「产业板块·3日 TOP10」表仍在', chk.board3dBox);
     ok('「小结·主线 vs 脉冲」仍在', chk.boardSummary);
-    ok('★ 重合机制仍生效（3日表里应有 ★）', chk.hasStar);
+    // ⚠️ `document` 只存在于页面上下文 —— 下面的「页面侧事实」必须用 page.evaluate 取回。
+    // ⚠️ 也别用 `document.body.innerText`：它只返回**可见**文本，板块面板此时是 display:none → 永远拿不到 ★。
+    //    改用**总是存在于 DOM** 的 `#board-3d-box` / `#board-summary` 的 textContent。
+    const pg = await page.evaluate(() => ({
+      hasStarMark: /★/.test((document.getElementById('board-3d-box') || {}).textContent || ''),
+      boardSummaryTxt: (document.getElementById('board-summary') || {}).textContent || '',
+    }));
+    ok('★ 重合机制（当日∩3日）按数据算出的期望值与页面一致',
+       chk.hasStar === null || (chk.hasStar
+          ? pg.hasStarMark
+          : /暂无/.test(pg.boardSummaryTxt)));
     ok('macro.indices 只有 4 条', chk.macroIndexCount === 4);
     ok('indices = 上证指数/深证成指/创业板指/沪深300',
        JSON.stringify(chk.macroIndexNames) === JSON.stringify(['上证指数', '深证成指', '创业板指', '沪深300']));
@@ -160,6 +177,10 @@ async function shoot(page, tag, panel, label, w, h) {
     ok('模拟后已还原为真实数据', gate.back.txt === gate.cur.txt);
 
     // ---- 高标跟踪（近半月 ≥4 连板）----
+    // ⚠️ 上面 shoot() 会把页面停在「均线」面板，`#bigboards-box` 在「板块」面板里（display:none）
+    //    → 必须先切回板块面板，否则 page.click 会 element is not visible 超时。
+    await page.click('.menu-item[data-panel="boards"]');
+    await sleep(500);
     ok('板块面板置顶新增「高标跟踪」卡片', chk.bbCard);
     if (chk.bbHasData > 0) {
       ok(`高标跟踪已渲染（${chk.bbGroups} 个题材组 / ${chk.bbRows} 只 / ${chk.bbDel} 个删除按钮）`,

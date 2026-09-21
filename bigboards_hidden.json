@@ -1,0 +1,4 @@
+{
+  "hidden": [],
+  "_note": "高标跟踪的后端删除黑名单。写入股票代码后重跑 fetch_data.py 并 push，即可在所有设备上永久移除该票。前端「删除」按钮只写本机 localStorage(bb_deleted_v1)，换设备会重现。"
+}
