@@ -569,6 +569,99 @@ def fetch_zt_pool_full(date_yyyymmdd):
     return p, dict(ZT_STAT)
 
 
+def recount_lbc_by_continuity(zt_hist, days, verbose=True):
+    """用**严格连续**口径重算各交易日涨停池的连板数（交叉校验 + 降级兜底）。
+
+    口径（用户定义，与同花顺「连板梯队」接口一致）：
+        连板数 = 自本轮第一个涨停起，**每个交易日都必须涨停**，断一天即止。
+        → lbc = 从当日往前、连续涨停的交易日数（当日计 1）
+
+    为什么要自算（两层保险）：
+      ① 主路径 `ths_source.fetch_zt_pool` 已改用 `continuous_limit_up`（同花顺权威连板梯队）；
+         本函数逐日**交叉校验**，不一致且非窗口截断 → 打印告警（暴露接口异常 / 解析回归）。
+      ② 该接口偶发无返回时（并发限流 403/空响应），`fetch_zt_pool` 会降级记 1
+         （`lbc_src='fallback'`）；本函数用历史涨停池把降级值修正为真值 ——
+         **不依赖任何外部接口，天然抗抖动**。
+
+    ⚠️ 窗口限制：`days` 只有 N 天（默认 20）。若某票从窗口第一个交易日至今一路涨停，
+        自算值只是**下界**（真实可能更长）→ 此时不覆盖、不告警，保留主路径的值。
+      数据缺失的交易日**跳过**而不当作断板（缺失 ≠ 未涨停）。
+
+    Args:
+        zt_hist: {YYYY-MM-DD: [stock, ...]}，每只 stock 含 code / name / lbc / lbc_src
+        days:    交易日列表（升序，YYYY-MM-DD）
+        verbose: 是否打印统计与告警样本
+
+    Returns:
+        dict: {'checked': 校验只数, 'fixed': 降级修正只数, 'skipped': 数据缺口跳过只数,
+               'warn': 与权威口径不符（可疑）只数}
+    """
+    days = [str(d) for d in (days or [])]
+    if not days or not zt_hist:
+        return {'checked': 0, 'fixed': 0, 'warn': 0}
+
+    # 每只票 → 它出现过的交易日集合
+    seen = {}
+    for d, pool in zt_hist.items():
+        for s in pool:
+            seen.setdefault(s.get('code'), set()).add(d)
+
+    idx = {d: i for i, d in enumerate(days)}
+    checked = fixed = warn = skipped = 0
+    samples = []
+
+    for d in days:
+        pool = zt_hist.get(d)
+        if not pool:
+            continue
+        i = idx[d]
+        for s in pool:
+            checked += 1
+            code = s.get('code')
+            hit_days = seen.get(code) or set()
+            # 往前连续回溯：缺失日跳过（缺失 ≠ 未涨停，不能当断板）
+            c, j = 1, i - 1
+            while j >= 0:
+                dj = days[j]
+                if dj not in zt_hist:      # 该交易日数据缺失 → 跳过
+                    j -= 1
+                    continue
+                if dj in hit_days:
+                    c += 1
+                    j -= 1
+                else:
+                    break
+            truncated = (j < 0)            # 一路连到窗口起点 → c 只是下界
+
+            old = int(s.get('lbc') or 0)
+            if s.get('lbc_src') == 'fallback':
+                # 主路径降级（连板梯队接口没返回）→ 自算值直接接管
+                if c != old:
+                    s['lbc'] = c
+                    s['lbc_src'] = 'recounted'
+                    fixed += 1
+            elif old != c and not truncated:
+                # 「N天M板」里 N == M ⇒ 最近 N 个交易日**全部涨停** ⇒ 连板数就是 M（自证）。
+                #   此时自算反而偏小，只可能是**历史涨停池漏了这只票**（接口漏股 / 抓取不全），
+                #   属数据缺口而非口径异常 → 静默跳过，不告警（当日权威值本就正确）。
+                mm = re.match(r'(\d+)天(\d+)板', s.get('high_days') or '')
+                if mm and mm.group(1) == mm.group(2) and int(mm.group(2)) == old:
+                    skipped += 1
+                    continue
+                # 其余情况：主路径（连板梯队）是权威 → 不改值，只告警，暴露口径异常
+                warn += 1
+                if len(samples) < 8:
+                    samples.append((d, code, s.get('name'), old, c, s.get('high_days') or ''))
+
+    if verbose:
+        print('  连板连续性自算：校验 %d 只 · 降级修正 %d 只 · 数据缺口跳过 %d 只 · 权威口径告警 %d 只'
+              % (checked, fixed, skipped, warn))
+        for d, code, name, old, c, hd in samples:
+            print('     ⚠️ %s %s(%s) 权威=%s 自算=%s high_days=%s（以权威为准，请查接口）'
+                  % (d, name, code, old, c, hd))
+    return {'checked': checked, 'fixed': fixed, 'warn': warn, 'skipped': skipped}
+
+
 def fetch_dt_pool(date_yyyymmdd):
     """返回当日跌停股列表。
 
@@ -1581,7 +1674,18 @@ def track_status(code, node_date, days_list, zt_hist, today_lbc, fallback_boards
         if gap <= 3:
             return '断板反包', today_lbc
         return ('连板中' if today_lbc >= 2 else '首板'), today_lbc
-    return '已断板', fallback_boards
+    # 已断板：板数取「**最后一次涨停那天的连板数**」（可从 zt_hist 精确回溯），
+    # 而不是沿用上一版 data.json 的旧值 —— 旧值可能是历史错误口径算出来的，
+    # 沿用会把它永久固化（本次连板 bug 的连带问题）。
+    last = 0
+    for d in reversed(after):
+        for x in zt_hist.get(d, []):
+            if x['code'] == code:
+                last = x['lbc']
+                break
+        if last:
+            break
+    return '已断板', (last or fallback_boards)
 
 
 def find_start_volume(zt_hist, days, idx, code):
@@ -1969,6 +2073,11 @@ def main():
                 zt_hist[d] = p
             time.sleep(0.15)
     print('  有效交易日涨停数据：%d 天' % len(zt_hist))
+
+    # 连板数「严格连续」口径自算：交叉校验同花顺连板梯队接口 + 修正其降级值。
+    # 必须**在节点/候选池构建之前**执行 —— 下游 build_ladder / track_status / build_candidates
+    # 全部读 zt_hist[*]['lbc']，此处不改则错误口径会一路传到前端（本次连板 bug 的教训）。
+    recount_lbc_by_continuity(zt_hist, days)
 
     # 跌停池：与涨停池同步抓（用于「跌停板梯队」——家数趋势 + 连续跌停明细）
     dt_days = days[-DT_LADDER_DAYS:] if len(days) > DT_LADDER_DAYS else days

@@ -35,8 +35,23 @@
   330329=涨停统计
   → 响应里另有结构化键名（无需码）：code/name/latest/change_rate/turnover/
     turnover_rate/order_amount/currency_value/sum_market_value/reason_type/
-    high_days(「8天5板」)/high_days_value(hex: **高 16 位＝板数 M，低 16 位＝天数 N**，即 (M<<16)|N)/
+    high_days(「8天5板」)/high_days_value(hex，见下方⚠️)/
     change_tag(FIRST_LIMIT|LIMIT_BACK|…)/is_again_limit/market_id(17=沪 33=深)/is_new
+
+  ⚠️⚠️ **`high_days` / `high_days_value` 里的板数 M ≠ 连板数，任何情况下都不要拿它当连板数**
+  ────────────────────────────────────────────────────────────────────────
+    high_days_value 编码 = `(M << 16) | N`，对应页面显示的「**N 天 M 板**」：
+        8天5板 → 0x50008（>>16 = 5，&0xFFFF = 8）
+        6天3板 → 0x30006（>>16 = 3，&0xFFFF = 6）
+        4天2板 → 0x20004（>>16 = 2，&0xFFFF = 4）
+    其中 **M = 最近 N 天内的涨停「次数」，中间断板也计数**（`change_tag=LIMIT_BACK` 断板回封尤其典型），
+    而**连板数**的口径是「自本轮第一个涨停起，每个交易日都必须涨停，断一天即止」。
+    两者在 N == M 时**恰好相等**（如 6天6板），N ≠ M 时必然 M > 连板数。
+    实例（2026-09-18 远望谷 002161）：页面写「6天3板」，但真实走势是
+      09-11 首板(一字板) → 09-14 天地板炸板 → 09-15 跌停 → 09-16 涨停(LIMIT_BACK) →
+      09-17 跌 → 09-18 涨停(FIRST_LIMIT)
+    它**没有任何一笔连板**，连板数 = 1；取 M 得 3、取 N 得 6 都是错的。
+    ✅ 唯一权威口径 = 同花顺「连板梯队」接口 `continuous_limit_up`（见 `fetch_lianban_ladder()`）。
 
 三、THS 唯一缺口
 ────────────────────────────────────────────────────────────────────────
@@ -182,16 +197,28 @@ def fetch_zt_pool(date_yyyymmdd):
                                 s.get('reason_type') or '',
                                 s.get('reason_info') or '')
 
-    # 连板数映射表：**唯一致命口径** —— 取同花顺「连板梯队」接口 `continuous_limit_up`
+    # 连板数：**唯一权威口径** = 同花顺「连板梯队」接口 `continuous_limit_up`
     #   （`fetch_lianban_ladder()`，返回 [{height, stocks:[{code,name,market}]}]）。
-    # 为什么不从涨停池自己算：涨停池只有 `high_days`「N天M板」和它的 hex 值，M 是**N 天内的涨停次数**、
-    #   **含中间断板**，N ≠ M 时就不是连板数。实测 09-07/08/09/14 四天用 M 当连板数会把最高板抬高 1~2 档。
-    #   `change_tag='LIMIT_BACK'` 的票（断板回封）尤其容易踩 —— 众泰汽车 09-17「8天5板」根本不是连板梯队成员。
-    #   连板梯队接口不返回 height < 2 的组，故「不在表里」＝当日涨停不属于连续段＝首板/断板反包，记 1。
+    #   · 该接口就是「严格连续」口径：只收录连续涨停 ≥2 天的票，按高度分组。
+    #   · 它不返回 height < 2 的组 → **「不在表里」＝当日涨停不属于连续段**（首板，或断板后重新涨停）
+    #     ＝ 连板数 1。这正好符合用户定义：「自第一个涨停后接着都是涨停，只要断开就不算连板」。
+    #   · 为什么不退回 `high_days` / `high_days_value`：那里的 M 是「N 天内涨停次数」含断板，
+    #     见文件头 ⚠️ 说明（远望谷 09-18「6天3板」真实连板数是 1）。
     ladder_map = {}
-    for _g in (fetch_lianban_ladder(date_yyyymmdd) or []):
-        for _st in (_g.get('stocks') or []):
-            ladder_map[_st['code']] = _g['height']
+    ladder_ok = False
+    _groups = fetch_lianban_ladder(date_yyyymmdd)
+    if _groups:
+        for _g in _groups:
+            for _st in (_g.get('stocks') or []):
+                ladder_map[_st['code']] = _g['height']
+        ladder_ok = True
+    else:
+        # ⚠️ 接口无返回（并发限流 / 网络抖动 / 接口变更）时的降级。
+        #   **故意不退回 high_days 的 M**（那是含断板的错误口径，会静默虚高最高板），
+        #   而是统一记 1 并打醒目告警：宁可"信息缺失"也不要"确定地错"。
+        #   上层 `fetch_data.recount_lbc_by_continuity()` 会用「历史涨停池自算」把这批值修正回来。
+        print('  [warn] 连板梯队接口无返回 %s → 连板数降级为 1（将由连续性自算层修正）'
+              % date_yyyymmdd)
 
     out = []
     for s in info:
@@ -200,22 +227,8 @@ def fetch_zt_pool(date_yyyymmdd):
         if not code or is_excluded(code, name):
             continue
         fst, lst, cnum, rtype, rinfo = seal_time.get(code, (None, None, None, '', ''))
-        # 连板数（连续涨停高度）
-        lbc = 0
-        if ladder_map:
-            lbc = int(ladder_map.get(code) or 1)
-        else:
-            # ⚠️ 退路：连板梯队接口整个取不到时（网络/接口变更），只能用 high_days_value 的**高 16 位**
-            #   （=「N天M板」的 M，含断板 → 会**高于**真实连板数），或 block_top 的 continue_num。
-            #   宁可近似也不要让梯队全空；正常路径不会走到这里。
-            #   编码实测 `(板数 M << 16) | 天数 N`：8天5板=0x50008 / 6天3板=0x30006 / 4天2板=0x20004。
-            hdv = s.get('high_days_value')
-            if isinstance(hdv, int) and hdv:
-                lbc = hdv >> 16
-            if not lbc and cnum:
-                lbc = int(cnum)
-        if not lbc:
-            lbc = _parse_high_days(s.get('high_days'))
+        # 连板数（严格连续口径）：在梯队里 → 用梯队高度；不在 → 1
+        lbc = int(ladder_map.get(code) or 1) if ladder_ok else 1
         fbt = _ts_to_hhmmss(fst)
         lbt = _ts_to_hhmmss(lst)
         out.append({
@@ -230,6 +243,7 @@ def fetch_zt_pool(date_yyyymmdd):
             'total_cap': float(s.get('sum_market_value') or 0),  # 总市值（元）
             'turnover': round(float(s.get('turnover_rate') or 0), 2),
             'lbc': int(lbc),
+            'lbc_src': 'ladder' if ladder_ok else 'fallback',   # 供上层判断是否为可信口径
             'first_seal': fbt,                                  # 首次封板时间 HHMMSS
             'last_seal': lbt,                                   # 最后封板时间 HHMMSS
             'seal_fund': float(s.get('order_amount') or 0),      # 封单额（元）
@@ -248,8 +262,15 @@ def fetch_zt_pool(date_yyyymmdd):
     return out, stat
 
 
-def _parse_high_days(hd):
-    """'6天6板' → 6；'首板' → 1；'3天2板' → 2。"""
+def _m_boards_from_high_days(hd):
+    """从「N天M板」字符串里取 **M（最近 N 天内的涨停次数）**。
+
+    ⚠️⚠️ **M 不是连板数，禁止用它当连板数**（详见文件头字段说明）。
+        · '6天3板' → 3   ← 但该票真实连板数可能是 1（中途断板，如远望谷 09-18）
+        · '6天6板' → 6   ← 只有这种 N == M 的才恰好等于连板数
+        · '首板'   → 1
+    取连板数请一律用 `fetch_lianban_ladder()`（同花顺连板梯队接口，严格连续口径）。
+    """
     if not hd:
         return 0
     m = re.search(r'(\d+)\s*板', str(hd))
@@ -321,7 +342,12 @@ def fetch_zb_pool(date_yyyymmdd, limit=_POOL_MAX):
             'float_cap': float(s.get('currency_value') or 0),
             'seal_fund': float(s.get('order_amount') or 0),
             'open_cnt': int(s.get('open_num') or s.get('open_cnt') or 0),
-            'lbc': _parse_high_days(s.get('high_days')),
+            # ⚠️ 这里**故意不提供 `lbc`（连板数）**：炸板票今天没封住，其「炸板前连板高度」
+            #   需要昨日数据才能定；单日接口只有「N天M板」的 M（含断板，会虚高）。
+            #   过往曾在此填 M 并命名 `lbc`，是一个**静默的口径陷阱**（本次连板 bug 的同源问题）。
+            #   当前无任何消费方（`fetch_ytd_lists` 的「昨日炸板」只取 code）。
+            #   将来若需要，请用 `fetch_lianban_ladder(前一交易日)` 取真值。
+            'm_boards': _m_boards_from_high_days(s.get('high_days')),   # M：N天内涨停次数（**非连板数**）
             'concepts': [x for x in (s.get('reason_type') or '').split('+') if x],
             'src': 'ths',
         })
