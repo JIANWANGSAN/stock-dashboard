@@ -81,6 +81,13 @@ async function shoot(page, tag, panel, label, w, h) {
         boardSummary: !!document.getElementById('board-summary'),
         // ⚠️ 这类 DOM 读取必须写在 evaluate 内，不能拿到 Node 作用域用（会 ReferenceError: document is not defined）
         hasStar: /★/.test(document.body.innerText),
+        // 高标跟踪（近半月 ≥4 连板）—— 2026-09-21 新增，板块面板置顶
+        bbCard: !!document.getElementById('bigboards-card'),
+        bbGroups: document.querySelectorAll('#bigboards-box .bb-group').length,
+        bbRows: document.querySelectorAll('#bigboards-box .bb-row').length,
+        bbDel: document.querySelectorAll('#bigboards-box [data-bb-del]').length,
+        bbNote: (document.getElementById('bb-note') || {}).textContent || '',
+        bbHasData: (typeof D !== 'undefined' && D && D.bigboards) ? (D.bigboards.groups || []).length : -1,
         macroIndexCount: m && m.indices ? m.indices.length : -1,
         macroIndexNames: m && m.indices ? m.indices.map(i => i.name) : [],
         hasStyleKey: !!(m && m.style),
@@ -151,6 +158,33 @@ async function shoot(page, tag, panel, label, w, h) {
     ok('只满足「跌停>10」→ 不触发', !/空仓/.test(gate.onlyD.txt));
     ok('封板率数据缺失 → 显示「—」（不误报为可参与）', /—/.test(gate.miss.txt));
     ok('模拟后已还原为真实数据', gate.back.txt === gate.cur.txt);
+
+    // ---- 高标跟踪（近半月 ≥4 连板）----
+    ok('板块面板置顶新增「高标跟踪」卡片', chk.bbCard);
+    if (chk.bbHasData > 0) {
+      ok(`高标跟踪已渲染（${chk.bbGroups} 个题材组 / ${chk.bbRows} 只 / ${chk.bbDel} 个删除按钮）`,
+         chk.bbGroups > 0 && chk.bbRows > 0 && chk.bbDel === chk.bbRows);
+      page.on('dialog', d => d.accept());          // 删除按钮有 confirm()，这里自动确认
+      const code = await page.evaluate(() => {
+        const b = document.querySelector('#bigboards-box [data-bb-del]');
+        return b ? b.getAttribute('data-bb-del') : '';
+      });
+      const b4 = chk.bbRows;
+      if (code) { await page.click('#bigboards-box [data-bb-del]'); await sleep(400); }
+      const del = await page.evaluate(c => ({
+        rows: document.querySelectorAll('#bigboards-box .bb-row').length,
+        gone: !Array.from(document.querySelectorAll('#bigboards-box [data-bb-del]'))
+                   .some(b => b.getAttribute('data-bb-del') === c),
+        ls: localStorage.getItem('bb_deleted_v1') || '',
+      }), code);
+      ok('删除按钮：点击后该票立即从列表消失', !!code && del.rows === b4 - 1 && del.gone);
+      ok('删除记录已写入本机黑名单(localStorage)', del.ls.indexOf(code) >= 0);
+      await page.evaluate(() => { localStorage.removeItem('bb_deleted_v1'); renderBigboards(); });
+      const back = await page.evaluate(() => document.querySelectorAll('#bigboards-box .bb-row').length);
+      ok('清掉本机黑名单后即恢复（证明是本地过滤，未动数据）', back === b4);
+    } else {
+      console.log('  · 提示：data.js 暂无 bigboards 数据（旧数据），跳过渲染/删除断言');
+    }
 
     // 触发态**特写**截图（供确认「空仓」警示样式；拍完立即还原，不影响其它截图与线上数据）
     // ⚠️ 前面的 shoot() 会把页面停在「均线」面板，`#mkt-kpi` 在「必看」面板里 → 必须先切回去，

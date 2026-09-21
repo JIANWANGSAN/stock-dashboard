@@ -298,6 +298,32 @@
   .rank-no { font-weight: 700; color: #9ca3af; }
   .star { color: #f59e0b; font-weight: 700; }
   /* 小结 */
+  /* 高标跟踪（近半月 ≥4 连板）—— 2026-09-21 用户点名新增
+     配色遵循项目既有语义：红=强/涨（最高板）、绿=跌（跌停终态）、蓝=进行中（跟踪中），
+     不给「跟踪中」用绿 —— 那会和「跌」撞色。 */
+  .bb-sum { font-size: 11.5px; color: #6b7280; margin-bottom: 9px; line-height: 1.6; }
+  .bb-group { margin-bottom: 11px; }
+  .bb-theme { display: flex; align-items: center; gap: 6px; font-size: 12.5px;
+              font-weight: 700; color: #374151; margin-bottom: 5px; }
+  .bb-theme i { width: 7px; height: 7px; border-radius: 50%; background: #f59e0b; }
+  .bb-theme .n { font-size: 11px; font-weight: 600; color: #9ca3af; }
+  .bb-row { display: flex; align-items: center; gap: 7px; padding: 5px 9px;
+            border: 1px solid #eef0f4; border-radius: 7px; margin-bottom: 4px; background: #fafbfc; }
+  .bb-row.ld { background: #f3f4f6; border-color: #e8eaee; }
+  .bb-row .bb-name { font-size: 12.5px; font-weight: 600; }
+  .bb-row.ld .bb-name { color: #6b7280; }
+  .bb-row .bb-code { font-size: 10.5px; color: #9ca3af; font-variant-numeric: tabular-nums; }
+  .bb-row .bb-meta { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 11px; }
+  .bb-row .bb-lb { font-weight: 800; color: #dc2626; font-variant-numeric: tabular-nums; }
+  .bb-row.ld .bb-lb { color: #9ca3af; }
+  .bb-row .bb-cur { color: #6b7280; }
+  .bb-row .bb-badge { font-size: 10.5px; padding: 1px 6px; border-radius: 5px; white-space: nowrap; }
+  .bb-row .bb-badge.on { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  .bb-row .bb-badge.ld { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+  .bb-row .bb-del { border: 1px solid #e5e7eb; background: #fff; color: #9ca3af; font-size: 10.5px;
+                    border-radius: 5px; padding: 1px 7px; cursor: pointer; line-height: 1.5; }
+  .bb-row .bb-del:hover { border-color: #fca5a5; color: #dc2626; }
+  .bb-empty { font-size: 12px; color: #9ca3af; padding: 6px 0; }
   .summary { background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 14px 16px; font-size: 13.5px; line-height: 1.8; }
   .summary .hl { color: #047857; font-weight: 700; }
   .note { font-size: 12px; color: #9ca3af; margin-top: 8px; line-height: 1.7; }
@@ -652,6 +678,13 @@
       <!-- ⛔ 已删（2026-09-20）：「产业板块 · 当日 TOP10」整张表（含卡片标题里的 `#d-uptime`）。
            用户要求不要在前端显示。⚠️ 只删了**展示**：`data.sector_daily` 仍在产出，
            3日表的 ★ 与下方「小结·主线 vs 脉冲」都要靠它算，别顺手把数据也删了。**不要再加回来**。 -->
+      <!-- 高标跟踪（近半月 ≥4 连板）—— 2026-09-21 用户点名新增：按当前最贴合题材归类，
+           跟到跌停为止；每票带「删除」按钮（本机 localStorage，删除后不再收录、也不再跟踪）。 -->
+      <div class="card" id="bigboards-card">
+        <div class="card-title">高标跟踪 · 近半月 ≥4 连板 <span class="tag" id="bb-note">—</span></div>
+        <div class="bb-sum" id="bb-sum"></div>
+        <div id="bigboards-box"></div>
+      </div>
       <div class="card" data-page-node-id="FxZ2tpDkjoo6eaNXFMCBX4">
         <div class="card-title" data-page-node-id="9vvy48VDKBkKYFPJNIPwiL">产业板块 · 3日 TOP10 <span class="tag" id="d-3dnote" data-page-node-id="NKVHSzQP2OHOlw97y1ZI8i">—</span></div>
         <div id="board-3d-box" data-page-node-id="6lv64vJewbFig4NuU0LPI7"></div>
@@ -716,7 +749,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.21-1';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.21-2';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -1378,7 +1411,78 @@ function pctCell(v, extra){
   const cls=n>0?'up':(n<0?'down':'flat');
   return `<td class="${cls} ${extra||''}">${n>0?'+':''}${n.toFixed(2)}%</td>`;
 }
+// ============ 高标跟踪（近半月 ≥4 连板）============
+// 数据来自后端 `bigboards`（`fetch_data.py` → `bigboards.py`）；这里只做展示 + 本机删除。
+// ⚠️ 「删除」是**本机 localStorage 黑名单**：点了就永久从本机视图消失（且后续每天的新数据
+//    也会被过滤掉，不会"明天又回来"）。但它**写不回仓库** —— 若要跨设备、或从数据源头彻底删，
+//    需把代码写进 `bigboards_hidden.json`（后端生成时直接排除），见 项目约定.md §3.15。
+const BB_DEL_KEY='bb_deleted_v1';
+function bbDeleted(){
+  try{ return new Set(JSON.parse(localStorage.getItem(BB_DEL_KEY)||'[]')); }catch(e){ return new Set(); }
+}
+function bbAddDeleted(code){
+  const s=bbDeleted(); if(code) s.add(code);
+  try{ localStorage.setItem(BB_DEL_KEY, JSON.stringify([...s])); }catch(e){}
+}
+function renderBigboards(){
+  const box=document.getElementById('bigboards-box');
+  if(!box) return;
+  const note=document.getElementById('bb-note'), sum=document.getElementById('bb-sum');
+  const bb=(typeof D!=='undefined' && D && D.bigboards)||null;
+  if(!bb || !(bb.groups||[]).length){
+    box.innerHTML='<div class="bb-empty">暂无数据（等待 15:05 盘后任务产出）</div>';
+    if(sum) sum.textContent='';
+    if(note) note.textContent='—';
+    return;
+  }
+  const del=bbDeleted();
+  const groups=(bb.groups||[]).map(g=>Object.assign({}, g, {
+    stocks:(g.stocks||[]).filter(s=>!del.has(s.code))})).filter(g=>g.stocks.length);
+  const shown=groups.reduce((n,g)=>n+g.stocks.length, 0);
+  if(note) note.textContent='近 '+bb.days+' 个交易日';
+  if(sum) sum.innerHTML=String(bb.date_from||'').slice(5)+' ~ '+String(bb.date_to||'').slice(5)
+    +' · 共 '+bb.stats.total+' 只（跟踪中 <b class="up">'+bb.stats.tracking
+    +'</b> · 跌停 <b class="down">'+bb.stats.limit_down+'</b>）'
+    +(bb.stats.total>shown ? ' · 本机已删 '+(bb.stats.total-shown)+' 只' : '');
+  if(!shown){ box.innerHTML='<div class="bb-empty">已全部删除（本机）</div>'; return; }
+  box.innerHTML=groups.map(g=>`
+    <div class="bb-group">
+      <div class="bb-theme"><i></i>${esc(g.theme)}<span class="n">${g.stocks.length}只</span></div>
+      ${g.stocks.map(s=>{
+        const ld=(s.status==='limit_down');
+        const detail=(ld ? ('跌停 '+String(s.ld_date||'').slice(5)
+                            +(s.ld_chg!=null?(' ('+Number(s.ld_chg).toFixed(2)+'%)'):''))
+                         : '跟踪中（尚未跌停）')
+          +' · 最高'+s.max_lbc+'板 · 首达 '+(s.first_big||'—')+' · 末涨停 '+(s.last_zt||'—')
+          +' · 涨停原因：'+((s.concepts||[]).join('、')||'—');
+        return `<div class="bb-row${ld?' ld':''}">
+          <span class="bb-name">${esc(s.name)}</span>
+          <span class="bb-code">${esc(s.code)}</span>
+          <span class="bb-meta">
+            <span class="bb-lb">${s.max_lbc}板</span>
+            ${s.cur_lbc>=2?`<span class="bb-cur">当前${s.cur_lbc}板</span>`:''}
+            <span class="bb-badge ${ld?'ld':'on'}" data-tip-title="${esc(s.name)}"
+                  data-tip="${esc(detail)}">${ld?'跌停 '+String(s.ld_date||'').slice(5):'跟踪中'}</span>
+            <button class="bb-del" data-bb-del="${esc(s.code)}"
+                    data-bb-name="${esc(s.name)}">删除</button>
+          </span>
+        </div>`;}).join('')}
+    </div>`).join('');
+}
+// 删除按钮：事件委托（列表是动态生成的）。⚠️ 触屏无 hover，用 click 而非 mouseover。
+document.addEventListener('click', e=>{
+  if(!(e.target instanceof Element)) return;
+  const b=e.target.closest('[data-bb-del]');
+  if(!b) return;
+  e.preventDefault();
+  const code=b.getAttribute('data-bb-del'), name=b.getAttribute('data-bb-name')||code;
+  if(!confirm('删除「'+name+'」的全部跟踪数据？\n\n删除后本机不再显示，也不再跟踪（含以后每天的新数据）。')) return;
+  bbAddDeleted(code);
+  renderBigboards();
+});
+
 function renderBoards(){
+  renderBigboards();                                   // 高标跟踪卡片（本面板置顶）
   // 「产业板块」= 用户指定的 28 个板块清单（后端 SECTOR_WATCH 映射到东财板块代码取数）
   const daily=(D.sector_daily||[]).slice(0,10);       // 产业板块 · 当日榜（**不再展示**，仅供 ②的★ 与 ③小结 计算）
   const d3=(D.sector_3d||[]).slice(0,10);             // 产业板块 · 3日 TOP10（唯一展示的表）

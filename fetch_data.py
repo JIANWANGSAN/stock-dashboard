@@ -25,6 +25,8 @@ from board_kline_src import (fetch_board_klines as _bk_fetch_board_klines,
 from ths_board_map import THS_MAP
 # 同花顺统一取数层（2026-09-17 起：东财停用，全站数据源收敛到这里）
 import ths_source as THS
+# 高标跟踪（近半月 ≥4 连板 → 按题材归类 → 跟到跌停为止）
+import bigboards as BB
 
 sys.stdout.reconfigure(encoding='utf-8')
 import urllib.request
@@ -355,9 +357,35 @@ def save_js(path, obj):
 
 # ⛔ 已删（2026-09-20）：厄尔尼诺整块功能（后端 + 前端）已按用户要求删除。**不要再加回来**。
 # ============ 1. 交易日列表 ============
+def _confirm_today():
+    """确认「今天是不是**已经收盘的交易日**」，是则返回 `YYYY-MM-DD`，否则 None。
+
+    为什么要单独确认：交易日两源（腾讯日K / 同花顺指数日K）**盘后都不含当日**
+    （同花顺尤其明显，见 §9.2 第 2 条），所以「今天」不能凭空塞进列表 ——
+    遇到节假日会造出一个不存在的交易日，把整条管线带偏。
+    判据用**涨停池**：非交易日它返回空（A 股从未出现过全天零涨停，可放心用）。
+    """
+    now = datetime.now()
+    if now.weekday() >= 5 or now.hour < 15:
+        return None                       # 周末 / 未收盘 → 今天不可能是"已完成的交易日"
+    try:
+        pool, _ = THS.fetch_zt_pool(now.strftime('%Y%m%d'))
+        if pool:
+            return now.strftime('%Y-%m-%d')
+    except Exception:
+        pass
+    return None
+
+
 def fetch_trade_days(limit=90):
     """交易日列表：主源腾讯日K，备源同花顺上证指数日K，
-    两源都失败时**回退本地缓存**（否则网络一抖整条管线直接终止）。"""
+    两源都失败时**回退本地缓存**（否则网络一抖整条管线直接终止）。
+
+    ⚠️ 拿到列表后还要做一次**当日校验**：两源盘后都不含当日（指数日K要等更晚才生成），
+    若今天是交易日而列表缺它，必须补上 —— 否则整条管线会把**今天的数据挂到上一交易日**，
+    而且这种「源成功但数据陈旧」比「源全失败」更危险（后者会走下面的缓存兜底、反而补上了今天）。
+    2026-09-21 实测踩到：15:29 跑出来 `date=09-18`，而 15:11（当时两源全失败）反而是 `09-21`。
+    """
     got = None
     # 主源：腾讯
     url = ('https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?'
@@ -377,6 +405,11 @@ def fetch_trade_days(limit=90):
     if not got:
         got = THS.fetch_trade_days(limit) or None
     if got:
+        # 当日校验：列表缺当日 + 今天确实是交易日 → 补上（详见函数 docstring 与 _confirm_today）
+        ds = _confirm_today()
+        if ds and got[-1] < ds:
+            print('  [warn] 交易日源缺当日 %s（指数日K盘后滞后，非接口失败）→ 已确认今日为交易日并补上' % ds)
+            got = got + [ds]
         try:
             save_json(TRADE_DAYS_CACHE, {'days': got,
                                          'ts': datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
@@ -1527,21 +1560,50 @@ def _related(board, own_concepts):
     return False
 
 
-def concept_heat(cname):
-    """概念对应板块的当日涨幅（用于「当下热度」排序），找不到返回 None"""
-    if not BOARD_HEAT:
-        return None
+# 「风格 / 属性类」弱题材词：它们在**同花顺概念榜里确实有对应板块**（选中会命中），
+# 但**不是真正在炒的题材** —— 一只票挂这些标签只是因为它的属性（次新、国企、破净…）。
+# 归类时必须**降权**，否则泛词会把真题材挤掉（实测：锡华科技 因涨停原因首位是「次新股」
+# 被归到「科创次新股」，而它真正炒的是「风电齿轮箱」）。
+WEAK_THEME_KW = ('次新', '国企改革', '预盈预增', '预亏预减', '贬值受益', '送转', '高送转',
+                 '破净', '低价股', '百元股', '微盘', '壳资源', '摘帽', 'AB股', 'AH股',
+                 '融资融券', '转债标的', 'MSCI', '富时', '标普', 'GDR', '专精特新',
+                 '昨日', '涨停', '跌停', '抱团', '机构重仓', '社保重仓', 'QFII', '基金重仓')
+
+
+def match_board(cname):
+    """概念名 → 命中的板块 `(板块名, 当日涨幅)`；找不到返回 `(None, None)`。
+
+    匹配优先级：**精确同名** > **去后缀后相等**（CPO ↔ CPO概念）> **互相包含**（光通信模块 ↔ 光模块）。
+    同一档内取**当日涨幅最高**的那个。
+
+    ⚠️ 分档很重要：若不分档，像「AI」这种泛词会被当天涨得最好的「智谱AI」抢走，
+    而它本来该落到更贴切的同义板块上。
+    """
+    if not BOARD_HEAT or not cname:
+        return (None, None)
     if cname in BOARD_HEAT:
-        return BOARD_HEAT[cname]
-    # 模糊：板块名 与 概念名 互相包含（如 CPO ↔ CPO概念，光通信模块 ↔ 光模块）
+        return (cname, BOARD_HEAT[cname])
     base = re.sub(r'(板块|概念股?)$', '', cname)
+    if not base:
+        return (None, None)
+    same, fuzzy = [], []
     for bn, pct in BOARD_HEAT.items():
         b2 = re.sub(r'(板块|概念股?)$', '', bn)
-        if not base or not b2:
+        if not b2:
             continue
-        if base == b2 or (len(base) >= 2 and base in b2) or (len(b2) >= 2 and b2 in base):
-            return pct
-    return None
+        if base == b2:
+            same.append((bn, pct))          # 去掉「板块/概念」后缀后完全相等
+        elif (len(base) >= 2 and base in b2) or (len(b2) >= 2 and b2 in base):
+            fuzzy.append((bn, pct))         # 互相包含
+    pool = same or fuzzy
+    if not pool:
+        return (None, None)
+    return max(pool, key=lambda t: t[1])
+
+
+def concept_heat(cname):
+    """概念对应板块的当日涨幅（用于「当下热度」排序），找不到返回 None"""
+    return match_board(cname)[1]
 
 
 def rank_concepts(concepts):
@@ -2416,6 +2478,55 @@ def main():
              sum(1 for _b in concept[:15] if _k_ok(_b)), len(concept[:15]),
              sum(1 for _b in board_3d if _k_ok(_b)), len(board_3d)))
 
+    # ---- 高标跟踪（近半月 ≥4 连板 → 按当前最贴合题材归类 → 跟到跌停为止）----
+    # 依赖 zt_hist / dt_hist（**运行期内存数据，不落盘**）与标签缓存，故必须在本模块内产出。
+    def _theme_of(code, market, fb, ind):
+        """当前最贴合题材。
+
+        三步取值（顺序即优先级）：
+          ① **涨停原因**（`fb`，同花顺标注的「今天为什么涨停」）中能命中在榜板块的 → 用**命中的板块名**；
+          ② 退而用 F10 题材（标签缓存）中能命中在榜板块的 → 同样用板块名；
+          ③ 都没命中 → 退回原始词（涨停原因 → F10 → 行业），**不塞进「其他」**。
+
+        ⚠️ 为什么「涨停原因」优先于 F10 题材：F10 是**宽泛标签**（一只票挂 5~6 个），
+        按"当日涨幅最高"选会严重跑偏 —— 实测 **爱仕达** 被归到「土地流转」(当日 2.84%)，
+        而它当天真正的涨停原因是「**人形机器人**」；闽东电力被归到「国企改革」而非「风电」。
+        ⚠️ 为什么最终用「**板块名**」做归类键：只有归一化，同题材的票才会落到同一组
+        （锡华科技的「风电齿轮箱」与闽东电力的「风电」都会归到「风电」）。
+        """
+        cpts = [x for x in ((cache.get('%s.%s' % (market, code)) or {}).get('concepts') or []) if x]
+        fb = [x for x in (fb or []) if x]
+
+        def _weak(x):
+            return any(k in x for k in WEAK_THEME_KW)
+
+        # ① 涨停原因：按**位置**取第一个命中的 —— 同花顺「为什么涨停」的顺序是可靠的
+        for x in fb:
+            if _weak(x):
+                continue
+            bn, _ = match_board(x)
+            if bn:
+                return bn
+        # ② F10 题材：位置**不可靠**（一票挂 5~6 个、顺序含泛词），故改按**当日涨幅**取最热的命中板块
+        best, best_pct = None, None
+        for x in cpts:
+            if _weak(x):
+                continue
+            bn, pct = match_board(x)
+            if bn and (best_pct is None or pct > best_pct):
+                best, best_pct = bn, pct
+        if best:
+            return best
+        # ③ 只剩「次新 / 国企改革 / 破净」这类属性词 → 降级使用（聊胜于无）
+        for x in fb + cpts:
+            bn, _ = match_board(x)
+            if bn:
+                return bn
+        # ④ 一个在榜板块都没命中 → 退回原始词，**不要塞进「其他」**
+        return (fb or [None])[0] or (cpts or [None])[0] or ind or '其他'
+
+    bigboards = BB.build_bigboards(zt_hist, days, dt_hist, theme_of=_theme_of)
+
     data = {
         'updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         'date': today,
@@ -2433,6 +2544,7 @@ def main():
         'zt_pool': today_pool,
         'dt_pool': dt_today,        # 跌停板梯队：今日明细（含题材）
         'dt_ladder': dt_series,     # 跌停板梯队：近 7 日家数/最高连跌趋势
+        'bigboards': bigboards,     # 高标跟踪：近半月 ≥4 连板，按当前题材归类，跟到跌停为止
         'nodes': nodes_out[:12],
         'board_perf': build_board_perf(today_pool, days),  # 连板晋级 + 昨日涨停表现（同花顺自算）
         'market_volume': {                           # 沪深京量能（近15个已收盘交易日）
