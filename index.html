@@ -316,13 +316,9 @@
   .bb-row .bb-meta { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 11px; }
   .bb-row .bb-lb { font-weight: 800; color: #dc2626; font-variant-numeric: tabular-nums; }
   .bb-row.ld .bb-lb { color: #9ca3af; }
-  .bb-row .bb-cur { color: #6b7280; }
   .bb-row .bb-badge { font-size: 10.5px; padding: 1px 6px; border-radius: 5px; white-space: nowrap; }
   .bb-row .bb-badge.on { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
   .bb-row .bb-badge.ld { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
-  .bb-row .bb-del { border: 1px solid #e5e7eb; background: #fff; color: #9ca3af; font-size: 10.5px;
-                    border-radius: 5px; padding: 1px 7px; cursor: pointer; line-height: 1.5; }
-  .bb-row .bb-del:hover { border-color: #fca5a5; color: #dc2626; }
   .bb-empty { font-size: 12px; color: #9ca3af; padding: 6px 0; }
   .summary { background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 14px 16px; font-size: 13.5px; line-height: 1.8; }
   .summary .hl { color: #047857; font-weight: 700; }
@@ -509,10 +505,12 @@
   .sk-head b{ font-size: 16px; }
   .sk-code{ color: #6b7280; font-size: 12px; margin-left: 6px; }
   .sk-pct{ font-weight: 700; margin-left: 8px; font-size: 14px; }
-  .sk-close{ cursor: pointer; font-size: 15px; color: #6b7280; padding: 2px 9px; border-radius: 6px; }
-  .sk-close:hover{ background: #f1f5f9; }
+  /* ⛔ 关掉「关闭」按钮的 hover 高亮（同一批「不要浮动高亮」要求）。**不要再加。** */
+  .sk-close{ font-size: 15px; color: #6b7280; padding: 2px 9px; border-radius: 6px; }
   .sk-tabs{ display: flex; gap: 8px; padding: 8px 14px 0; }
-  .sk-tab{ font-size: 12.5px; padding: 4px 12px; border-radius: 999px; background: #f1f5f9; color: #475569; cursor: pointer; }
+  /* ⛔ 未激活 tab 的 hover 高亮已删（2026-09-21 用户要求「不要浮动高亮」）。
+     **不要再加 `.sk-tab:hover` / `cursor:pointer` 之类的悬停反馈。** */
+  .sk-tab{ font-size: 12.5px; padding: 4px 12px; border-radius: 999px; background: #f1f5f9; color: #475569; }
   .sk-tab.active{ background: #2563eb; color: #fff; }
   .sk-chart{ width: 100%; height: 330px; flex: 0 0 auto; }
   .sk-loading{ padding: 44px; text-align: center; color: #9ca3af; font-size: 13px; }
@@ -579,9 +577,9 @@
           <div>2、量能柱<b class="mv-red">红</b><b class="mv-green">绿</b>颜色代表相对于昨日放量/缩量</div>
         </div>
       </div>
-      <!-- ① 大盘概览与今日资金主线 -->
+      <!-- ① 概览（2026-09-21 由「大盘概览与今日资金主线」简化而来） -->
       <div class="card" id="mkt-card">
-        <div class="card-title">大盘概览与今日资金主线
+        <div class="card-title">概览
           <span class="tag" id="mkt-session">—</span>
           <span class="tag src-tag" id="mkt-src">同花顺</span>
         </div>
@@ -749,7 +747,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.21-3';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.21-4';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -937,7 +935,7 @@ function renderMacro(){
   // ---- 关键指标 ----
   const kpi=document.getElementById('mkt-kpi');
   if(kpi){
-    const b=m.breadth||{}, md=m.mood||{}, amt=m.amount_yi;
+    const b=m.breadth||{}, md=m.mood||{};
     // ---- 仓位闸门（用户 2026-09-21 指定）：封板率 < 75% **且** 跌停 > 10 → 「空仓」----
     // ⚠️ 必须用**原始比例** md.zt_rate（如 0.7549，界面四舍五入显示成 75%）直接与 0.75 比：
     //    若先 `Math.round(zt_rate*100)` 再比，0.746（显示 75%）会漏判、0.7549 会误判。
@@ -947,8 +945,8 @@ function renderMacro(){
     const dtN = (typeof md.dt==='number') ? md.dt : null;
     const jHas = (ztR!=null && dtN!=null);
     const jEmpty = jHas && ztR < 0.75 && dtN > 10;
+    // ⛔ 「两市成交额」卡片已删（2026-09-21 用户要求，连数据一起不再展示）。**不要加回来。**
     const cells=[
-      {k:'两市成交额', v:amt!=null?Math.round(amt)+'亿':'—', c:''},
       {k:'涨停 / 跌停', v:`<b class="up">${md.zt!=null?md.zt:'—'}</b> / <b class="${(md.dt||0)>0?'down':'flat'}">${md.dt!=null?md.dt:'—'}</b>`, c:''},
       {k:'封板率', v:md.zt_rate!=null?Math.round(md.zt_rate*100)+'%':'—', c:''},
       {k:'炸板家数', v:md.zt_open!=null?md.zt_open:'—', c:''},
@@ -1412,18 +1410,10 @@ function pctCell(v, extra){
   return `<td class="${cls} ${extra||''}">${n>0?'+':''}${n.toFixed(2)}%</td>`;
 }
 // ============ 高标跟踪（近半月 ≥4 连板）============
-// 数据来自后端 `bigboards`（`fetch_data.py` → `bigboards.py`）；这里只做展示 + 本机删除。
-// ⚠️ 「删除」是**本机 localStorage 黑名单**：点了就永久从本机视图消失（且后续每天的新数据
-//    也会被过滤掉，不会"明天又回来"）。但它**写不回仓库** —— 若要跨设备、或从数据源头彻底删，
-//    需把代码写进 `bigboards_hidden.json`（后端生成时直接排除），见 项目约定.md §3.15。
-const BB_DEL_KEY='bb_deleted_v1';
-function bbDeleted(){
-  try{ return new Set(JSON.parse(localStorage.getItem(BB_DEL_KEY)||'[]')); }catch(e){ return new Set(); }
-}
-function bbAddDeleted(code){
-  const s=bbDeleted(); if(code) s.add(code);
-  try{ localStorage.setItem(BB_DEL_KEY, JSON.stringify([...s])); }catch(e){}
-}
+// 数据来自后端 `bigboards`（`fetch_data.py` → `bigboards.py`）；前端**只做展示，无任何交互**。
+// ⛔ 2026-09-21 用户要求删除「删除按钮」与整套前端删除机制（localStorage 黑名单 / 确认弹窗 / 事件委托）。
+//    理由：不再跟踪的票由后端 `bigboards_hidden.json` 黑名单**直接排除**，前端删除是多余的。
+//    **不要以任何理由把 `BB_DEL_KEY` / `bbDeleted` / `bbAddDeleted` / `.bb-del` / `data-bb-del` 加回来。**
 function renderBigboards(){
   const box=document.getElementById('bigboards-box');
   if(!box) return;
@@ -1435,20 +1425,17 @@ function renderBigboards(){
     if(note) note.textContent='—';
     return;
   }
-  const del=bbDeleted();
-  const groups=(bb.groups||[]).map(g=>Object.assign({}, g, {
-    stocks:(g.stocks||[]).filter(s=>!del.has(s.code))})).filter(g=>g.stocks.length);
-  const shown=groups.reduce((n,g)=>n+g.stocks.length, 0);
+  const groups=bb.groups||[];
+  const shown=groups.reduce((n,g)=>n+(g.stocks||[]).length, 0);
   if(note) note.textContent='近 '+bb.days+' 个交易日';
+  const st=bb.stats||{};
   if(sum) sum.innerHTML=String(bb.date_from||'').slice(5)+' ~ '+String(bb.date_to||'').slice(5)
-    +' · 共 '+bb.stats.total+' 只（跟踪中 <b class="up">'+bb.stats.tracking
-    +'</b> · 跌停 <b class="down">'+bb.stats.limit_down+'</b>）'
-    +(bb.stats.total>shown ? ' · 本机已删 '+(bb.stats.total-shown)+' 只' : '');
-  if(!shown){ box.innerHTML='<div class="bb-empty">已全部删除（本机）</div>'; return; }
+    +' · 共 '+(st.total!=null?st.total:shown)+' 只（跟踪中 <b class="up">'+(st.tracking||0)
+    +'</b> · 跌停 <b class="down">'+(st.limit_down||0)+'</b>）';
   box.innerHTML=groups.map(g=>`
     <div class="bb-group">
-      <div class="bb-theme"><i></i>${esc(g.theme)}<span class="n">${g.stocks.length}只</span></div>
-      ${g.stocks.map(s=>{
+      <div class="bb-theme"><i></i>${esc(g.theme)}<span class="n">${(g.stocks||[]).length}只</span></div>
+      ${(g.stocks||[]).map(s=>{
         const ld=(s.status==='limit_down');
         const detail=(ld ? ('跌停 '+String(s.ld_date||'').slice(5)
                             +(s.ld_chg!=null?(' ('+Number(s.ld_chg).toFixed(2)+'%)'):''))
@@ -1460,26 +1447,12 @@ function renderBigboards(){
           <span class="bb-code">${esc(s.code)}</span>
           <span class="bb-meta">
             <span class="bb-lb">${s.max_lbc}板</span>
-            ${s.cur_lbc>=2?`<span class="bb-cur">当前${s.cur_lbc}板</span>`:''}
             <span class="bb-badge ${ld?'ld':'on'}" data-tip-title="${esc(s.name)}"
                   data-tip="${esc(detail)}">${ld?'跌停 '+String(s.ld_date||'').slice(5):'跟踪中'}</span>
-            <button class="bb-del" data-bb-del="${esc(s.code)}"
-                    data-bb-name="${esc(s.name)}">删除</button>
           </span>
         </div>`;}).join('')}
     </div>`).join('');
 }
-// 删除按钮：事件委托（列表是动态生成的）。⚠️ 触屏无 hover，用 click 而非 mouseover。
-document.addEventListener('click', e=>{
-  if(!(e.target instanceof Element)) return;
-  const b=e.target.closest('[data-bb-del]');
-  if(!b) return;
-  e.preventDefault();
-  const code=b.getAttribute('data-bb-del'), name=b.getAttribute('data-bb-name')||code;
-  if(!confirm('删除「'+name+'」的全部跟踪数据？\n\n删除后本机不再显示，也不再跟踪（含以后每天的新数据）。')) return;
-  bbAddDeleted(code);
-  renderBigboards();
-});
 
 function renderBoards(){
   renderBigboards();                                   // 高标跟踪卡片（本面板置顶）

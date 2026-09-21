@@ -55,9 +55,7 @@
 | `_smoke_init.js` | 前端**桩件冒烟**：模拟 DOM 跑 `init()` 与各 `render*()`（改前端后必跑）|
 | `_shot.js` | 前端**视觉验收**：playwright-core + 系统 Edge 逐面板截图 + 结构断言，产物落 `.shots/`（改前端后必跑，见 `项目约定.md` §9.3）|
 | `check_ladder.py` | **连板梯队回归检查（两道）**：① 自建梯队 vs 同花顺 `continuous_limit_up` 逐日对账；② 纯数学断言「N天M板且 N≠M ⇒ 连板数 ≤ M−1」（能同时抓住「取 M」「取 N」两种错误，不依赖接口）。改连板数相关代码后必跑，见 `项目约定.md` §9.2 第 12 条 |
-| `bigboards.py` | **高标跟踪后端模块**（2026-09-21 用户指定）：近 10 个交易日 **≥4 连板**的票 → 按当前最贴合题材归类 → 跟到跌停为止 → 每行可删。产出 `data.bigboards`，被 `fetch_data.py` 主流程调用。含删除黑名单读写 `load_hidden()` / `save_hidden()`（文件 `bigboards_hidden.json`，**已入库**）。见 `项目约定.md` §3.15 |
-| `hide_bigboard.py` | **高标跟踪黑名单维护工具**（改黑名单的唯一推荐方式，别手改 JSON）：`--list` 列出已跌停候选 / `--show` 显示黑名单并核对是否已从 data.json 消失 / `--hide-limit-down` 一键清除全部已跌停票 / `--add` / `--remove`。写完**必须重跑 `fetch_data.py` + push** |
-| `bigboards_hidden.json` | 高标跟踪的**后端删除黑名单**（`{"codes":[...]}`，⚠️ 键名必须 `codes`）。**git 跟踪** —— 入库才能跨设备全栈删除；前端「删除」只写本机 `localStorage`（`bb_deleted_v1`），换设备会重现 |
+| `bigboards.py` | **高标跟踪后端模块**（2026-09-21 用户指定）：近 10 个交易日 **≥4 连板**的票 → 按当前最贴合题材归类 → 跟到跌停为止。产出 `data.bigboards`，被 `fetch_data.py` 主流程调用。**纯统计，无删除/黑名单副作用。** 见 `项目约定.md` §3.15 |
 | `_tags_dump.py` | 盘后复盘 B 段的**正式工具**：给涨停/炸板/跌停池补概念标签（**可直接复用，别重复创建**）|
 
 ---

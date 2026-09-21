@@ -92,9 +92,16 @@ async function shoot(page, tag, panel, label, w, h) {
         bbCard: !!document.getElementById('bigboards-card'),
         bbGroups: document.querySelectorAll('#bigboards-box .bb-group').length,
         bbRows: document.querySelectorAll('#bigboards-box .bb-row').length,
+        // ⛔ 删除按钮已删（2026-09-21 用户要求）—— 下面两条断言必须恒为 0
         bbDel: document.querySelectorAll('#bigboards-box [data-bb-del]').length,
+        bbCur: document.querySelectorAll('#bigboards-box .bb-cur').length,
         bbNote: (document.getElementById('bb-note') || {}).textContent || '',
+        bbSum: (document.getElementById('bb-sum') || {}).textContent || '',
         bbHasData: (typeof D !== 'undefined' && D && D.bigboards) ? (D.bigboards.groups || []).length : -1,
+        // ⛔ 已删功能的自检（都应为「不存在」）
+        bbDelKeyFn: [typeof bbDeleted, typeof bbAddDeleted].join(','),
+        kpiHasAmt: /两市成交额|成交额/.test((document.getElementById('mkt-kpi') || {}).textContent || ''),
+        mktTitle: (document.querySelector('#mkt-card .card-title') || {}).textContent || '',
         macroIndexCount: m && m.indices ? m.indices.length : -1,
         macroIndexNames: m && m.indices ? m.indices.map(i => i.name) : [],
         hasStyleKey: !!(m && m.style),
@@ -139,7 +146,11 @@ async function shoot(page, tag, panel, label, w, h) {
     if (chk.notes !== 3) { failed++; console.log(`  ❌ 研判应为 3 条，实为 ${chk.notes}`); } else console.log('  ✅ 研判 3 条');
 
     // ---- 仓位闸门：真值 + 边界 + 「与/或」语义（改 mood 后 renderMacro 重绘，结束时还原）----
-    ok('KPI 行末新增「仓位建议」卡', chk.kpiCount === 8 && /仓位建议/.test(chk.judgeTxt));
+    // ⛔ KPI 行数 = 7：「两市成交额」卡已删（2026-09-21 用户要求，连数据一起不展示）。**不得加回。**
+    ok('KPI 行已无「两市成交额」卡', !chk.kpiHasAmt);
+    ok('面板标题已简化为「概览」（不再含「资金主线」）',
+       /概览/.test(chk.mktTitle) && !/资金主线/.test(chk.mktTitle));
+    ok('KPI 行末新增「仓位建议」卡', chk.kpiCount === 7 && /仓位建议/.test(chk.judgeTxt));
     // 期望值按当前数据动态算（data.js 换成任意一天的数据都成立），不写死
     const expEmpty = (typeof chk.moodZtRate === 'number' && typeof chk.moodDt === 'number')
       && chk.moodZtRate < 0.75 && chk.moodDt > 10;
@@ -176,35 +187,42 @@ async function shoot(page, tag, panel, label, w, h) {
     ok('封板率数据缺失 → 显示「—」（不误报为可参与）', /—/.test(gate.miss.txt));
     ok('模拟后已还原为真实数据', gate.back.txt === gate.cur.txt);
 
-    // ---- 高标跟踪（近半月 ≥4 连板）----
-    // ⚠️ 上面 shoot() 会把页面停在「均线」面板，`#bigboards-box` 在「板块」面板里（display:none）
-    //    → 必须先切回板块面板，否则 page.click 会 element is not visible 超时。
+    // ---- 高标跟踪（近半月 ≥4 连板）—— 2026-09-21 已改为**纯展示** ----
+    // ⛔ 删除按钮 / localStorage 黑名单 / 汇总条本地过滤 —— 全部已删。下面这批断言**必须恒真**，
+    //    它们是「减法没被revert」的守卫：一旦有人把删除机制加回来，这里会立刻红。
+    //    口径：高标跟踪里「不再跟踪」的票 = 跌停后不再出现在卡片里，**别处统计一律照旧使用**。
     await page.click('.menu-item[data-panel="boards"]');
     await sleep(500);
     ok('板块面板置顶新增「高标跟踪」卡片', chk.bbCard);
+    ok(`高标跟踪【无删除按钮】（实测 ${chk.bbDel} 个 [data-bb-del]）`, chk.bbDel === 0);
+    ok(`高标跟踪【无「当前N板」标记】（实测 ${chk.bbCur} 个 .bb-cur）`, chk.bbCur === 0);
+    ok('前端删除函数已彻底删除（bbDeleted / bbAddDeleted 均 undefined）',
+       chk.bbDelKeyFn === 'undefined,undefined');
     if (chk.bbHasData > 0) {
-      ok(`高标跟踪已渲染（${chk.bbGroups} 个题材组 / ${chk.bbRows} 只 / ${chk.bbDel} 个删除按钮）`,
-         chk.bbGroups > 0 && chk.bbRows > 0 && chk.bbDel === chk.bbRows);
-      page.on('dialog', d => d.accept());          // 删除按钮有 confirm()，这里自动确认
-      const code = await page.evaluate(() => {
-        const b = document.querySelector('#bigboards-box [data-bb-del]');
-        return b ? b.getAttribute('data-bb-del') : '';
-      });
-      const b4 = chk.bbRows;
-      if (code) { await page.click('#bigboards-box [data-bb-del]'); await sleep(400); }
-      const del = await page.evaluate(c => ({
+      ok(`高标跟踪已渲染（${chk.bbGroups} 个题材组 / ${chk.bbRows} 只）`,
+         chk.bbGroups > 0 && chk.bbRows > 0);
+      // 汇总条 = 后端 stats（纯展示，不再按本机显示行做二次统计）
+      const st = await page.evaluate(() => ({
+        sum: (document.getElementById('bb-sum') || {}).textContent || '',
         rows: document.querySelectorAll('#bigboards-box .bb-row').length,
-        gone: !Array.from(document.querySelectorAll('#bigboards-box [data-bb-del]'))
-                   .some(b => b.getAttribute('data-bb-del') === c),
-        ls: localStorage.getItem('bb_deleted_v1') || '',
-      }), code);
-      ok('删除按钮：点击后该票立即从列表消失', !!code && del.rows === b4 - 1 && del.gone);
-      ok('删除记录已写入本机黑名单(localStorage)', del.ls.indexOf(code) >= 0);
-      await page.evaluate(() => { localStorage.removeItem('bb_deleted_v1'); renderBigboards(); });
-      const back = await page.evaluate(() => document.querySelectorAll('#bigboards-box .bb-row').length);
-      ok('清掉本机黑名单后即恢复（证明是本地过滤，未动数据）', back === b4);
+        st: (D.bigboards && D.bigboards.stats) || null,
+      }));
+      const e = st.st || {};
+      ok(`汇总条与后端 stats 一致（共 ${e.total} 只 / 跟踪中 ${e.tracking} / 跌停 ${e.limit_down}）`,
+         st.st != null
+         && st.sum.indexOf('共 ' + e.total + ' 只') >= 0
+         && st.sum.indexOf('跟踪中 ' + e.tracking) >= 0
+         && st.sum.indexOf('跌停 ' + e.limit_down) >= 0);
+      ok(`汇总条声明的总只数与实际渲染行数一致（${e.total} vs ${st.rows}）`, e.total === st.rows);
+      // 跌停票必须仍在列表里（只是带 ld 样式），不是被删掉 —— 这正是「不再跟踪 ≠ 永久排除」
+      const ld = await page.evaluate(() => document.querySelectorAll('#bigboards-box .bb-row.ld').length);
+      ok(`跌停票仍在列表中打标（${ld} 只 .bb-row.ld == stats.limit_down ${e.limit_down}）`,
+         ld === e.limit_down);
+      // localStorage 里不应再有任何高标跟踪相关的键
+      const lsKeys = await page.evaluate(() => Object.keys(localStorage).filter(k => /bb_deleted|bigboard/i.test(k)));
+      ok(`localStorage 已无高标跟踪黑名单键（实测 ${JSON.stringify(lsKeys)}）`, lsKeys.length === 0);
     } else {
-      console.log('  · 提示：data.js 暂无 bigboards 数据（旧数据），跳过渲染/删除断言');
+      console.log('  · 提示：data.js 暂无 bigboards 数据（旧数据），跳过渲染断言');
     }
 
     // 触发态**特写**截图（供确认「空仓」警示样式；拍完立即还原，不影响其它截图与线上数据）
