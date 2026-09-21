@@ -25,6 +25,11 @@ from datetime import datetime
 BASE = os.path.dirname(os.path.abspath(__file__))
 HIDDEN_FILE = os.path.join(BASE, 'bigboards_hidden.json')
 
+# 黑名单文件里的说明字段 —— `save_hidden()` 必须原样保留，否则重跑一次就把人看的说明抹掉了
+_HIDDEN_NOTE = ('高标跟踪的后端删除黑名单（codes = 证券代码，升序）。此文件入库 → 重跑 fetch_data.py '
+                '并 push 后，所有设备都会永久排除这些票。前端「删除」按钮只写本机 localStorage'
+                '(bb_deleted_v1)，换设备会重现，故真正的「全栈删除」必须走本文件。')
+
 BIG_DAYS = 10        # 近半月 ≈ 10 个交易日（与 NODE_KEEP_DAYS 同口径）
 BIG_MIN_LBC = 4      # 收录门槛：窗口内曾达到 4 连板及以上
 
@@ -32,27 +37,38 @@ BIG_MIN_LBC = 4      # 收录门槛：窗口内曾达到 4 连板及以上
 def load_hidden() -> set:
     """读取「已删除」黑名单（证券代码集合）。
 
+    ⚠️ 键名是 **`codes`**（与 `save_hidden()` 写入的一致）。历史上有一次误写成 `hidden`
+       → 黑名单**静默失效**（读不到 → 票又冒出来，且不报错）。改这里务必同步改 `save_hidden()`。
+
     Returns:
         set[str]: 代码集合；文件不存在 / 解析失败一律返回空集（绝不让管线挂掉）。
     """
     try:
         with open(HIDDEN_FILE, encoding='utf-8') as f:
             d = json.load(f)
-        return {str(c).strip() for c in (d.get('codes') or []) if str(c).strip()}
+        if not isinstance(d, dict):
+            return set()
+        # 兼容两种键名（`codes` 为准，`hidden` 为历史误写），任一命中即生效
+        raw = d.get('codes')
+        if raw is None:
+            raw = d.get('hidden')
+        return {str(c).strip() for c in (raw or []) if str(c).strip()}
     except Exception:
         return set()
 
 
 def save_hidden(codes) -> None:
-    """写回黑名单（代码升序 + 更新时间，便于人工审阅 git diff）。
+    """写回黑名单（代码升序 + 更新时间 + 保留说明，便于人工审阅 git diff）。
 
     Args:
         codes: 可迭代的证券代码。写入后，这些票在下次生成时会被完全排除。
     """
     out = {'updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-           'codes': sorted({str(c).strip() for c in codes if str(c).strip()})}
+           'codes': sorted({str(c).strip() for c in codes if str(c).strip()}),
+           '_note': _HIDDEN_NOTE}
     with open(HIDDEN_FILE, 'w', encoding='utf-8') as f:
         json.dump(out, f, ensure_ascii=False, indent=1)
+        f.write('\n')
 
 
 def build_bigboards(zt_hist, days, dt_hist, theme_of=None, hidden=None, now=None):
