@@ -255,6 +255,73 @@ async function shoot(page, tag, panel, label, w, h) {
     }
     await page.evaluate(s => { D.macro.mood.zt_rate = s.r; D.macro.mood.dt = s.d; renderMacro(); }, saved);
 
+    // ── 日K线「涨停」标黄（约定 §3.9b）──────────────────────────────
+    // ① 判据纯函数：用**真实行情样本**（含腾讯前复权 3 位小数、一字板、差一分没封、跌停）逐条断言
+    const lim = await page.evaluate(() => {
+      const B = (o, c, h, l) => ({ o, c, h, l });
+      return {
+        // 远望谷 2026-09-11 一字首板：前收 7.31 → 涨停价 8.04（真实样本）
+        yizi:      isLimitUpBar(B(8.04, 8.04, 8.04, 8.04), 7.31, '002161', '远望谷'),
+        // 远望谷 2026-06-17（前复权 3 位小数）：7.31→8.04 同一天在复权空间的表现 5.677→6.247
+        qfq3:      isLimitUpBar(B(5.597, 6.247, 6.247, 5.447), 5.677, '002161', '远望谷'),
+        // 闽东电力 2026-09-18：+9.07% 未封（真实样本，必须判否）
+        notSealed: isLimitUpBar(B(19.05, 19.60, 19.75, 18.90), 17.97, '000993', '闽东电力'),
+        // 「差一分没封」且收盘=最高（前收 10 → 涨停价 11.00，收 10.99）必须判否
+        oneCent:   isLimitUpBar(B(11.00, 10.99, 10.99, 10.80), 10.00, '600000', '浦发银行'),
+        // 一字跌停（全部相等但下跌）必须判否
+        yiziDt:    isLimitUpBar(B(9.00, 9.00, 9.00, 9.00), 10.00, '600000', '浦发银行'),
+        // 首根K线（无前收）必须判否
+        firstBar:  isLimitUpBar(B(8.00, 8.40, 8.40, 7.90), null, '002161', '远望谷'),
+        // 创业板 20%（前收 10 → 涨停价 12.00）
+        cyb20:     isLimitUpBar(B(10.00, 12.00, 12.00, 9.95), 10.00, '300001', '特锐德'),
+        cyb10:     isLimitUpBar(B(10.00, 11.00, 11.00, 9.95), 10.00, '300001', '特锐德'),
+        // 限幅识别
+        rMain: limitRatioOf('600000', '浦发银行'), rCyb: limitRatioOf('300001', '特锐德'),
+        rKcb:  limitRatioOf('688001', '华兴源创'), rBjs: limitRatioOf('830001', '某北交所'),
+        rSt:   limitRatioOf('600000', '*ST 某'),
+      };
+    });
+    ok('涨停判据：一字板（前收7.31→8.04）→ 命中', lim.yizi === true);
+    ok('涨停判据：前复权 3 位小数（5.677→6.247）→ 命中', lim.qfq3 === true);
+    ok('涨停判据：+9.07% 未封（闽东电力 09-18）→ 不命中', lim.notSealed === false);
+    ok('涨停判据：「差一分没封」但收=最高（10.99 vs 11.00）→ 不命中', lim.oneCent === false);
+    ok('涨停判据：一字跌停 → 不命中', lim.yiziDt === false);
+    ok('涨停判据：首根K线无前收 → 不命中', lim.firstBar === false);
+    ok('涨停判据：创业板 20% 涨停 → 命中', lim.cyb20 === true);
+    ok('涨停判据：创业板仅 +10% → 不命中', lim.cyb10 === false);
+    ok(`限幅识别：主板 ${lim.rMain} / 创业板 ${lim.rCyb} / 科创板 ${lim.rKcb} / 北交所 ${lim.rBjs} / ST ${lim.rSt}`,
+       lim.rMain === 0.10 && lim.rCyb === 0.20 && lim.rKcb === 0.20 && lim.rBjs === 0.30 && lim.rSt === 0.05);
+
+    // ② 集成：真的走 renderKline 画一遍，从 ECharts 实例里读回「哪几根被标黄」
+    const kline = await page.evaluate(() => {
+      const el = document.createElement('div');
+      el.style.cssText = 'width:600px;height:320px;position:absolute;left:-9999px;';
+      document.body.appendChild(el);
+      const bars = [
+        { d: '2026-09-10', o: 6.91, c: 7.31, h: 7.40, l: 6.89, v: 399633 },  // 普通阳线
+        { d: '2026-09-11', o: 8.04, c: 8.04, h: 8.04, l: 8.04, v: 187876 },  // 一字涨停
+        { d: '2026-09-14', o: 8.47, c: 7.24, h: 8.47, l: 7.24, v: 1050332 }, // 天地板（非涨停）
+      ];
+      renderKline(el, { kind: 'k', bars }, '002161', '远望谷');
+      const opt = echarts.getInstanceByDom(el).getOption();
+      const data = opt.series[0].data;
+      const out = {
+        n: data.length,
+        isPlain0: Array.isArray(data[0]),
+        isPlain2: Array.isArray(data[2]),
+        marked1: !Array.isArray(data[1]) && !!(data[1] && data[1].itemStyle),
+        color1: data[1] && data[1].itemStyle ? data[1].itemStyle.color : null,
+        val1: data[1] && data[1].itemStyle ? JSON.stringify(data[1].value) : null,
+      };
+      skChart = null;          // 复位全局，避免 resize 时指向已 dispose 的实例
+      echarts.dispose(el); el.remove();
+      return out;
+    });
+    ok(`K线涨停标黄：仅第 2 根（一字涨停）带 itemStyle（共 ${kline.n} 根）`,
+       kline.n === 3 && kline.isPlain0 && kline.isPlain2 && kline.marked1);
+    ok(`K线涨停标黄：颜色为黄色 ${kline.color1}`, kline.color1 === '#facc15');
+    ok(`K线涨停标黄：K线数值未被破坏 ${kline.val1}`, kline.val1 === '[8.04,8.04,8.04,8.04]');
+
     console.log(`  · 页脚：${chk.pageVer.trim()}`);
     if (errs.length) { failed++; console.log('  ❌ 页面报错：\n     ' + errs.slice(0, 5).join('\n     ')); }
     else console.log('  ✅ 无 JS 报错');

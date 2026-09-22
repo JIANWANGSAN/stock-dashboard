@@ -747,7 +747,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.21-5';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.22-1';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -1568,7 +1568,7 @@ function renderModule4(){
     (st.disclaimer?('<span style="color:#9ca3af;">'+esc(st.disclaimer)+'</span>'):'');
 }
 /* ---- 个股行情弹层：当日分时 / 日K线（腾讯源优先，东财兜底；二者均支持跨域直连） ---- */
-let skChart=null, skSecid='', skView='min';
+let skChart=null, skSecid='', skView='min', skNameText='';
 function secidOf(code, market){
   const m=(market===0||market===1)?market:(String(code).charAt(0)==='6'?1:0);
   return m+'.'+String(code);
@@ -1585,6 +1585,7 @@ function jget(url){
 function openStock(code, market, name){
   code=String(code||''); if(!code) return;
   skSecid=secidOf(code, market); skView='min';
+  skNameText=name||code;   // 供「涨停」判据识别 ST（见 §3.9b）
   document.getElementById('sk-name').textContent=name||code;
   document.getElementById('sk-code').textContent=code;
   document.getElementById('sk-pct').textContent='';
@@ -1646,7 +1647,8 @@ function drawStock(){
   loadSeries(skSecid, isMin).then(res=>{
     el.innerHTML='';
     if(!res){ el.innerHTML='<div class="empty">暂无数据（可能停牌/退市）</div>'; return; }
-    if(res.kind==='min') renderMinute(el, res); else renderKline(el, res);
+    if(res.kind==='min') renderMinute(el, res);
+    else renderKline(el, res, String(skSecid).split('.')[1], skNameText);
   }).catch(()=>{
     el.innerHTML='<div class="empty">行情加载失败（网络或接口受限）<br>'
       +'<a href="'+emQuoteUrl(skSecid)+'" target="_blank" rel="noopener" style="color:#2563eb;">点此用同花顺网页查看</a></div>';
@@ -1683,10 +1685,49 @@ function renderMinute(el, res){
     ]
   });
 }
-function renderKline(el, res){
+/* ---- 日K线「涨停」统一标记（项目约定 §3.9b）----
+   ⚠️ 全项目**任何**画日K线的地方都必须走这里 —— 当天收盘涨停 → 该根K线显示为**黄色**。
+   判据（2026-09-22 以同花顺涨停池为真值实测标定，120 只票 / 近 10 交易日 1194 根 K 线：
+        召回 174/174 = 100%，误标 1/1194 = 0.097%）：
+     ① 收 == 高       —— 封板到收盘；盘中炸板（收 < 高）不算涨停
+     ② |收/前收 −(1+限幅)| ≤ 0.005/前收 + 0.0004
+        · 0.005/前收 = **涨停价四舍五入到「分」**带来的最大相对偏差（结构项，随价位自动缩放）
+        · +0.0004    = 数据源噪声预算（腾讯前复权是 3 位小数近似，实测把偏差抬高 0.0004~0.0008，
+                       见 000679/09-08 偏差 0.00076；补 0.0004 即可拿满召回）
+   ⚠️ 为什么不用「涨幅 ≥9.8%」这类阈值：各板块限幅不同（10/20/30/5%），且低价股涨停后
+      涨幅可能只有 9.66%（涨停价向下取整）——阈值法必然两头都错。
+   ⚠️ 已知边界（无法消除，数据源本身只有「分」的精度）：
+      · 「差一分没封」的相对差是 0.01/前收，与上面的容差只差 0.005/前收−0.0004 →
+        **前收 < 12.5 元的票可完全分开**；≥12.5 元的票若出现「差一分没封且收盘=最高」会被标黄
+        （实测 1194 根里仅 1 例：000002/2026-09-21 涨幅 9.94%）。
+      · 除权日（复权因子跳变）可能漏标，已用「一字板兜底」覆盖大部分。 */
+const LIMIT_UP_STYLE={color:'#facc15',borderColor:'#ca8a04',color0:'#facc15',borderColor0:'#ca8a04'};
+const LIMIT_UP_NOISE=0.0004;              // 数据源噪声预算（见上）
+function limitRatioOf(code, name){
+  const c=String(code||'');
+  if(/^(688|689)/.test(c)) return 0.20;           // 科创板
+  if(/^30/.test(c))        return 0.20;           // 创业板（含 ST 创业板）
+  if(/^(8|4|92)/.test(c))  return 0.30;           // 北交所
+  if(/ST/i.test(String(name||''))) return 0.05;   // 主板 ST
+  return 0.10;                                    // 主板 60/00
+}
+function isLimitUpBar(b, prevC, code, name){
+  if(!b || !(prevC>0) || !(b.c>0)) return false;          // 首根K线无前收 → 不判
+  // 一字板兜底：不依赖限幅（抗除权/复权失真）；一字下跌不满足涨 2% 条件
+  if(b.o===b.c && b.c===b.h && b.h===b.l && b.c>=prevC*1.02) return true;
+  if(b.c < b.h-1e-9) return false;                        // ① 收盘非最高 = 未封板到收盘
+  const lim=limitRatioOf(code, name);
+  return Math.abs(b.c/prevC-(1+lim)) <= 0.005/prevC + LIMIT_UP_NOISE;   // ②
+}
+function renderKline(el, res, code, name){
   const bars=res.bars;
   const dates=bars.map(b=>b.d);
-  const kd=bars.map(b=>[b.o,b.c,b.l,b.h]);   // [开,收,低,高]
+  // ⚠️ 涨停日 → 该根K线整体黄色（约定 §3.9b）；volume 柱不标，保持红/绿
+  const kd=bars.map((b,i)=>{
+    const prev=(i>0)?bars[i-1].c:null;
+    const v=[b.o,b.c,b.l,b.h];   // [开,收,低,高]
+    return isLimitUpBar(b, prev, code, name) ? {value:v, itemStyle:LIMIT_UP_STYLE} : v;
+  });
   const vol=bars.map(b=>({value:b.v,itemStyle:{color:b.c>=b.o?'#dc2626':'#16a34a'}}));
   skChart=echarts.init(el);
   skChart.setOption({
@@ -1802,6 +1843,8 @@ function maSeries(closes,n){
   return out;
 }
 function renderBoardK(el, ks){
+  // ⚠️ 板块K线**不做**「涨停黄色」标记（约定 §3.9b）：这里画的是板块**指数**，指数没有涨跌停概念。
+  //    「涨停标黄」只适用于**个股**日K（见 renderKline / isLimitUpBar）。
   const bars=ks.map(s=>{const a=s.split(',');return{d:a[0],o:+a[1],c:+a[2],h:+a[3],l:+a[4]};});
   const dates=bars.map(b=>b.d), closes=bars.map(b=>b.c);
   bkChart=echarts.init(el);
