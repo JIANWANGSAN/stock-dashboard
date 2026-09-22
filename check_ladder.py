@@ -6,13 +6,16 @@
 —— 例如 09-17 把断板回封的众泰汽车（8天5板）画成当日最高 **8 板**，而真实最高只有 5 板。
 详见 `项目约定.md` §9.2 第 12 条。
 
-本脚本含**两道检查**：
+本脚本含**三道检查**：
   ① `check()`    — 自建梯队的 top/second 必须逐日等于 `continuous_limit_up` 的 height 前两项。
   ② `check_n_neq_m()` — 纯数学断言：「N天M板」且 **N ≠ M** 的票，连板数必须 ≤ **M-1**。
      推理：N 个交易日里只有 M 次涨停（N > M）→ 至少有一天没涨停 → M 次涨停被切成 ≥2 段
            → 任何一段的连续长度 ≤ M-1。**故 M（次数）和 N（天数）都不可能是连板数。**
      这条能**同时抓住「取 M」和「取 N」两种取值错误**，不依赖任何接口。
      实例：远望谷 002161 @2026-09-18「6天3板」→ 连板数必须 ≤ 2（真值 1；取 M 得 3、取 N 得 6）。
+  ③ `check_candidates()` — 候选池**入池先决条件**：每只票的 `boards` 必须 ≥ 2。
+     「连板候选池」的票必须**前一交易日也涨停**（⟺ 连板数 ≥ 2，见 `项目约定.md` §3.6）。
+     2026-09-22 用户第二次报此错：池里混进一批首板（1 板）/ 断板反包票。
 
 **改任何与连板数相关的代码后都该跑一次。**
 
@@ -129,6 +132,55 @@ def check_n_neq_m(td, verbose: bool = False) -> int:
     return bad
 
 
+def check_candidates(verbose: bool = False) -> int:
+    """第三道检查：候选池的每只票 `boards` 必须 ≥ 2。
+
+    「连板候选池」的语义是「次日可能继续连板」→ 前提是**今天已经是连板**，
+    即连板数 ≥ 2（⟺ 前一交易日也涨停，见 §3.6 口径）。
+    若池里出现 `boards < 2` 的票（首板 / 断板反包），说明 `build_candidates` 的
+    分支过滤被改坏（2026-09-22 的真实事故：只看 `status`、没校验 `boards`）。
+
+    另核对：每只票必须**确实在当日涨停池里**（连板候选不可能不在涨停池）。
+
+    Returns:
+        违规条数（0 表示通过）。
+    """
+    import json
+    import os
+    here = os.path.dirname(os.path.abspath(__file__))
+    p = os.path.join(here, 'data.json')
+    if not os.path.exists(p):
+        print('候选池检查：跳过（找不到 data.json）')
+        return 0
+    with open(p, encoding='utf-8') as f:
+        d = json.load(f)
+    date = d.get('date') or ''
+    cands = d.get('candidates') or []
+    zt = {s.get('code'): s for s in (d.get('zt_pool') or [])}
+    if not cands:
+        print('候选池检查：跳过（data.json 无 candidates）')
+        return 0
+
+    bad = 0
+    print('候选池检查：%s 共 %d 只' % (date, len(cands)))
+    for c in cands:
+        b = c.get('boards')
+        ok_boards = isinstance(b, int) and b >= 2
+        in_pool = c.get('code') in zt
+        # 若在涨停池，用池里的权威 lbc 再核一遍（防节点里存的旧值）
+        lbc_now = (zt.get(c.get('code')) or {}).get('lbc')
+        ok_lbc = (lbc_now is None) or (isinstance(lbc_now, int) and lbc_now >= 2)
+        if not (ok_boards and in_pool and ok_lbc):
+            bad += 1
+            print('   ❌ %s(%s) boards=%s 在涨停池=%s 池内lbc=%s'
+                  % (c.get('name'), c.get('code'), b, in_pool, lbc_now))
+        elif verbose:
+            print('   ✅ %s(%s) boards=%s' % (c.get('name'), c.get('code'), b))
+    print('候选池入池门槛：%d 只 → %s'
+          % (len(cands), '全部满足 boards ≥ 2 ✅' if not bad else '违规 %d 只 ❌' % bad))
+    return bad
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description='连板梯队回归检查')
     ap.add_argument('--days', type=int, default=10, help='检查最近多少个交易日（默认 10）')
@@ -148,7 +200,11 @@ def main() -> int:
     print('── 第二道检查：N≠M 上界断言 ──')
     bad2 = check_n_neq_m(td, a.verbose)
 
-    return 1 if (bad or bad2) else 0
+    print()
+    print('── 第三道检查：候选池入池门槛（boards ≥ 2）──')
+    bad3 = check_candidates(a.verbose)
+
+    return 1 if (bad or bad2 or bad3) else 0
 
 
 if __name__ == '__main__':

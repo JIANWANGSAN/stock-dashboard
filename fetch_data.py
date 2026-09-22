@@ -1985,18 +1985,41 @@ def dedup_candidates(cands):
 
 def build_candidates(nodes_out, today_pool, hot_concepts, cache):
     """构造次日连板候选池。
-    数据源 = 各节点 stocks(连板中的首板) + 各节点 trigger(连板中的最高标)。
+
+    数据源 = 各节点 trigger(连板中的最高标) + 各节点 stocks(连板中的票)。
+
+    🔴 **入池先决条件（2026-09-22 用户明确）**：
+    **候选池是「连板」候选池 → 入池票必须是「今天在涨停池、且连板数 ≥ 2」的票。**
+    理由：连板 = 自本轮第一个涨停起每个交易日都涨停、**断开即重新起算**（§3 口径）。
+    所以「今天涨停」且「连板数 ≥ 2」**必然蕴含「前一交易日也涨停」** —— 这正是候选池
+    （次日竞价接力）该有的前提。反过来：
+      · 首板（lbc==1）→ 前一交易日没涨停 → **不构成连板，必须剔除**；
+      · 断板反包（连板段中途断过、今天重新涨停）→ 今天的 lbc 从 1 重新起算 →
+        若 lbc==1 同样**不是连板**，也要剔除；只有它已续成 ≥2 板（lbc>=2）才算连板。
+    ⚠️ 曾经的 bug（2026-09-22 用户第二次报）：第二分支只看 `status in ('连板中','断板反包')`，
+      **没校验 `boards`** → 一批「节点当日首板」（lbc==1）通过它们在**旧节点**里的
+      `断板反包` 记录混进池子（同一票在多个节点出现，dedup 取到旧节点那条），
+      表现为「候选池里一堆断板票 / 首板票」。
     trigger 单独入池是为了避免它被旧节点的 stock dedup 覆盖掉（如龙版 6 板
     穿越节点是当日 trigger，但最早它出现在 8/31 断板节点的 stocks 里）。
     """
     today_map = {s.get('code'): s for s in (today_pool or [])}
     cands = []
+
+    def _ok_boards(b):
+        """入池门槛：连板数 ≥ 2（⟺ 前一交易日也涨停）。"""
+        try:
+            return int(b or 0) >= 2
+        except (TypeError, ValueError):
+            return False
+
     for n in nodes_out:
         trg = n.get('trigger') or {}
         if not trg.get('code'):
             continue
         cur = today_map.get(trg['code'])
-        if not cur or cur.get('lbc', 0) < 2:
+        # ⚠️ 门槛用**当日涨停池的实时 lbc**（权威值），不信节点里存的历史 boards
+        if not cur or not _ok_boards(cur.get('lbc')):
             continue
         # ⚠️ nodes 里的 trigger 常缺 market 字段：不能默认 1(沪)，否则深市票会查错
         #    cache key（'1.000993'）→ 概念/地域/行业全空，且 secid 指向别的标的。
@@ -2026,25 +2049,41 @@ def build_candidates(nodes_out, today_pool, hot_concepts, cache):
         })
     for n in nodes_out:
         for s in n.get('stocks', []):
-            # 连板中 + 断板反包：后者虽中途断板，但 3 日内重新封板，仍是活口
-            if s.get('status') not in ('连板中', '断板反包'):
+            # 🔴 只收「连板中」且连板数 ≥ 2 的票（见函数头口径说明）。
+            #    ⛔ 不再收「断板反包」：它今天已断过板、连板从 1 重新起算，
+            #       若已续成 ≥2 板则以 status='连板中' 出现在它**自己的节点**里（会被这里收到）；
+            #       status='断板反包' 的 boards 恒等于当日 lbc，可能只有 1 → 不是连板。
+            if s.get('status') != '连板中':
+                continue
+            # ⚠️ 门槛双查：节点里存的 boards 可能滞后；以**当日涨停池的实时 lbc**为准
+            cur = today_map.get(s['code'])
+            lbc_now = cur.get('lbc') if cur else None
+            if not cur or not _ok_boards(lbc_now):
                 continue
             hit = concept_hit_count(s.get('concepts', []), hot_concepts)
             ferm = ferment_count(s.get('concepts', []), today_pool,
-                                 (today_map.get(s['code']) or {}).get('industry') or '')
+                                 cur.get('industry') or '')
             cands.append({
                 'node_type': n['type'], 'node_date': n['date'], 'node_id': n['id'],
                 'code': s['code'], 'market': s['market'], 'name': s['name'],
                 'region': s.get('region', '—'), 'pinyin': s.get('pinyin', ''),
                 'concepts': s.get('concepts', []), 'industry': s.get('industry', ''),
-                'boards': s.get('boards', 0), 'status': s.get('status', ''),
+                'boards': lbc_now, 'status': s.get('status', ''),
                 'concept_hit': hit, 'ferment': ferm,
-                'zbc': int((today_map.get(s['code']) or {}).get('zbc') or 0),   # 当日炸板次数
-                'first_seal': (today_map.get(s['code']) or {}).get('first_seal'),
+                'zbc': int(cur.get('zbc') or 0),   # 当日炸板次数
+                'first_seal': cur.get('first_seal'),
                 'amount_yi': round(s.get('amount', 0) / 1e8, 2),
                 'total_cap_yi': round(s.get('total_cap', 0) / 1e8, 2),
             })
-    return dedup_candidates(cands)[:12]
+    out = dedup_candidates(cands)[:12]
+    # 🛡️ 收尾自检：出池前再过滤一次，确保**没有任何 1 板票**漏网
+    #    （任何分支/未来改动引入的 1 板票都会在这里被挡下）
+    bad = [c for c in out if not _ok_boards(c.get('boards'))]
+    if bad:
+        print('  [warn] 候选池自检剔除 %d 只连板数<2 的票：%s'
+              % (len(bad), '、'.join('%s(%s板)' % (c.get('name'), c.get('boards')) for c in bad)))
+        out = [c for c in out if _ok_boards(c.get('boards'))]
+    return out
 
 
 def build_reco(cands, today_map, today, verbose=True):
