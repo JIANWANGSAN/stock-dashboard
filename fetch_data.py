@@ -2302,8 +2302,10 @@ def main():
         _last = str(_smp['day'][-1]).split(',')[0].replace('-', '')
         _today = datetime.now().strftime('%Y%m%d')
         if _last != _today:
-            print('  [warn] 板块K线末条=%s，未含今日(%s) —— 同花顺日K收盘后才更新，若已收盘请稍后重跑 '
-                  'fill_board_kline.py' % (_smp['day'][-1].split(',')[0], _today))
+            print('  [warn] 板块K线末条=%s，未含今日(%s) —— 同花顺板块日K当日发布较晚（常到当晚），'
+                  '属正常；要补当日须重跑本脚本，或 `python fill_board_kline.py --force`'
+                  '（⚠️ 不带 --force 只会补"空"的，不会重取"落后"的）'
+                  % (_smp['day'][-1].split(',')[0], _today))
 
     # ---- 梯队折线图数据 ----
     print('\n[5/8] 构建梯队折线数据...')

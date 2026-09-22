@@ -132,15 +132,40 @@ def check_n_neq_m(td, verbose: bool = False) -> int:
     return bad
 
 
-def check_candidates(verbose: bool = False) -> int:
-    """第三道检查：候选池的每只票 `boards` 必须 ≥ 2。
+def _candidate_base_date(d):
+    """候选池的**基准交易日**（YYYYMMDD 字符串）。
 
-    「连板候选池」的语义是「次日可能继续连板」→ 前提是**今天已经是连板**，
-    即连板数 ≥ 2（⟺ 前一交易日也涨停，见 §3.6 口径）。
+    ⚠️ 候选池是「盘前」任务生成的，基准 = **生成日的前一个交易日**的涨停池
+       （premarket.py 在 T 日 09:26 读的 data.json 还是 T-1 收盘版，见 §2 / §3.6b）。
+    所以**不能拿 `data.date` 去比对**：15:05 盘后重建后 `data.date` 已前进到 T，
+    而候选池仍基于 T-1 → 会造成 8/12 "不在当日涨停池" 的**假违规**（2026-09-22 实测踩到）。
+
+    判据：以 `premarket_updated`（其次 `updated`）的日期为「生成日」，取梯队日期里 < 生成日的最后一天。
+    """
+    days = sorted({str(s.get('date', '')).replace('-', '')
+                   for s in (d.get('ladder') or []) if s.get('date')})
+    stamp = str(d.get('premarket_updated') or d.get('updated') or '')
+    m = re.search(r'(\d{4})-(\d{2})-(\d{2})', stamp)
+    if m and days:
+        gen = '%s%s%s' % m.groups()
+        prevs = [x for x in days if x < gen]
+        if prevs:
+            return prevs[-1]
+    cur = str(d.get('date') or '').replace('-', '')
+    prevs = [x for x in days if x < cur]
+    return prevs[-1] if prevs else cur
+
+
+def check_candidates(verbose: bool = False) -> int:
+    """第三道检查：候选池的每只票 `boards` 必须 ≥ 2，且在该基准日涨停池里、池内 `lbc` ≥ 2。
+
+    「连板候选池」的语义是「次日可能继续连板」→ 前提是**基准日已经是连板**，
+    即连板数 ≥ 2（⟺ 再前一交易日也涨停，见 §3.6b 口径）。
     若池里出现 `boards < 2` 的票（首板 / 断板反包），说明 `build_candidates` 的
     分支过滤被改坏（2026-09-22 的真实事故：只看 `status`、没校验 `boards`）。
 
-    另核对：每只票必须**确实在当日涨停池里**（连板候选不可能不在涨停池）。
+    ⚠️ 比对用的涨停池是**基准日**（盘前生成日的前一交易日）的池，不是 `data.date` 当日的池
+       —— 详见 `_candidate_base_date()`。池取不到（网络）时降级为只断言 `boards ≥ 2`。
 
     Returns:
         违规条数（0 表示通过）。
@@ -154,28 +179,38 @@ def check_candidates(verbose: bool = False) -> int:
         return 0
     with open(p, encoding='utf-8') as f:
         d = json.load(f)
-    date = d.get('date') or ''
     cands = d.get('candidates') or []
-    zt = {s.get('code'): s for s in (d.get('zt_pool') or [])}
     if not cands:
         print('候选池检查：跳过（data.json 无 candidates）')
         return 0
 
+    base = _candidate_base_date(d)
+    zt, pool_ok = {}, False
+    try:
+        pool, _stat = THS.fetch_zt_pool(base)
+        zt = {s.get('code'): s for s in (pool or [])}
+        pool_ok = bool(zt)
+    except Exception as e:
+        print('   候选池检查：基准日 %s 涨停池取数失败（%s）→ 降级为只断言 boards ≥ 2' % (base, e))
+
     bad = 0
-    print('候选池检查：%s 共 %d 只' % (date, len(cands)))
+    print('候选池检查：%d 只（基准日 %s，data.date=%s%s）'
+          % (len(cands), base, d.get('date'), '' if pool_ok else '，池未取到'))
     for c in cands:
         b = c.get('boards')
         ok_boards = isinstance(b, int) and b >= 2
-        in_pool = c.get('code') in zt
-        # 若在涨停池，用池里的权威 lbc 再核一遍（防节点里存的旧值）
-        lbc_now = (zt.get(c.get('code')) or {}).get('lbc')
-        ok_lbc = (lbc_now is None) or (isinstance(lbc_now, int) and lbc_now >= 2)
-        if not (ok_boards and in_pool and ok_lbc):
+        in_pool = (c.get('code') in zt) if pool_ok else None
+        # 在池内时，用池里的权威 lbc 再核一遍（防节点里存的旧值）
+        lbc_now = (zt.get(c.get('code')) or {}).get('lbc') if pool_ok else None
+        ok_lbc = (not pool_ok) or (lbc_now is None) or (isinstance(lbc_now, int) and lbc_now >= 2)
+        ok_pool = (not pool_ok) or in_pool
+        if not (ok_boards and ok_pool and ok_lbc):
             bad += 1
-            print('   ❌ %s(%s) boards=%s 在涨停池=%s 池内lbc=%s'
+            print('   ❌ %s(%s) boards=%s 在基准日涨停池=%s 池内lbc=%s'
                   % (c.get('name'), c.get('code'), b, in_pool, lbc_now))
         elif verbose:
-            print('   ✅ %s(%s) boards=%s' % (c.get('name'), c.get('code'), b))
+            print('   ✅ %s(%s) boards=%s%s'
+                  % (c.get('name'), c.get('code'), b, '' if not pool_ok else ' 池内lbc=%s' % lbc_now))
     print('候选池入池门槛：%d 只 → %s'
           % (len(cands), '全部满足 boards ≥ 2 ✅' if not bad else '违规 %d 只 ❌' % bad))
     return bad

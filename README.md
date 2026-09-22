@@ -145,8 +145,13 @@
 **Q：`refresh.bat` 说 Python not found**
 先双击 `setup.bat`；若仍失败，确认 Python 已加入 PATH（命令行输入 `python --version` 验证）。
 
-**Q：拼音缩写是空的**
-`pypinyin` 没装上。双击 `setup.bat` 重装一次。
+**Q：拼音缩写是空的（"缩写怎么又丢了"）**
+`pypinyin` 没装上（**唯一的第三方依赖**）。⚠️ 缺了不会报错，只会把**全站缩写静默写成空串**。
+- 修复：`<你实际跑脚本的python> -m pip install pypinyin`
+  —— ⚠️ **本机清华 pypi 镜像不通**（报 `No matching distribution found`）→ **必须用官方源**（不加 `-i`）。
+- 装完**必须重跑 `fetch_data.py` + `enrich_tags.py`** 才补得回来（`candidates`/`recommend` 由 fetch_data 的
+  「派生字段自愈」自动补）。自检：脚本结尾会打印 `股票缩写(pinyin)：N/M 非空`（正常 >90%）。
+- 原理与完整事故复盘见 `项目约定.md` **§9.2 第 17 条**。
 
 **Q：概念抓得不准**
 在 `fetch_data.py` 的 `CONCEPT_FIX` 里按代码锁定，例如：

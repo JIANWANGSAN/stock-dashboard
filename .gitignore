@@ -29,6 +29,14 @@ _*.json
 _*.html
 _review_today.md
 
+# ⚠️ 备份/临时产物：下划线开头的 .js 是**正式文件**（_shot.js / _smoke_init.js）不能整类忽略，
+#    所以这里显式排除临时备份类。2026-09-22 事故：临时备份 `_bak_data.js` 被 15:35 备份任务
+#    的 `git add -A` 一并提交进公开仓库 → 临时文件请一律放**系统临时目录**，别留在项目根目录。
+_bak_*
+_tmp_*
+_tmp*
+_*_bak.*
+
 # 系统
 .DS_Store
 Thumbs.db

@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 """增量补齐板块K线：按「日K / 周K」分别检查完整性，缺哪补哪，合并写回（可反复运行）。
 
+⚠️ **本脚本默认只补「空」的，不会重取「非空但落后」的K线**
+   （判定见下方 `need_d = FORCE or not (v.get('day') or [])`，第 49-51 行的注释即为原因）。
+   所以：遇到「末条停在上一交易日」这种**落后**，默认模式会直接报 `待补 0 个 / ✅ 已全部齐备`——
+   **那是假安心**，必须用 `--force` 整批重取。
+
 取数实现见 `board_kline_src.py`：**先探测东财，通则整批走东财；东财 K线路径被封时整批切同花顺**
 （两家板块指数基期不同、点位不可混用，故不允许按单个板块切换来源）。
 
 用法：
-  python fill_board_kline.py              # 补齐（缺哪补哪，推荐）
-  python fill_board_kline.py --force      # 全部重取
+  python fill_board_kline.py              # 只补空的（缺哪补哪）
+  python fill_board_kline.py --force      # 全部重取（★ 补「当日/落后」用这个）
   python fill_board_kline.py --src ths    # 强制指定数据源（em / ths）
 """
 import sys, os
