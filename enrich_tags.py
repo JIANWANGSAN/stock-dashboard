@@ -19,7 +19,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 from fetch_data import (BASE, NODES_JSON, DATA_JSON, STOCK_CACHE, load_json, save_json,
                         fetch_stock_tags, pinyin_abbr, concept_hit_count, dedup_candidates,
                         fetch_seal_amount, ferment_count, build_candidates, TAGS_VER,
-                        market_of, fetch_board_rank, BOARD_HEAT)
+                        market_of, fetch_board_rank, BOARD_HEAT, PINYIN_OK, pinyin_coverage)
 import os, time
 from fetch_data import save_js
 
@@ -93,6 +93,12 @@ def main():
     print('=' * 58)
     print('节点票标签补齐  %s' % datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     print('=' * 58)
+    # ⚠️ 依赖自检：pypinyin 缺失会把「拼音缩写」写成空串且不报错（2026-09-22 踩过）
+    if not PINYIN_OK:
+        print('\n' + '!' * 58)
+        print('⚠️⚠️  pypinyin 未安装 —— 本次「拼音缩写」会全部为空！')
+        print("      修复：<python> -m pip install pypinyin（本机清华源不通，用官方源）")
+        print('!' * 58)
     print('节点 %d 个 | 缓存 %d 条' % (len(nodes), len(cache)))
 
     # 收集待标注（去重）
@@ -167,6 +173,10 @@ def main():
         save_json(DATA_JSON, data)
         save_js(os.path.join(BASE, 'data.js'), data)
         print('\n候选池/推荐：沿用盘前版本（本步不再重算）')
+        _ok, _tot = pinyin_coverage(data)
+        _tail = '' if (_tot == 0 or _ok / _tot > 0.9) else \
+                '   ⚠️ 覆盖率异常低 → 检查 pypinyin，装后重跑 fetch_data.py + 本脚本'
+        print('股票缩写(pinyin)：%d/%d 非空%s' % (_ok, _tot, _tail))
 
 
 if __name__ == '__main__':

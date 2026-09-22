@@ -33,11 +33,41 @@ import urllib.request
 
 try:
     from pypinyin import lazy_pinyin
+    PINYIN_OK = True
     def pinyin_abbr(name):
         return ''.join([w[0].upper() for w in lazy_pinyin(name) if w and w[0].isalpha()])
 except ImportError:
+    # ⛔ 绝不要在这里"静默返回空串"！
+    #    2026-09-22 事故：环境重建后 pypinyin 没装回来 → 全站「股票缩写」全变空字符串，
+    #    脚本一声不响跑完，直到用户发现「缩写怎么又丢了」。→ 改为亮明状态 + 运行时告警。
+    PINYIN_OK = False
     def pinyin_abbr(name):
         return ''
+
+
+def pinyin_coverage(obj):
+    """统计 data 里 pinyin 字段的非空率 → (非空数, 总数)。
+
+    用于每次跑完自检：正常应 >90%（少数名字无汉字拼音，如「N新亚」这类除外）。
+    若几乎全空 = pypinyin 没装 → 见 main() 开头的告警。
+    """
+    n = empty = 0
+
+    def walk(x):
+        nonlocal n, empty
+        if isinstance(x, dict):
+            if 'pinyin' in x:
+                n += 1
+                if not x.get('pinyin'):
+                    empty += 1
+            for v in x.values():
+                walk(v)
+        elif isinstance(x, list):
+            for v in x:
+                walk(v)
+
+    walk(obj)
+    return n - empty, n
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 DATA_JSON      = os.path.join(BASE, 'data.json')
@@ -2153,6 +2183,16 @@ def main():
     print('A股短线仪表盘 · 数据采集  %s' % datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     print('=' * 60)
 
+    # ⚠️ 依赖自检：pypinyin 决定「股票缩写」，缺了会静默把全站缩写写成空串（2026-09-22 踩过）
+    if not PINYIN_OK:
+        print('\n' + '!' * 60)
+        print('⚠️⚠️  pypinyin 未安装 —— 本次生成的「股票缩写(pinyin)」将全部为空！')
+        print('      修复：<python> -m pip install pypinyin   （本机清华源不通，用官方源）')
+        print('      装完必须重跑本脚本 + enrich_tags.py 才会把缩写补回来。')
+        print('!' * 60)
+    else:
+        print('  [依赖] pypinyin OK → 股票缩写可正常生成')
+
     print('\n[1/8] 获取交易日...')
     days = fetch_trade_days(args.days)
     if not days:
@@ -2504,6 +2544,13 @@ def main():
     _prev = load_json(DATA_JSON, {}) or {}
     cands = _prev.get('candidates') or []
     reco = _prev.get('recommend')
+    # ⚠️ 派生字段自愈：candidates / recommend 是**从盘前版本原样沿用**的，其中的 `pinyin`
+    #    是「名字的纯函数」→ 每次沿用都按当前名字重算一遍。
+    #    2026-09-22 事故：盘前生成它们时 pypinyin 恰好缺失 → 这 13 条缩写永远是空串，
+    #    即使后来装了 pypinyin、盘后重跑 fetch_data.py 也不会被修（因为它们是"沿用"的）。
+    for _o in (cands or []) + ([reco] if reco else []):
+        if isinstance(_o, dict) and _o.get('name'):
+            _o['pinyin'] = pinyin_abbr(_o['name'])
     print('  沿用上一版：候选 %d 只%s'
           % (len(cands), ('，首选 ' + reco['name']) if reco else ''))
 
@@ -2610,6 +2657,11 @@ def main():
     save_js(os.path.join(BASE, 'data.js'), data)
     print('\n✅ 完成，耗时 %.1fs' % (time.time() - t0))
     print('   输出：data.json / data.js / nodes.json / board_history.json')
+    # 股票缩写自检：正常 >90% 非空；几乎全空 = pypinyin 没装（见开头告警）
+    _ok, _tot = pinyin_coverage(data)
+    _tail = '' if (_tot == 0 or _ok / _tot > 0.9) else \
+            '   ⚠️ 覆盖率异常低 → 检查 pypinyin 是否安装，装后重跑本脚本'
+    print('   股票缩写(pinyin)：%d/%d 非空%s' % (_ok, _tot, _tail))
 
     # ---- 「必看」页大盘宏观面板（macro.py）----
     # 与主流程一体：盘后跑完主体数据后，顺手刷新 macro 键；--no-macro 可跳过。

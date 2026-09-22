@@ -23,6 +23,21 @@ echo   Refresh A-share dashboard data
 echo   Python: %PY%
 echo ============================================
 echo.
+
+REM ---- dependency check: missing pypinyin silently blanks ALL stock-name
+REM      abbreviations in data.json (real incident on 2026-09-22) ----
+"%PY%" -c "import pypinyin" 2>nul
+if errorlevel 1 (
+    echo [X] pypinyin NOT installed -- stock abbreviations would be EMPTY.
+    echo     Installing it now ...
+    "%PY%" -m pip install pypinyin
+    "%PY%" -c "import pypinyin" 2>nul
+    if errorlevel 1 (
+        echo [X] Still missing. Run manually:  ^<python^> -m pip install pypinyin
+        pause
+        exit /b 1
+    )
+)
 echo [1/3] fetch_data.py ...（已内置 macro.py：盘后一并刷新「必看」页宏观面板）
 "%PY%" fetch_data.py
 echo.

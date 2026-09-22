@@ -36,10 +36,25 @@ if exist ".venv\Scripts\python.exe" (
 
 echo.
 echo [3/3] Installing pypinyin (needed for stock name abbreviation) ...
-".venv\Scripts\python.exe" -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pypinyin
+REM NOTE: the Tsinghua mirror is NOT reachable on some machines (returns
+REM       "No matching distribution found") -> try the OFFICIAL PyPI first.
+".venv\Scripts\python.exe" -m pip install pypinyin
 if errorlevel 1 (
-    echo [!] Tsinghua mirror failed, trying default source ...
-    ".venv\Scripts\python.exe" -m pip install pypinyin
+    echo [!] Default PyPI failed, trying Tsinghua mirror ...
+    ".venv\Scripts\python.exe" -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pypinyin
+)
+
+echo.
+echo [check] Verifying pypinyin is importable ...
+".venv\Scripts\python.exe" -c "import pypinyin;print('  pypinyin OK ->',pypinyin.__file__)"
+if errorlevel 1 (
+    echo.
+    echo [X] pypinyin STILL missing. Stock abbreviations will be EMPTY.
+    echo     Install it manually into the interpreter that runs the scripts:
+    echo         ^<python^> -m pip install pypinyin
+    echo.
+    pause
+    exit /b 1
 )
 
 echo.

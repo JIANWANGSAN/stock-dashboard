@@ -115,9 +115,26 @@ async function shoot(page, tag, panel, label, w, h) {
         })(),
         moodZtRate: (m && m.mood) ? m.mood.zt_rate : null,
         moodDt: (m && m.mood) ? m.mood.dt : null,
+        // 股票缩写(pinyin) 覆盖率：pypinyin 缺失时会全站变空串（2026-09-22 出过事故）
+        py: (function () {
+          let n = 0, empty = 0;
+          (function walk(x) {
+            if (x && typeof x === 'object') {
+              if (Object.prototype.hasOwnProperty.call(x, 'pinyin')) {
+                n++; if (!x.pinyin) empty++;
+              }
+              for (const k in x) walk(x[k]);
+            }
+          })(typeof D !== 'undefined' ? D : null);
+          return { n, empty };
+        })(),
       };
     });
     const ok = (name, cond) => { if (!cond) failed++; console.log(`  ${cond ? '✅' : '❌'} ${name}`); };
+    // 股票缩写防回归：正常 >90% 非空；几乎全空 = pypinyin 没装（见 项目约定.md §9.2 第 17 条）
+    const pyRate = chk.py.n ? (chk.py.n - chk.py.empty) / chk.py.n : 0;
+    ok(`股票缩写(pinyin)非空率 ${(pyRate * 100).toFixed(1)}%（${chk.py.n - chk.py.empty}/${chk.py.n}）> 90%`,
+       chk.py.n > 0 && pyRate > 0.9);
     ok('`.panel-head` 数量 = 0（三条导语条已删除）', chk.panelHeadCount === 0);
     ok('三个面板顶部无 `.sub` 残留', chk.panelTopSubCount === 0);
     ok('正文无原流程导语', !chk.staleFlowText);
