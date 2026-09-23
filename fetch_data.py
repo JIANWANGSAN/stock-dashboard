@@ -2455,13 +2455,21 @@ def main():
             status, boards = track_status(
                 s['code'], n['date'], days, zt_hist,
                 cur['lbc'] if cur else 0,
-                (prev or {}).get('boards', s['lbc']))            # 成交额/市值：连板中的票用今日最新值（用于竞价量/封单计算），
+                (prev or {}).get('boards', s['lbc']))
+            # 成交额/市值：连板中的票用今日最新值（用于竞价量/封单计算），
             # 一字板形态仍按节点诞生当日（s）判定。
             amount = cur['amount'] if cur else s['amount']
             total_cap = cur['total_cap'] if cur else s['total_cap']
 
-            # 节点票池市值过滤：只保留 200 亿以下（数据缺失时不误杀）
-            if total_cap and total_cap > NODE_CAP_LIMIT:
+            # 🔴🔴 节点票池市值过滤：**必须按「节点诞生当日」的市值判定**（2026-09-23 修 bug）。
+            #   原写法用「今日市值」(`total_cap`)，会把「节点日合格、之后涨上去」的票**错杀** ——
+            #   铁证：新华文轩 09-18 市值 171.5 亿（合格），到 09-23 涨到 228.26 亿，
+            #   于是 09-18 节点池把它误删；用户从图上发现「09-18 节点少了 4 板的新华文轩」。
+            #   语义上节点池入库时是**冻结的快照**，市值门槛只能在**诞生当日**判一次，
+            #   否则「后来涨上去的票会被追溯删除」，节点池越跑越少（不可逆）。
+            #   ⚠️ 数据缺失（None）时不误杀。
+            cap_gate = s.get('total_cap') or total_cap
+            if cap_gate and cap_gate > NODE_CAP_LIMIT:
                 cap_filtered += 1
                 continue
 

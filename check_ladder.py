@@ -216,6 +216,66 @@ def check_candidates(verbose: bool = False) -> int:
     return bad
 
 
+def check_node_cap_gate(days, verbose=False):
+    """第四道：节点票池的「≤200 亿市值」门槛**必须按节点诞生当日市值判定**。
+
+    2026-09-23 修的真实 bug：原写法用「今日市值」过滤节点池，把
+    「节点日合格、之后涨上去」的票**追溯错杀** ——
+      · 新华文轩 09-18 市值 171.5 亿（合格）→ 09-23 涨到 228.3 亿
+      → 09-18 节点池被误删，用户从图上发现「09-18 节点少了 4 板的新华文轩」。
+    本检查：对每个节点，用**节点日涨停池**重算「合格票」（节点日市值 ≤ 200 亿 且
+    属于该节点票池类型：断板/突破/穿越节点均为当日首板 lbc==1），
+    与 data.json 里的池内票比对，报出「该在但不在」的漏票。
+
+    返回不一致的节点数（0 = 全对）。
+    """
+    import json as _json
+    LIMIT = 200 * 1e8
+    NODE_CAP = 200.0
+    try:
+        with open('data.json', encoding='utf-8') as f:
+            d = _json.load(f)
+    except Exception as e:
+        print('  [skip] 读不到 data.json：%s' % e)
+        return 0
+
+    nodes = d.get('nodes') or []
+    if not nodes:
+        print('  [skip] data.json 无节点')
+        return 0
+
+    bad = 0
+    total_lost = 0
+    for n in nodes:
+        dt = n['date']
+        dtc = dt.replace('-', '')
+        pool, _ = THS.fetch_zt_pool(dtc)
+        if not pool:
+            continue
+        # 节点票池口径：全部节点类型的池子都是「当日首板」（见 detect_nodes）
+        cand = {s['code']: s for s in pool if s['lbc'] == 1}
+        # 节点日市值合格者
+        ok = {c: s for c, s in cand.items()
+              if (s.get('total_cap') or 0) and (s['total_cap'] / 1e8) <= NODE_CAP}
+        inpool = {s['code'] for s in n.get('stocks', [])}
+        missing = {c: s for c, s in ok.items() if c not in inpool}
+        if missing:
+            bad += 1
+            total_lost += len(missing)
+            print('  ❌ [%s] %s 漏掉 %d 只节点日合格的票：' % (dt, n['type'], len(missing)))
+            for c, s in sorted(missing.items(), key=lambda kv: kv[1]['name']):
+                cur = next((x for x in pool if x['code'] == c), None)
+                print('       %-10s %s  节点日市值=%.1f 亿（今日若涨过 200 亿会被旧写法误杀）'
+                      % (s['name'], c, s['total_cap'] / 1e8))
+
+    if not bad:
+        print('  节点池市值门槛：%d 个节点全部按「节点日市值」判定 ✅' % len(nodes))
+    else:
+        print('  ⛔ %d 个节点存在漏票，合计 %d 只 —— 检查 fetch_data.py 的 cap_gate 是否用了今日市值'
+              % (bad, total_lost))
+    return bad
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description='连板梯队回归检查')
     ap.add_argument('--days', type=int, default=10, help='检查最近多少个交易日（默认 10）')
@@ -239,7 +299,11 @@ def main() -> int:
     print('── 第三道检查：候选池入池门槛（boards ≥ 2）──')
     bad3 = check_candidates(a.verbose)
 
-    return 1 if (bad or bad2 or bad3) else 0
+    print()
+    print('── 第四道检查：节点池「市值门槛」须按节点日判定 ──')
+    bad4 = check_node_cap_gate(td, a.verbose)
+
+    return 1 if (bad or bad2 or bad3 or bad4) else 0
 
 
 if __name__ == '__main__':
