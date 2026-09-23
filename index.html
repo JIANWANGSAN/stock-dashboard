@@ -636,7 +636,7 @@
       <div class="card" data-page-node-id="4LDXHmInSblrqZKmH2SbLk">
         <div class="card-title" data-page-node-id="1JCFVjOuTeZMucS3Se0hZz">连板高度梯队 <span class="tag" data-page-node-id="SOrFifQLO9pb3LwuCUnCJ5">主板 · 4板以上 · 每层一条曲线</span></div>
         <div id="echart-ladder" data-page-node-id="UhbxgyC6bJyE7N4TacYG6c"></div>
-        <div class="note" data-page-node-id="ladderNote">纵轴＝板数，横轴＝日期：<b>4板以上每一层各是一条独立曲线</b>（6板一条、5板一条、4板一条），用来<b>看一个时间段内连板高度的变化</b>。线贴在几就代表几板，<b>点上的数字＝该层当日家数</b>；<b>某天没有这一层，曲线就下探到 0 轴</b>，等它回来再从 0 轴升起。只统计主板（不含创业板/科创板/北交所）。· <b>鼠标移到任意一天</b>弹出当天各层全部股票与所属概念</div>
+        <div class="note" data-page-node-id="ladderNote">纵轴＝板数（0/4/5/6/7/8/9），横轴＝日期：<b>4板以上每一层各是一条独立曲线</b>，用来<b>看一个时间段内连板高度的变化</b>。线贴在几就代表几板，<b>点上的数字＝该层当日家数</b>；<b>某天没有这一层，曲线就下探到 0 轴</b>，等它回来再从 0 轴升起。配色按<b>最高板优先</b>：最高板紫 → 红 → 黄 → 深蓝 → 绿 → 青 → 灰。只统计主板（不含创业板/科创板/北交所）。· <b>鼠标移到任意一天</b>弹出当天各层全部股票与所属概念</div>
       </div>
       <div class="card" data-page-node-id="dtLadderCard">
         <div class="card-title" data-page-node-id="dtLadderTitle">跌停板梯队 <span class="tag" id="dt-note" data-page-node-id="dtNote">—</span></div>
@@ -735,7 +735,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.23-5';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.23-6';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -1128,7 +1128,8 @@ function renderMarketVolume(){
       **「不需要最高板和次高板了；需要 2板以上每一层是一条线，
          这样可以看出一个时间段内连板高度的变化，排除掉创业板的部分」**
       → 之后再次收窄：**「只统计 4 板以上」** + **「天与天之间用曲线连接」**
-        + **「某天没有该层 → 曲线连接到 0 轴，等它回来再从 0 轴连起来」**。
+        + **「某天没有该层 → 曲线连接到 0 轴，等它回来再从 0 轴连起来」**
+        + **「Y 轴刻度 0/4/5/6/7/8/9」** + **「颜色按最高板优先：紫 → 红 → 黄 → 深蓝 → 绿 → 青 → 灰」**。
       · 图上 = **每层一条独立曲线**（6板一条、5板一条、4板一条）；
       · 纵轴 = **板数高度**（5板那条线就贴在 y=5），点上的**数字 = 该层当日家数**；
       · 缺层 → 该点 **Y = 0**（落到 0 轴上），等这一层回来再从 0 轴升起（曲线连通、不断开）；
@@ -1137,9 +1138,13 @@ function renderMarketVolume(){
       跌停图（dt_ladder）没有 levels → 走老三条线分支，两图仍共用一个函数。 */
 let ladderChart=null, dtChart=null;
 
-// 连板层级配色（2026-09-23 用户指定）：**6板=紫 · 5板=红 · 4板=淡粉**（区分度高，一眼可辨）
-//   高阶层级多出来时（7板/8板…）继续往下取备用色。
-const LADDER_LEVEL_COLORS=['#7c3aed','#dc2626','#f472b6','#0891b2','#16a34a','#ca8a04','#be185d'];
+// 连板层级配色（2026-09-23 用户指定）：**按「最高板优先」分配** ——
+//   窗口内**实际出现的最高板**拿第 1 个颜色（紫），往下依次 红 → 黄 → 深蓝 → 绿 → 青 → 灰。
+//   ⚠️ 注意：**不是「板数 → 固定颜色」的绝对映射**，而是「相对窗口内最高板的序位」。
+//      · 若窗口最高是 6 板 → 6板紫 / 5板红 / 4板黄
+//      · 若窗口最高是 9 板 → 9板紫 / 8板红 / 7板黄 / 6板深蓝 / 5板绿 / 4板青
+//   颜色顺序由用户 2026-09-23 明确给定，**不要自行调整顺序**。
+const LADDER_LEVEL_COLORS=['#7c3aed','#dc2626','#eab308','#1e40af','#16a34a','#0891b2','#6b7280'];
 
 function drawLadderChart(el, prevChart, L, cfg){
   const chart = prevChart || echarts.init(el);
@@ -1267,8 +1272,16 @@ function drawLadderChart(el, prevChart, L, cfg){
       type:'scroll'},
     grid: levelMode ? {left:40, right:40, top:44, bottom:30} : {left:40, right:24, top:44, bottom:30},
     xAxis:xAxisCfg,
-    // 纵轴**只保留整数**刻度（板数/连跌天数都是离散整数，不要小数）
-    yAxis:{type:'value', name:cfg.yName, min:0, axisLabel:{fontSize:11}, minInterval:1},
+    // 纵轴（2026-09-23 用户指定）：**刻度固定为 0 / 4 / 5 / 6 / 7 / 8 / 9**
+    //   · 0 必须有 —— 缺层要落到 0 轴（曲线下探到 0 再回升）
+    //   · 4 以下不画刻度（连板梯队只统计 ≥4 板）→ 用自定义 ticks 屏蔽 1/2/3
+    //   · ⚠️ 不能只写 `min:4`：那样 0 轴点会被裁掉，缺层的「落 0」就看不见了
+    yAxis: levelMode
+      ? {type:'value', name:cfg.yName, min:0, max:9, interval:1,
+         axisLabel:{fontSize:11, formatter:v=>(v===0||v>=4)?String(v):''},
+         axisTick:{show:true, interval:(idx)=>idx===0||idx>=4},
+         splitLine:{show:true}}
+      : {type:'value', name:cfg.yName, min:0, axisLabel:{fontSize:11}, minInterval:1},
     // ⛔ 连板图**不用 visualMap**：每层一条 series，颜色由各层自己的 LADDER_LEVEL_COLORS[i] 决定
     series
   }, {notMerge:true});   // ⚠️ 必须 notMerge：否则上一版遗留的 visualMap 等配置不会被清除（setOption 默认合并）

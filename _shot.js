@@ -443,6 +443,23 @@ async function shoot(page, tag, panel, label, w, h) {
         nullOk, hasVisualMap, oldNames, lowLv: lowLv.slice(0, 6), lowTotal: lowLv.length,
         tooltipTrigger: opt && opt.tooltip && opt.tooltip[0] ? opt.tooltip[0].trigger : null,
         badCodes: badCodes.slice(0, 6), badTotal: badCodes.length,
+        // ── Y 轴刻度（2026-09-23 用户指定）：固定 0 / 4 / 5 / 6 / 7 / 8 / 9 ──
+        yMin: opt && opt.yAxis && opt.yAxis[0] ? opt.yAxis[0].min : null,
+        yMax: opt && opt.yAxis && opt.yAxis[0] ? opt.yAxis[0].max : null,
+        yInterval: opt && opt.yAxis && opt.yAxis[0] ? opt.yAxis[0].interval : null,
+        // 刻度文案：1/2/3 必须为空（<4 不显示），0/4/5/… 显示数字
+        yLabel: (function () {
+          const f = opt && opt.yAxis && opt.yAxis[0]
+                    && opt.yAxis[0].axisLabel && opt.yAxis[0].axisLabel.formatter;
+          if (typeof f !== 'function') return null;
+          const o = {};
+          [0, 1, 2, 3, 4, 5, 6, 9].forEach(v => { o[v] = f(v); });
+          return o;
+        })(),
+        // ── 颜色（2026-09-23 用户指定）：最高板紫 → 红 → 黄 → 深蓝 → 绿 → 青 → 灰 ──
+        // ⚠️ 是「相对窗口内最高板的序位」，不是「板数 → 固定颜色」
+        seriesColors: seriesAll.map(s => (s.lineStyle && s.lineStyle.color) || null),
+        itemColors: seriesAll.map(s => (s.itemStyle && s.itemStyle.color) || null),
         keepOld: Object.prototype.hasOwnProperty.call(last, 'second')
                  && Object.prototype.hasOwnProperty.call(last, 'top_list'),
         lastDate: last.date,
@@ -474,6 +491,27 @@ async function shoot(page, tag, panel, label, w, h) {
     ok(`末条 ${ldr.lastDate} 图上数字 == 各层家数（${JSON.stringify(ldr.lastCnts)} vs ${JSON.stringify(ldr.expCnts)}）`,
        JSON.stringify(ldr.lastCnts) === JSON.stringify(ldr.expCnts));
     ok(`梯队图 tooltip 用 axis 触发（悬浮某天出当天完整名单与概念）`, ldr.tooltipTrigger === 'axis');
+    // 🔴 用户要求「让 Y 轴从 4 开始，0-4-5-6-7-8-9」
+    //   ⚠️ 不能写 min:4 —— 那样缺层的「落 0」点会被裁掉；正确做法是 min:0 + 屏蔽 1/2/3 刻度
+    ok(`梯队 Y 轴范围 min=0 / max=9 / interval=1（实测 ${ldr.yMin}/${ldr.yMax}/${ldr.yInterval}）`,
+       ldr.yMin === 0 && ldr.yMax === 9 && ldr.yInterval === 1);
+    ok(`梯队 Y 轴刻度：0 与 4/5/6/7/8/9 显示、1/2/3 隐藏（实测 ${JSON.stringify(ldr.yLabel)}）`,
+       !!ldr.yLabel && ldr.yLabel[0] === '0' && ldr.yLabel[1] === '' && ldr.yLabel[2] === ''
+       && ldr.yLabel[3] === '' && ldr.yLabel[4] === '4' && ldr.yLabel[5] === '5'
+       && ldr.yLabel[6] === '6' && ldr.yLabel[9] === '9');
+    // 🔴 用户要求「最高板紫色，往下的颜色顺序为红、黄、深蓝、绿、青、灰」
+    //   窗口内 allLevels 已降序 → 第 1 条（最高板）= 紫；颜色是**序位映射**，不是板数绝对映射
+    {
+      const WANT = ['#7c3aed', '#dc2626', '#eab308', '#1e40af', '#16a34a', '#0891b2', '#6b7280'];
+      const exp = ldr.seriesCount === 0 ? [] : WANT.slice(0, ldr.seriesCount);
+      ok(`梯队**最高板（${ldr.expLv[0] || '-'}板）为紫色 ${WANT[0]}**（实测 ${ldr.seriesColors[0]}）`,
+         ldr.seriesColors[0] === WANT[0]);
+      ok(`梯队层级配色按「最高板优先」依次取 ${exp.join(' → ')}（实测 ${ldr.seriesColors.join(' → ')}）`,
+         JSON.stringify(ldr.seriesColors) === JSON.stringify(exp));
+      ok(`梯队每层「线色 == 点色」`, JSON.stringify(ldr.itemColors) === JSON.stringify(ldr.seriesColors));
+      ok(`梯队各层颜色互不重复（${new Set(ldr.seriesColors).size}/${ldr.seriesColors.length}）`,
+         ldr.seriesColors.length > 0 && new Set(ldr.seriesColors).size === ldr.seriesColors.length);
+    }
     // 🔴 用户要求：悬浮要能看到「这个点上到底是哪些票和其所属概念」→ 实际调 formatter 验内容
     // ⚠️ 窗口是 slice(-7)，lastIdx 是**窗口内**下标 → 取数据必须用同一个窗口，不能拿全量 D.ladder
     const tipChk = await page.evaluate(() => {
