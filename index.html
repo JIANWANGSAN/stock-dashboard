@@ -282,19 +282,7 @@
   #board-3d-box table th:nth-child(3), #board-3d-box table td:nth-child(3){ width: 20%; text-align: right; font-weight: 600; }
   #board-3d-box table th:nth-child(4), #board-3d-box table td:nth-child(4){ width: 16%; text-align: right; }
   #board-3d-box table th:nth-child(5), #board-3d-box table td:nth-child(5){ width: 22%; text-align: center; }
-  /* 模块2 连板候选池：固定布局，列宽按比例分配，始终对齐（已删序号列） */
-  #cand-box table{ table-layout: fixed; }
-  #cand-box table .c2-name{ width: 12%; text-align: left; }
-  #cand-box table .c2-py{ width: 8%; text-align: center; }
-  #cand-box table .c2-region{ width: 7%; text-align: left; }
-  #cand-box table .c2-concepts{ width: 17%; text-align: left; }
-  #cand-box table .c2-boards{ width: 5%; text-align: center; }
-  #cand-box table .c2-node{ width: 9%; text-align: left; }
-  #cand-box table .c2-hit{ width: 6%; text-align: center; }
-  #cand-box table .c2-ferment{ width: 8%; text-align: center; }
-  #cand-box table .c2-zbc{ width: 6%; text-align: center; }
-  #cand-box table .c2-line{ width: 10%; text-align: center; }
-  #cand-box table .c2-ok{ width: 12%; text-align: center; }
+  /* ⛔ 已删（2026-09-23）：连板候选池 `#cand-box` 的列宽 CSS 随卡片一起删除。不要再加回来。 */
   .rank-no { font-weight: 700; color: #9ca3af; }
   .star { color: #f59e0b; font-weight: 700; }
   /* 小结 */
@@ -478,16 +466,12 @@
        （⛔ 2026-09-20 起只剩 3日表 `#board-3d-box`，当日表已不在前端展示） */
     #board-3d-box table{ display: table; width: 100%; table-layout: fixed; overflow: visible; white-space: normal; }
     #board-3d-box table th, #board-3d-box table td{ white-space: normal; word-break: break-word; padding: 5px 3px; font-size: 10.5px; }
-    /* 模块2 连板候选池：手机端自适应铺满，不横滑，文字换行，列严格对齐 */
-    #cand-box table{ display: table; width: 100%; table-layout: fixed; overflow: visible; white-space: normal; }
-    #cand-box table th, #cand-box table td{ white-space: normal; word-break: break-word; padding: 5px 2px; font-size: 10px; }
-    #cand-box table .cpt{ font-size: 9.5px; padding: 0 3px; }
+    /* ⛔ 已删（2026-09-23）：连板候选池 `#cand-box` 的手机端 CSS 随卡片一起删除。 */
     .sk-chart{ height: 300px; flex: 0 0 auto; }
   }
 
-  /* 候选池 · 竞价合格判定 */
-  .auc-ok{ color: #16a34a; font-weight: 700; }
-  .auc-no{ color: #dc2626; font-weight: 700; }
+  /* ⛔ 已删（2026-09-23）：`.auc-ok` / `.auc-no`（候选池「竞价结论」列的合格/不足样式）
+     随连板候选池卡片一起删除 —— 全站已无消费方。 */
 
   /* ===== 个股行情弹层 ===== */
   /* 可点击的股票名 */
@@ -641,14 +625,18 @@
         <div class="card-title" data-page-node-id="DrUDTouhoYuh29fTFYfNOH">我的想法 · 次日连板推荐</div>
         <div id="reco-box" data-page-node-id="WRAS1X0j8u5jbuiRqjtZCQ"></div>
       </div>
-      <div class="card" data-page-node-id="aCTqkg0MtJKDHykq1CvTcC">
-        <div class="card-title" data-page-node-id="9kec8XikUhdW1YWUM5H0iw">连板候选池 <span class="tag" data-page-node-id="s3PMK1vkIah6sGtNdUEQOQ">优先取自节点票·按题材共振排序</span></div>
-        <div id="cand-box" data-page-node-id="7IzM90Wk1sAsHIyR1LksHm"></div>
-      </div>
+      <!-- ⛔ 已删（2026-09-23，用户点名「这个功能删掉吧，不要了」）：连板候选池卡片
+           （`.card` 标题「连板候选池」+ `<div id="cand-box">` + `renderCandidates()` + 配套 CSS）。
+           ⚠️ **只删前端展示**：后端 `data.candidates` **照旧全量产出**，因为
+             · `auction_check.py`（9:26 竞价核对）逐只读它写回 `auction_*` 字段；
+             · `build_reco()` 用候选池第 1 名生成「次日连板推荐」；
+             · `module4.py` 的 `get_fallback_members()` 拿它当题材兜底池；
+             · `check_ladder.py` 第三道 `check_candidates()` 断言它的入池门槛。
+           **绝不可顺手把后端 candidates 一起删掉。** -->
       <div class="card" data-page-node-id="4LDXHmInSblrqZKmH2SbLk">
-        <div class="card-title" data-page-node-id="1JCFVjOuTeZMucS3Se0hZz">连板高度梯队 <span class="tag" data-page-node-id="SOrFifQLO9pb3LwuCUnCJ5">蓝=最高板 绿=次高板 橙=创业板</span></div>
+        <div class="card-title" data-page-node-id="1JCFVjOuTeZMucS3Se0hZz">连板高度梯队 <span class="tag" data-page-node-id="SOrFifQLO9pb3LwuCUnCJ5">逐层级全出线 · 颜色越深板数越高</span></div>
         <div id="echart-ladder" data-page-node-id="UhbxgyC6bJyE7N4TacYG6c"></div>
-        <div class="note" data-page-node-id="ladderNote">图上数字＝当日该梯队板数（避免名字重叠）· <b>点/悬浮任意日期</b>看当天各梯队股票与题材</div>
+        <div class="note" data-page-node-id="ladderNote">每一层板数（6板/5板/4板/3板/2板…）各一条线，当天没有该层就断开 · 图上数字＝该层当日家数 · <b>点/悬浮任意日期</b>看当天各层股票与题材</div>
       </div>
       <div class="card" data-page-node-id="dtLadderCard">
         <div class="card-title" data-page-node-id="dtLadderTitle">跌停板梯队 <span class="tag" id="dt-note" data-page-node-id="dtNote">—</span></div>
@@ -747,7 +735,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.22-1';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.23-1';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -761,7 +749,7 @@ function init(){
   renderMacro();
   renderNodes();
   renderReco();
-  renderCandidates();
+  /* ⛔ 已删（2026-09-23）：renderCandidates() —— 连板候选池卡片已按用户要求删除。 */
   renderBoards();
   renderModule4();
   renderDtLadder();
@@ -1135,8 +1123,15 @@ function renderMarketVolume(){
   });
 }
 
-/* ---- 模块2 梯队折线图（连板高度梯队 / 跌停板梯队 **共用同一套渲染**）---- */
+/* ---- 模块2 梯队折线图（连板高度梯队 / 跌停板梯队 **共用同一套渲染**）----
+   🔴 2026-09-23 用户报「9-22 的 3板 和 4板 呢？」→ 渲染改为**逐层级全出线**：
+      连板图 x 轴每一列，凡 `levels[]` 里出现的高度都画一个点（不再只画 top/second/cyb 三条）。
+      板数层级用**同一族蓝色**由深到浅（越高越深），一眼看出「台阶」与**断层**。
+      跌停图（dt_ladder）结构不同（没有 levels），仍走原来的三条线 + 复用同一函数。 */
 let ladderChart=null, dtChart=null;
+
+// 连板层级配色：越高越深（深蓝 → 浅蓝）。第 7 层及以后统一最浅色。
+const LADDER_LEVEL_COLORS=['#1d4ed8','#2563eb','#3b82f6','#60a5fa','#93c5fd','#bfdbfe','#dbeafe'];
 
 function drawLadderChart(el, prevChart, L, cfg){
   const chart = prevChart || echarts.init(el);
@@ -1167,6 +1162,38 @@ function drawLadderChart(el, prevChart, L, cfg){
       `<span style="color:#9ca3af;font-size:11px;">(${s.boards}${cfg.unit}${s.industry?'\u00b7'+esc(s.industry):''})</span></span>`
     ).join('');
   };
+
+  // ---- 逐层级模式（连板图）：每个高度一层，各画一条线 ----
+  const levelMode = !!(cfg.levelMode && L.some(s=>s.levels));
+  let series, legendData;
+  if(levelMode){
+    const allLevels = [...new Set(L.flatMap(s=>(s.levels||[]).map(v=>v.boards)))]
+      .sort((a,b)=>b-a);                      // 降序：高板在前
+    legendData = allLevels.map(b=>b+cfg.levelUnit);
+    // 每层一个点：data 里放该层的家数（图上线高 = 板数，但仍以板数为 Y 值）
+    series = allLevels.map((b,i)=>({
+      name: b+cfg.levelUnit, type:'line', smooth:true,
+      data: L.map(s=>{
+        const lv=(s.levels||[]).find(v=>v.boards===b);
+        return lv ? {value:b, cnt:lv.n, list:lv.list} : null;   // 该日无此层 → 断点
+      }),
+      connectNulls:false, symbol:'circle', symbolSize:8,
+      lineStyle:{width:2.5,color:LADDER_LEVEL_COLORS[Math.min(i,LADDER_LEVEL_COLORS.length-1)]},
+      itemStyle:{color:LADDER_LEVEL_COLORS[Math.min(i,LADDER_LEVEL_COLORS.length-1)]},
+      label:{show:true, position:'top', fontSize:11, fontWeight:'bold', color:'#374151',
+        // 数字 = **该层当日家数**（用户口径）；该日无此层则不标
+        formatter:p=>{
+          const v=p.value; if(!v||v.cnt==null||!v.cnt) return '';
+          return v.cnt;
+        }}
+    }));
+  } else {
+    series = [ mk('top',cfg.colors[0],cfg.labels[0]),
+               mk('second',cfg.colors[1],cfg.labels[1]),
+               mk('cyb',cfg.colors[2],cfg.labels[2]) ];
+    legendData = cfg.labels;
+  }
+
   chart.setOption({
     tooltip:{trigger:'axis', confine:true, enterable:true,      // enterable：内容多时可滚动查看
       backgroundColor:'rgba(255,255,255,.97)', borderColor:'#e5e7eb',
@@ -1175,6 +1202,16 @@ function drawLadderChart(el, prevChart, L, cfg){
       formatter:ps=>{
         if(!ps||!ps.length) return '';
         const d=L[ps[0].dataIndex]; if(!d) return '';
+        if(levelMode){
+          // 逐层级模式：按板数从高到低逐层列名单（**每层都列，含 3板/4板**）
+          const lv=(d.levels||[]).slice().sort((a,b)=>b.boards-a.boards);
+          const nLv=lv.reduce((n,v)=>n+v.n,0);
+          return `<div style="min-width:200px;white-space:normal;line-height:1.7;"><b>${d.date}</b>`
+            + (cfg.extra?cfg.extra(d):'')
+            + `<div style="margin-top:3px;color:#6b7280;">连板共 <b>${nLv}</b> 只 · 最高 <b>${d.top}${cfg.unit}</b></div>`
+            + lv.map((v,idx)=>`<div style="margin-top:4px;"><b style="color:${LADDER_LEVEL_COLORS[Math.min(idx,LADDER_LEVEL_COLORS.length-1)]};">${v.boards}${cfg.unit} · ${v.n}只</b> ${fmtList(v.list)}</div>`).join('')
+            + `</div>`;
+        }
         return `<div style="min-width:200px;white-space:normal;line-height:1.7;"><b>${d.date}</b>`
           + (cfg.extra?cfg.extra(d):'')
           + `<div style="margin-top:4px;"><b style="color:${cfg.colors[0]};">${cfg.labels[0]}</b> ${fmtList(d.top_list)}</div>`
@@ -1182,25 +1219,26 @@ function drawLadderChart(el, prevChart, L, cfg){
           + (d.cyb_list&&d.cyb_list.length?`<div><b style="color:${cfg.colors[2]};">${cfg.labels[2]}</b> ${fmtList(d.cyb_list)}</div>`:'')
           + `</div>`;
       }},
-    legend:{data:cfg.labels, top:0, right:0, itemWidth:14, itemHeight:8, textStyle:{fontSize:11}},
+    legend:{data:legendData, top:0, right:0, itemWidth:14, itemHeight:8, textStyle:{fontSize:11},
+      // 层级多时图例换行，避免挤出画布
+      type:'scroll'},
     grid:{left:40, right:24, top:44, bottom:30},
     xAxis:{type:'category', data:dates, axisLabel:{fontSize:11}},
     // 纵轴**只保留整数**刻度（板数/连跌天数都是离散整数，不要小数）
     yAxis:{type:'value', name:cfg.yName, min:0, axisLabel:{fontSize:11}, minInterval:1},
-    series:[ mk('top',cfg.colors[0],cfg.labels[0]),
-             mk('second',cfg.colors[1],cfg.labels[1]),
-             mk('cyb',cfg.colors[2],cfg.labels[2]) ]
+    series
   });
   return chart;
 }
 
-/* 连板高度梯队 */
+/* 连板高度梯队 —— 逐层级全出线（最高板 / 次高板 / 3板 / 4板…） */
 function renderChart(){
   if(!D.ladder||!D.ladder.length) return;
   ladderChart = drawLadderChart(document.getElementById('echart-ladder'), ladderChart,
     D.ladder.slice(-7), {
       labels:['最高板','次高板','创业板'], colors:['#2563eb','#059669','#ea580c'],
-      unit:'板', yName:'连板数'
+      unit:'板', yName:'连板数',
+      levelMode:true, levelUnit:'板'
     });
 }
 
@@ -1360,39 +1398,9 @@ function renderReco(){
   </div>`;
 }
 
-/* ---- 模块2 候选 ---- */
-function renderCandidates(){
-  const box=document.getElementById('cand-box');
-  // 按「发酵」降序（次键：板数 > 主线共振）
-  const arr=[...(D.candidates||[])].sort((a,b)=>{
-    const fa=(a.ferment||{}).zt||0, fb=(b.ferment||{}).zt||0;
-    if(fb!==fa) return fb-fa;
-    if((b.boards||0)!==(a.boards||0)) return (b.boards||0)-(a.boards||0);
-    return (b.concept_hit||0)-(a.concept_hit||0);
-  });
-  if(!arr.length){ box.innerHTML='<div class="empty">暂无候选</div>'; return; }
-  box.innerHTML=`<table>
-    <thead><tr><th class="c2-name">名称</th><th class="c2-py">缩写</th><th class="c2-region">地域</th><th class="c2-concepts">题材概念</th><th class="c2-boards">板数</th><th class="c2-node">来源节点</th><th class="c2-hit">主线</th><th class="c2-ferment">发酵</th><th class="c2-zbc">炸板</th><th class="c2-line">竞价硬线</th><th class="c2-ok">竞价结论</th></tr></thead>
-    <tbody>${arr.map(c=>{
-      const cs=(c.concepts||[]).filter(x=>!/板块$/.test(x)).slice(0,3).map(x=>`<span class="cpt">${esc(x)}</span>`).join('');
-      const f=c.ferment||{};
-      return `<tr>
-        <td class="c2-name"><b class="sk" data-scode="${esc(c.code)}" data-smkt="${c.market}" data-sname="${esc(c.name)}">${esc(c.name)}</b></td>
-        <td class="c2-py"><span class="py" style="font-family:ui-monospace,monospace;font-size:11px;background:#eef2ff;padding:1px 6px;border-radius:4px;">${esc(c.pinyin)}</span></td>
-        <td class="c2-region">${esc(c.region)}</td>
-        <td class="c2-concepts">${cs}</td>
-        <td class="c2-boards">${c.boards}板</td>
-        <td class="c2-node">${esc(c.node_type)}</td>
-        <td class="c2-hit">${c.concept_hit}</td>
-        <td class="c2-ferment">${f.zt?f.zt+'家('+f.lb+')':'—'}</td>
-        <td class="c2-zbc">${c.zbc?('<span style="color:#dc2626;font-weight:600;">'+c.zbc+'次</span>'):'—'}</td>
-        <td class="c2-line" title="${esc(c.bid_basis||'上板分时量×50%')}">${c.bid_required_yi!=null?(c.bid_required_yi+'亿'):'—'}</td>
-        <td class="c2-ok">${(c.auction_amt_yi!=null)
-            ? ((c.auction_ok?'<span class="auc-ok">合格</span>':'<span class="auc-no">不足</span>')
-               +'<br><span style="color:#9ca3af;font-size:10px;">竞价'+c.auction_amt_yi+'亿</span>')
-            : '<span style="color:#9ca3af;">待竞价</span>'}</td></tr>`;
-    }).join('')}</tbody></table>`;
-}
+/* ⛔ 已删（2026-09-23，用户点名「这个功能删掉吧，不要了」）：连板候选池渲染函数 `renderCandidates()`。
+   ⚠️ **只删前端**：`D.candidates` 仍由后端产出并被竞价核对 / 推荐 / 模块4兜底 / check_ladder 使用，
+       **绝不可把后端 `build_candidates` 或 `data.candidates` 一并删除**（见 HTML 卡片处的同款注释）。 */
 
 /* ⛔ 已删（2026-09-20）：厄尔尼诺整块功能（后端 + 前端）已按用户要求删除。**不要再加回来**。 */
 

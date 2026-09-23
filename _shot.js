@@ -160,7 +160,36 @@ async function shoot(page, tag, panel, label, w, h) {
     ok('indices = 上证指数/深证成指/创业板指/沪深300',
        JSON.stringify(chk.macroIndexNames) === JSON.stringify(['上证指数', '深证成指', '创业板指', '沪深300']));
     ok("macro 已无 'style' 键", !chk.hasStyleKey);
-    if (chk.notes !== 3) { failed++; console.log(`  ❌ 研判应为 3 条，实为 ${chk.notes}`); } else console.log('  ✅ 研判 3 条');
+    // ⚠️ 研判条数**依赖当日数据**（研判2「量价背离」需有 涨幅>0.5% 且 净流出>1亿 的板块；
+    //    研判3 依赖 上证50/中证1000，而这两个指数**不进 macro 导出**，前端算不出来）。
+    //    → 不写死「== 3」（§9.3 第 ③ 条），改为**校验每条研判的内容自洽性**：
+    //      条数 1~3；每条都有 tag/init/level/title/body/data；tag 取值合法；正文带数据。
+    const noteChk = await page.evaluate(() => {
+      const M = (typeof D !== 'undefined' && D && D.macro) || {};
+      const ns = M.notes || [];
+      const LEGAL = ['超配', '标配', '观察'];
+      return {
+        n: ns.length,
+        allShaped: ns.every(x => x && x.tag && x.init && x.level && x.title && x.body && x.data),
+        levelLegal: ns.every(x => LEGAL.indexOf(x.level) >= 0),
+        tagEqLevel: ns.every(x => x.tag === x.level),
+        // init 应是 level 首字（原生卡片风格）
+        initMatches: ns.every(x => x.init === x.level[0]),
+        // 正文必须带客观数据（含 % 或 亿 或 家）
+        bodyHasData: ns.every(x => /%|亿|家/.test(x.body || '')),
+        // 不允许出现预测性措辞（全局规则：无主观预测）
+        noForecast: !/预计|预期|将涨|大概率|有望|明天/.test(ns.map(x => x.title + x.body).join('')),
+        // 研判1 的 title 必须带「（资金主线）」
+        hasMainlineTag: ns.length === 0 || ns.some(x => /（资金主线）/.test(x.title || '')),
+      };
+    });
+    ok(`研判条数在 1~3 之间（实测 ${noteChk.n}）`, noteChk.n >= 1 && noteChk.n <= 3);
+    ok('每条研判字段齐全（tag/init/level/title/body/data）', noteChk.allShaped);
+    ok('研判 level 取值合法（超配/标配/观察）且 tag==level', noteChk.levelLegal && noteChk.tagEqLevel);
+    ok('研判 init == level 首字（原生卡片风格）', noteChk.initMatches);
+    ok('研判正文均带客观数据（%/亿/家）', noteChk.bodyHasData);
+    ok('研判无预测性措辞（全局规则：无主观预测）', noteChk.noForecast);
+    ok('研判含「资金主线」条（研判1）', noteChk.hasMainlineTag);
 
     // ---- 仓位闸门：真值 + 边界 + 「与/或」语义（改 mood 后 renderMacro 重绘，结束时还原）----
     // ⛔ KPI 行数 = 7：「两市成交额」卡已删（2026-09-21 用户要求，连数据一起不展示）。**不得加回。**
@@ -338,6 +367,87 @@ async function shoot(page, tag, panel, label, w, h) {
        kline.n === 3 && kline.isPlain0 && kline.isPlain2 && kline.marked1);
     ok(`K线涨停标黄：颜色为黄色 ${kline.color1}`, kline.color1 === '#facc15');
     ok(`K线涨停标黄：K线数值未被破坏 ${kline.val1}`, kline.val1 === '[8.04,8.04,8.04,8.04]');
+
+    // ── 连板高度梯队「逐层级全出线」（约定 §3.1b；2026-09-23 用户报「9-22 的 3板/4板呢」）──
+    // ⚠️ 测 ECharts 要**读 option**，不能截图（headless Edge 拍 canvas 会全白 → 假失败，见 §9.3.1）
+    await page.click('.menu-item[data-panel="ladder"]');
+    await sleep(600);
+    const ldr = await page.evaluate(() => {
+      const el = document.getElementById('echart-ladder');
+      const inst = el && echarts.getInstanceByDom(el);
+      const opt = inst ? inst.getOption() : null;
+      const D_ = (typeof D !== 'undefined' && D) || {};
+      const W = (D_.ladder || []).slice(-7);
+      // 期望：窗口内出现过的**全部 ≥2 板层级**各一条 series（不是固定 3 条）
+      const expLv = [...new Set(W.flatMap(s => (s.levels || []).map(v => v.boards)))]
+        .sort((a, b) => b - a);
+      const names = opt ? opt.series.map(s => s.name) : [];
+      const last = W[W.length - 1] || {};
+      // 末条各层的家数（图上的数字）：series 顺序与 expLv 一致，
+      // **该日无此层 → 点不存在（null）**，此时期望值也应为 null（不是 0、不是缺失）。
+      const lastCounts = opt ? opt.series.map(s => {
+        const v = s.data[W.length - 1];
+        return v && typeof v === 'object' ? v.cnt : null;
+      }) : [];
+      // 期望：按 expLv 顺序，末条有该层则取 levels[].n，否则 null
+      const expCounts = expLv.map(b => {
+        const lv = (last.levels || []).find(v => v.boards === b);
+        return lv ? lv.n : null;
+      });
+      return {
+        expLv, names, seriesCount: names.length,
+        expCounts,
+        lastCounts,
+        // 末条实际有点的层级数（非 null 的个数）应 == 末条 levels 长度
+        lastNonNull: lastCounts.filter(v => v !== null).length,
+        lastLvN: (last.levels || []).length,
+        lastDate: last.date, lastLv: (last.levels || []).map(v => v.boards),
+        // 是否有某层在窗口中间断点（connectNulls 必须 false，断层才可见）
+        anyNullMid: opt ? opt.series.some(s => s.data.some(v => v === null || v === undefined)) : null,
+        legendCount: opt && opt.legend && opt.legend[0] ? (opt.legend[0].data || []).length : -1,
+        // data 层必须仍保留 top/second/cyb（其它代码可能还在读，别删）
+        keepOld: Object.prototype.hasOwnProperty.call(last, 'second')
+                 && Object.prototype.hasOwnProperty.call(last, 'top_list'),
+      };
+    });
+    ok(`梯队图 series 数 == 窗口层级数（${ldr.seriesCount} vs ${ldr.expLv.length}）→ 逐层级全出线`,
+       ldr.expLv.length > 0 && ldr.seriesCount === ldr.expLv.length);
+    ok(`梯队图 series 名 == 各层级（${JSON.stringify(ldr.names)}）`,
+       JSON.stringify(ldr.names) === JSON.stringify(ldr.expLv.map(b => b + '板')));
+    ok(`梯队图 >3 条线（证明不再只画 top/second/cyb 三条）`, ldr.seriesCount > 3);
+    ok(`梯队图例条数 == 层级数（${ldr.legendCount}）`, ldr.legendCount === ldr.expLv.length);
+    ok(`末条 ${ldr.lastDate} 图上数字 == 各层家数（${JSON.stringify(ldr.lastCounts)} vs ${JSON.stringify(ldr.expCounts)}）`,
+       JSON.stringify(ldr.lastCounts) === JSON.stringify(ldr.expCounts));
+    ok(`末条 ${ldr.lastDate} 有点的层级数 == levels 长度（${ldr.lastNonNull} vs ${ldr.lastLvN}）· 缺层应为 null 而非 0`,
+       ldr.lastNonNull === ldr.lastLvN);
+    ok(`梯队数据仍保留 top/second/*_list（未被误删）`, ldr.keepOld);
+    // 关键回归：若当前窗口里某日同时有 4板与3板，必须真的出现这两条线
+    if (ldr.expLv.includes(4) && ldr.expLv.includes(3)) {
+      ok(`窗口内 4板/3板 均已成线（${ldr.names.join('/')}）`,
+         ldr.names.includes('4板') && ldr.names.includes('3板'));
+    } else {
+      console.log(`  · 窗口层级=${JSON.stringify(ldr.expLv)}（当日实际无 4板或3板，非 bug）`);
+    }
+
+    // ── 连板候选池「已删」（2026-09-23 用户要求）──
+    // ⚠️ 只删**前端展示**；后端 data.candidates 必须照旧全量产出（竞价核对/推荐/模块4兜底都读它）
+    const candChk = await page.evaluate(() => ({
+      box: !!document.getElementById('cand-box'),
+      // 卡片标题里若还有「连板候选池」也算残留
+      title: /连板候选池/.test(document.body.innerText),
+      fn: typeof renderCandidates,
+      n: (typeof D !== 'undefined' && D && D.candidates) ? D.candidates.length : -1,
+      reco: !!document.getElementById('reco-box')
+            && (document.getElementById('reco-box').textContent || '').length > 20,
+      // 后端仍有 candidates 键（证明数据层没被删）
+      hasKey: (typeof D !== 'undefined' && D) ? Object.prototype.hasOwnProperty.call(D, 'candidates') : false,
+    }));
+    ok('候选池卡片已从 DOM 移除（#cand-box 不存在）', !candChk.box);
+    ok('正文已无「连板候选池」标题', !candChk.title);
+    ok('renderCandidates 函数已删除', candChk.fn === 'undefined');
+    ok(`后端 data.candidates 仍在产出（${candChk.n} 只）—— 只删前端不删数据`,
+       candChk.hasKey && candChk.n > 0);
+    ok('推荐卡「我的想法」仍正常渲染（依赖候选池第 1 名）', candChk.reco);
 
     console.log(`  · 页脚：${chk.pageVer.trim()}`);
     if (errs.length) { failed++; console.log('  ❌ 页面报错：\n     ' + errs.slice(0, 5).join('\n     ')); }

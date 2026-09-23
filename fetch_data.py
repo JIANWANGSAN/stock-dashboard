@@ -774,12 +774,21 @@ def fetch_dt_pool(date_yyyymmdd):
 
 
 def build_ladder(zt_hist, days):
-    """连板高度梯队：近 N 日「最高板 / 次高板 / 创业板」折线。
+    """连板高度梯队：近 N 日「最高板 / 次高板 / …／最低板」折线（**逐层级全部出线**）。
 
-    返回 [{date, top, second, cyb, top_n, second_n, cyb_n, *_names, *_list}]
+    返回 [{date, top, second, cyb, top_n, second_n, cyb_n, *_names, *_list, levels}]
       · top/second/cyb = 当日 最高板 / 次高板 / 创业板最高板（线的 Y 值）
       · *_n   = 该梯队**股票家数**（图上数字显示这个）
       · *_list = 结构化名单（name/code/market/boards/industry/zbc/is_yizi），供前端 tooltip
+      · levels = 🔴 **每个实际存在的高度层级各一条**（2026-09-23 用户要求），
+                形如 [{boards, n, list}]，boards 降序。
+
+    🔴 为什么要 `levels`（2026-09-23 用户报「9-22 的 3板 和 4板 呢？」）：
+      原实现只取 `lbcs[0]`(最高) 与 `lbcs[1]`(次高) 两个**高度序号**，
+      于是当天存在的 **3板 / 4板 完全不出线**。
+      例：09-22 高度集合 = [6,5,4,3,2,1] → 图上只有 6 与 5 两条，
+          南华生物(4板)、博通集成/新华文轩/三羊马/大亚圣象(3板) **一个都看不到**。
+      教训：**「次高板」≠「第二高的那个层级之外都不画」** —— 用户要看的是**完整梯队台阶**。
     """
     out = []
     for d in days:
@@ -823,6 +832,9 @@ def build_ladder(zt_hist, days):
             'second_list': _rows(second),
             'cyb_list': [r for r in _rows(cyb_max)
                          if str(r['code']).startswith(('300', '301'))] if cyb_max else [],
+            # 🔴 逐层级全出线（含 2 板起；1 板是首板，不属于「连板梯队」，不画）
+            'levels': [{'boards': b, 'n': len(_rows(b)), 'list': _rows(b)}
+                       for b in lbcs if b >= 2],
         })
     return out
 

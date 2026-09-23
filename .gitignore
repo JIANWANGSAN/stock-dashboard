@@ -40,3 +40,7 @@ _*_bak.*
 # 系统
 .DS_Store
 Thumbs.db
+
+# 自我改进 skill 的本地学习日志（self-improving-agent）
+#   默认保持 per-developer、不入库（可能含上下文噪声；要团队共享再放开）
+.learnings/
