@@ -634,9 +634,9 @@
              · `check_ladder.py` 第三道 `check_candidates()` 断言它的入池门槛。
            **绝不可顺手把后端 candidates 一起删掉。** -->
       <div class="card" data-page-node-id="4LDXHmInSblrqZKmH2SbLk">
-        <div class="card-title" data-page-node-id="1JCFVjOuTeZMucS3Se0hZz">连板高度梯队 <span class="tag" data-page-node-id="SOrFifQLO9pb3LwuCUnCJ5">一天一根竖线 · 点越高板数越高</span></div>
+        <div class="card-title" data-page-node-id="1JCFVjOuTeZMucS3Se0hZz">连板高度梯队 <span class="tag" data-page-node-id="SOrFifQLO9pb3LwuCUnCJ5">主板 · 4板以上 · 每层一条曲线</span></div>
         <div id="echart-ladder" data-page-node-id="UhbxgyC6bJyE7N4TacYG6c"></div>
-        <div class="note" data-page-node-id="ladderNote">纵轴＝板数，横轴＝日期：<b>每一天是一根竖线</b>，当天有几个高度就几个点（6板→2板 竖着排），日与日之间折线相连。点越高＝板数越高、颜色越深，<b>数字＝该层当日家数</b>；当天没有的高度不画点。· <b>鼠标移到任意一天</b>弹出当天各层全部股票与所属概念</div>
+        <div class="note" data-page-node-id="ladderNote">纵轴＝板数，横轴＝日期：<b>4板以上每一层各是一条独立曲线</b>（6板一条、5板一条、4板一条），用来<b>看一个时间段内连板高度的变化</b>。线贴在几就代表几板，<b>点上的数字＝该层当日家数</b>；<b>某天没有这一层，曲线就下探到 0 轴</b>，等它回来再从 0 轴升起。只统计主板（不含创业板/科创板/北交所）。· <b>鼠标移到任意一天</b>弹出当天各层全部股票与所属概念</div>
       </div>
       <div class="card" data-page-node-id="dtLadderCard">
         <div class="card-title" data-page-node-id="dtLadderTitle">跌停板梯队 <span class="tag" id="dt-note" data-page-node-id="dtNote">—</span></div>
@@ -735,7 +735,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.23-4';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.23-5';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -1124,16 +1124,22 @@ function renderMarketVolume(){
 }
 
 /* ---- 模块2 梯队折线图（连板高度梯队 / 跌停板梯队 **共用同一套渲染**）----
-   🔴 2026-09-23 用户报「9-22 的 3板 和 4板 呢？」→ 渲染改为**逐层级全出线**：
-      连板图 x 轴每一列，凡 `levels[]` 里出现的高度都画一个点（不再只画 top/second/cyb 三条）。
-      板数层级用**同一族蓝色**由深到浅（越高越深），一眼看出「台阶」与**断层**。
-      跌停图（dt_ladder）结构不同（没有 levels），仍走原来的三条线 + 复用同一函数。 */
+   🔴 连板图最终口径（2026-09-23 用户第 5 次澄清，以此为准）：
+      **「不需要最高板和次高板了；需要 2板以上每一层是一条线，
+         这样可以看出一个时间段内连板高度的变化，排除掉创业板的部分」**
+      → 之后再次收窄：**「只统计 4 板以上」** + **「天与天之间用曲线连接」**
+        + **「某天没有该层 → 曲线连接到 0 轴，等它回来再从 0 轴连起来」**。
+      · 图上 = **每层一条独立曲线**（6板一条、5板一条、4板一条）；
+      · 纵轴 = **板数高度**（5板那条线就贴在 y=5），点上的**数字 = 该层当日家数**；
+      · 缺层 → 该点 **Y = 0**（落到 0 轴上），等这一层回来再从 0 轴升起（曲线连通、不断开）；
+      · 🔴 **只保留 4 板及以上**（后端 `levels` 门槛 `b>=4`）、**只统计主板**（创业板/科创板/北交所已剔除）；
+      · ⛔ 不再画「最高板 / 次高板 / 创业板」三条线（语义已弃用）。
+      跌停图（dt_ladder）没有 levels → 走老三条线分支，两图仍共用一个函数。 */
 let ladderChart=null, dtChart=null;
 
-// 连板层级配色：越高越深（深蓝 → 浅蓝）。第 7 层及以后统一最浅色。
-// ⚠️ 已退役（2026-09-23）：连板图改为**单条折线 + visualMap 按板数着色**后，
-//    不再需要「逐层配色表」。保留定义仅为兼容 `_smoke_init.js` 的取回断言，新代码请勿使用。
-const LADDER_LEVEL_COLORS=['#1d4ed8','#2563eb','#3b82f6','#60a5fa','#93c5fd','#bfdbfe','#dbeafe'];
+// 连板层级配色（2026-09-23 用户指定）：**6板=紫 · 5板=红 · 4板=淡粉**（区分度高，一眼可辨）
+//   高阶层级多出来时（7板/8板…）继续往下取备用色。
+const LADDER_LEVEL_COLORS=['#7c3aed','#dc2626','#f472b6','#0891b2','#16a34a','#ca8a04','#be185d'];
 
 function drawLadderChart(el, prevChart, L, cfg){
   const chart = prevChart || echarts.init(el);
@@ -1165,47 +1171,49 @@ function drawLadderChart(el, prevChart, L, cfg){
     ).join('');
   };
 
-  // ---- 连板图：**单条连续折线 · 同一天竖直排列**（2026-09-23 用户第三次澄清后的最终形态）----
-  //   把「每个交易日 × 当天出现的每个高度（≥2板）」展开成一串点，**串成一条折线**：
-  //     · X = **日期（类目轴，一天一根竖线）** —— 同一天的各层点落在**同一个 x** 上，竖直排列
-  //     · Y = 板数（点落在几板的高度）
-  //     · 图上数字 = 该高度当日的**股票家数**
-  //     · 某层当日不存在 → 该层不产点，折线自然从上一个点斜到下一个点（不画缺口）
-  //   用户原话：「同一天的纵轴不应该是垂直的吗？你这全是斜的让我怎么看哪一天是哪一天？」
-  //   ⛔ v2/v3 曾把同日各层**横向错开**（同一天变斜线）→ 用户否掉：一天必须是一根**竖线**。
+  // ---- 连板图：**每层一条独立曲线**（6板一条、5板一条、4板一条）----
+  //   · X = 日期（类目轴，一天一个刻度）· Y = 板数高度（5板那条线就贴在 y=5）
+  //   · 点上数字 = 该层当日**家数**（如 4板那天有 2 只 → 标 2）
+  //   · 🔴 缺层 → 该点 **Y = 0**（落到 0 轴上），等这一层回来再从 0 轴拉起来。
+  //     语义：0 = 「这一层今天断了/没有票」→ 曲线下探到 0 再回升，断档一眼可见。
+  //   · 🔴 只保留 4 板及以上（后端 levels 门槛 b>=4）
+  //   · 用途：**看一个时间段内连板高度的变化**（哪一层在变厚/变薄、哪层断了）
+  //   用户原话：「2板以上每一层是一个线，这样我可以看出一个时间段内连板高度的变化，排除掉创业板的部分」
+  //           → 收窄：「只统计4板以上」+「天与天之间曲线连接」
+  //           → 再收窄：「如果某一天没有4板，那就**连接到0轴**，等有4板再从0轴连起来」
+  //   ⛔ 被否掉的版本：① 只画最高板/次高板/创业板 三条（4板/3板 永远看不到）
+  //                    ② 把同日各层串成一条线（全是斜的，读不出哪根线是哪天）
+  //                    ③ 缺层用 null + connectNulls 跨过去（用户要的是**下探到 0 轴**）
   const levelMode = !!(cfg.levelMode && L.some(s=>s.levels));
   let series, legendData, xData, xAxisCfg;
   if(levelMode){
-    // 折线点：按日期顺序（x = 日序），同日高度从高到低（同一 x → 竖直）
-    const pts=[];
-    L.forEach((s,di)=>{
-      (s.levels||[]).slice().sort((a,b)=>b.boards-a.boards).forEach(v=>{
-        pts.push({value:[di, v.boards],
-                  cnt:v.n, list:v.list, boards:v.boards, date:s.date});
-      });
-    });
-    series = [{
-      name: '连板高度',
-      type:'line', smooth:true, data: pts,
-      // ⚠️ ECharts 折线默认按「数组顺序」连线；同 x 多点会自然形成**竖直段**，
-      //    但相邻两天之间必须有连接线 → 保持数组顺序（日 0 全部点 → 日 1 全部点 …）
-      //    即可：日内竖直、日间斜向，正是用户要的形态。
-      symbol:'circle', symbolSize:9,
-      // ⚠️ 颜色交给 visualMap（按板数深浅）→ 这里**不要再写死 itemStyle.color**，否则被覆盖成单色
-      itemStyle:{borderColor:'#fff', borderWidth:1.5},
-      label:{show:true, position:'right', fontSize:11, fontWeight:'bold', color:'#374151',
-        // ⚠️ 开了 visualMap 后 value 是 [日序, 板数] 数组，家数要从 **p.data.cnt** 取
+    // 窗口内出现过的**全部 ≥4 板层级**（后端已只统计主板），降序：高板在前
+    const allLevels = [...new Set(L.flatMap(s=>(s.levels||[]).map(v=>v.boards)))]
+      .sort((a,b)=>b-a);
+    legendData = allLevels.map(b=>b+cfg.levelUnit);
+    series = allLevels.map((b,i)=>({
+      name: b+cfg.levelUnit, type:'line', smooth:true,   // smooth：曲线
+      data: L.map(s=>{
+        const lv=(s.levels||[]).find(v=>v.boards===b);
+        // 🔴 该日没有这一层 → Y=0（落到 0 轴），曲线从 0 轴升起/回落
+        return lv ? {value:b, cnt:lv.n, list:lv.list} : {value:0, cnt:0, list:[], empty:true};
+      }),
+      connectNulls:true,        // 兼容保底（现已无 null，但留着防将来改回 null）
+      symbol:'circle', symbolSize:8,
+      // 0 轴上的「断档点」不画实心圆、也不标数字，避免视觉噪音
+      symbolSize:(v)=> (v && v.value===0) ? 0 : 8,
+      lineStyle:{width:2.5,color:LADDER_LEVEL_COLORS[Math.min(i,LADDER_LEVEL_COLORS.length-1)]},
+      itemStyle:{color:LADDER_LEVEL_COLORS[Math.min(i,LADDER_LEVEL_COLORS.length-1)],
+                 borderColor:'#fff', borderWidth:1.5},
+      label:{show:true, position:'top', fontSize:11, fontWeight:'bold', color:'#374151',
+        // 数字 = **该层当日家数**；0 轴断档点不标
         formatter:p=>{
-          const c = (p.data && p.data.cnt!=null) ? p.data.cnt
-                  : (Array.isArray(p.value) ? null : p.value);
-          return (c==null||!c) ? '' : c;
+          const v=p.value; if(!v||v.cnt==null||!v.cnt) return '';
+          return v.cnt;
         }}
-    }];
-    legendData = ['连板高度'];
-    xData = dates;   // ✅ 类目轴：一天一个刻度，同日点共享同一 x → 竖直排列
-    // ⚠️ 不要 boundaryGap:false（那会让点位与日期标签错开半格，用户会读错「哪根线是哪天」）
-    xAxisCfg = {type:'category', data:xData,
-                axisLabel:{fontSize:11}, axisTick:{show:false}};
+    }));
+    xData = dates;
+    xAxisCfg = {type:'category', data:xData, axisLabel:{fontSize:11}, axisTick:{show:false}};
   } else {
     series = [ mk('top',cfg.colors[0],cfg.labels[0]),
                mk('second',cfg.colors[1],cfg.labels[1]),
@@ -1217,7 +1225,7 @@ function drawLadderChart(el, prevChart, L, cfg){
 
   chart.setOption({
     // 连板图/跌停图都用 axis 触发：**鼠标移到某一天**就出当天完整名单
-    //   （连板图同日多点共享同一 x → axis 触发会一次给出这天所有层级的票，正是用户要的）
+    //   （连板图同日各层各一条线、共享同一 x → axis 触发一次给出这天所有层级的票）
     tooltip:{trigger:'axis', axisPointer:{type:'line', snap:true, lineStyle:{color:'#93c5fd', width:1, type:'dashed'}},
              confine:true, enterable:true,   // enterable：鼠标可移进弹层滚动查看
       backgroundColor:'rgba(255,255,255,.97)', borderColor:'#e5e7eb',
@@ -1226,16 +1234,15 @@ function drawLadderChart(el, prevChart, L, cfg){
       formatter:ps=>{
         if(!ps||!ps.length) return '';
         if(levelMode){
-          // 按**日期**取当天完整名单（axis 触发下 ps 是当天所有点）
-          const first=Array.isArray(ps)?ps[0]:ps;
-          const di=Array.isArray(first.value)?first.value[0]:first.dataIndex;
+          // 每层一条 series，ps 里每条 series 各一个点，但 dataIndex 都指向**同一天**
+          const di = ps[0].dataIndex;
           const d=L[di]; if(!d) return '';
           const lv=(d.levels||[]).slice().sort((a,b)=>b.boards-a.boards);
           const nLv=lv.reduce((n,x)=>n+x.n,0);
           return `<div style="min-width:230px;white-space:normal;line-height:1.75;"><b>${d.date}</b>`
             + `<div style="margin-top:3px;color:#6b7280;">连板共 <b>${nLv}</b> 只 · 最高 <b>${d.top}${cfg.unit}</b></div>`
-            + lv.map(v=>
-                `<div style="margin-top:7px;"><b style="color:#1d4ed8;">${v.boards}${cfg.unit} · ${v.n}只</b></div>`
+            + lv.map((v,vi)=>
+                `<div style="margin-top:7px;"><b style="color:${LADDER_LEVEL_COLORS[Math.min(vi,LADDER_LEVEL_COLORS.length-1)]};">${v.boards}${cfg.unit} · ${v.n}只</b></div>`
                 + `<div>`+ (v.list||[]).map(s=>
                     `<span style="display:inline-block;margin:1px 8px 1px 0;">`
                     + `${esc(s.name?String(s.name).slice(0,3):'')}`
@@ -1258,20 +1265,17 @@ function drawLadderChart(el, prevChart, L, cfg){
       }},
     legend:{data:legendData, top:0, right:0, itemWidth:14, itemHeight:8, textStyle:{fontSize:11},
       type:'scroll'},
-    // 单条折线（连板图）右侧留宽：末条最右点的家数标签（position:'right'）需要空间，否则被裁
-    grid: levelMode ? {left:40, right:56, top:44, bottom:30} : {left:40, right:24, top:44, bottom:30},
+    grid: levelMode ? {left:40, right:40, top:44, bottom:30} : {left:40, right:24, top:44, bottom:30},
     xAxis:xAxisCfg,
     // 纵轴**只保留整数**刻度（板数/连跌天数都是离散整数，不要小数）
     yAxis:{type:'value', name:cfg.yName, min:0, axisLabel:{fontSize:11}, minInterval:1},
-    // 连板图：点的**颜色随板数深浅**（越高越深）—— 用 visualMap 按 Y 值着色
-    ...(levelMode ? {visualMap:{show:false, dimension:1, min:1, max:7,
-        inRange:{color:['#93c5fd','#60a5fa','#3b82f6','#2563eb','#1d4ed8','#1e3a8a']}}} : {}),
+    // ⛔ 连板图**不用 visualMap**：每层一条 series，颜色由各层自己的 LADDER_LEVEL_COLORS[i] 决定
     series
-  });
+  }, {notMerge:true});   // ⚠️ 必须 notMerge：否则上一版遗留的 visualMap 等配置不会被清除（setOption 默认合并）
   return chart;
 }
 
-/* 连板高度梯队 —— 逐层级全出线（最高板 / 次高板 / 3板 / 4板…） */
+/* 连板高度梯队 —— **主板 · 4板以上每层一条独立曲线**（看一个时间段内连板高度的变化） */
 function renderChart(){
   if(!D.ladder||!D.ladder.length) return;
   ladderChart = drawLadderChart(document.getElementById('echart-ladder'), ladderChart,

@@ -37,6 +37,10 @@ _tmp_*
 _tmp*
 _*_bak.*
 
+# 验证脚本的日志输出（_shot.log / _smoke.log / _fetch.log），每次重跑都会覆盖，不入库
+_chk.js
+_*.log
+
 # 系统
 .DS_Store
 Thumbs.db

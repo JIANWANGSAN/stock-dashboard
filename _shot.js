@@ -368,7 +368,7 @@ async function shoot(page, tag, panel, label, w, h) {
     ok(`K线涨停标黄：颜色为黄色 ${kline.color1}`, kline.color1 === '#facc15');
     ok(`K线涨停标黄：K线数值未被破坏 ${kline.val1}`, kline.val1 === '[8.04,8.04,8.04,8.04]');
 
-    // ── 连板高度梯队「单条折线 · 横向错开」（约定 §3.1b；2026-09-23 用户两次澄清）──
+    // ── 连板高度梯队「主板 · 2板以上每层一条独立折线」（约定 §3.1b；2026-09-23 用户第 5 次澄清）──
     // ⚠️ 测 ECharts 要**读 option**，不能截图（headless Edge 拍 canvas 会全白 → 假失败，见 §9.3.1）
     await page.click('.menu-item[data-panel="ladder"]');
     await sleep(600);
@@ -379,77 +379,118 @@ async function shoot(page, tag, panel, label, w, h) {
       const D_ = (typeof D !== 'undefined' && D) || {};
       const W = (D_.ladder || []).slice(-7);
       const last = W[W.length - 1] || {};
-      // 期望：窗口内出现过的**全部 ≥2 板层级**（用于核对「一层都没漏」）
+      // 期望：窗口内出现过的**全部 ≥4 板层级**（用于核对「一层都没漏」）
       const expLv = [...new Set(W.flatMap(s => (s.levels || []).map(v => v.boards)))]
         .sort((a, b) => b - a);
+      // 🔴 只统计 4 板以上：levels 里不许出现 <4 的层级
+      const lowLv = W.flatMap(s => (s.levels || []).map(v => v.boards)).filter(b => b < 4);
       // 期望：窗口内**总点数** == 各日 levels 长度之和（每层一个点）
       const expPts = W.reduce((n, s) => n + (s.levels || []).length, 0);
-      const s0 = opt && opt.series && opt.series[0] ? opt.series[0] : null;
-      const pts = s0 ? (s0.data || []) : [];
-      // 每个点 value = [日序, 板数]（类目轴 → 日序即日期下标）
-      const ptList = pts.map(p => Array.isArray(p.value) ? p.value : null).filter(Boolean);
-      // 末条（最后一天）的层级与家数：**同一天共享同一 x** → 直接按 x === lastIdx 过滤
+      const seriesAll = opt ? opt.series : [];
+      // 每层一条 series → 每条的 data 都是「窗口天数」长（缺层为 0 轴点）
+      const lens = seriesAll.map(s => (s.data || []).length);
+      const lensOk = lens.length > 0 && lens.every(n => n === W.length);
+      // 🔴 缺层 → Y=0（落到 0 轴）；不许有 null
+      const hasNull = seriesAll.some(s => (s.data || []).some(p => p === null || p === undefined));
+      const nullOk = !hasNull && seriesAll.every(s => (s.data || []).every(p =>
+        p && typeof p.value === 'number'));
+      // 期望的 0 轴点数 = 各 series 中「该层当日不存在」的格子数
+      let expZero = 0;
+      seriesAll.forEach(s => {
+        const b = parseInt(String(s.name).replace(/[^\d]/g, ''), 10);
+        W.forEach(row => {
+          if (!(row.levels || []).some(v => v.boards === b)) expZero++;
+        });
+      });
+      const zeroPts = seriesAll.reduce((n, s) => n + (s.data || []).filter(p => p && p.value === 0).length, 0);
+      // 末条（最后一天）：每层一条线 → 该层的点 value == 板数，且**同一天各层的 series 名字与板数一致**
       const lastIdx = W.length - 1;
       const lastLv = (last.levels || []).map(v => v.boards).sort((a, b) => b - a);
-      const lastPts = ptList.filter(v => v[0] === lastIdx).map(v => v[1]).sort((a, b) => b - a);
-      const lastCnts = pts.filter(p => Array.isArray(p.value) && p.value[0] === lastIdx).map(p => p.cnt);
-      const expCnts = lastLv.map(b => (last.levels || []).find(v => v.boards === b).n);
-      // 🔴 用户报「同一天的纵轴不应该是垂直的吗？你这全是斜的」→ 同一天必须**共享同一 x**
-      const dayXs = [...new Set(ptList.map(v => v[0]))];
-      const verticalOk = dayXs.length === W.length
-        && dayXs.every(d => Number.isInteger(d) && d >= 0 && d < W.length);
-      const maxPerDay = dayXs.map(d => ptList.filter(v => v[0] === d).length).reduce((a, b) => Math.max(a, b), 0);
-      // 单条折线：series 数必须 == 1（退化回多条平行线即失败）
-      const seriesCount = opt ? opt.series.length : -1;
-      // x 轴必须是**类目轴**（一天一根竖线）
-      const xType = opt && opt.xAxis && opt.xAxis[0] ? opt.xAxis[0].type : null;
-      const xCatCount = opt && opt.xAxis && opt.xAxis[0] && opt.xAxis[0].data ? opt.xAxis[0].data.length : -1;
+      // 最后一天各层家数：从各 series 的第 lastIdx 个点取 cnt（0 轴断档点不算）
+      const lastCntsByLv = {};
+      seriesAll.forEach(s => {
+        const p = (s.data || [])[lastIdx];
+        if (p && p.value > 0 && p.cnt != null) lastCntsByLv[p.value] = p.cnt;
+      });
+      const lastPts = Object.keys(lastCntsByLv).map(Number).sort((a, b) => b - a);
+      const lastCnts = lastPts.map(b => lastCntsByLv[b]);
+      const expCnts = lastLv.map(b => ((last.levels || []).find(v => v.boards === b) || {}).n);
+      // 🔴 用户要求「排除创业板」：levels 里**不许出现 300/301/688/689/4xx/8xx** 开头的代码
+      const badCodes = [];
+      W.forEach(s => (s.levels || []).forEach(v => (v.list || []).forEach(x => {
+        const c = String(x.code || '');
+        if (c.startsWith('300') || c.startsWith('301') || c.startsWith('688') || c.startsWith('689')
+            || c[0] === '4' || c[0] === '8' || c.startsWith('92')) badCodes.push(c);
+      })));
+      // 🔴 旧逻辑：缺层 null 断点 —— 已弃用，现改为 Y=0
+      // ⛔ 不许再有 visualMap（每层颜色由 LADDER_LEVEL_COLORS 决定）
+      // ⚠️ ECharts 的 getOption() **恒返回** `visualMap: []`（空数组也是真值）→ 必须判 `.length`
+      const hasVisualMap = !!(opt && opt.visualMap && opt.visualMap.length > 0);
+      // ⛔ 不许再画最高板/次高板/创业板三条线
+      const names = seriesAll.map(s => s.name);
+      const oldNames = names.some(n => /最高板|次高板|创业板/.test(n));
       return {
         expLv, expPts, expLvDays: W.length,
-        seriesCount, names: opt ? opt.series.map(s => s.name) : [],
-        ptCount: pts.length,
+        seriesCount: seriesAll.length,
+        names,
+        lensOk, lens,
+        ptCount: lens.reduce((a, b) => a + b, 0),
+        zeroPts, expZero,
         lastPts, expLastLv: lastLv,
         lastCnts, expCnts,
-        verticalOk, dayXCount: dayXs.length, maxPerDay,
-        xType, xCatCount,
-        anyNull: pts.some(p => p === null || p === undefined),
+        connectNulls: seriesAll.map(s => s.connectNulls),
+        smoothAll: seriesAll.map(s => s.smooth),
+        nullOk, hasVisualMap, oldNames, lowLv: lowLv.slice(0, 6), lowTotal: lowLv.length,
         tooltipTrigger: opt && opt.tooltip && opt.tooltip[0] ? opt.tooltip[0].trigger : null,
+        badCodes: badCodes.slice(0, 6), badTotal: badCodes.length,
         keepOld: Object.prototype.hasOwnProperty.call(last, 'second')
                  && Object.prototype.hasOwnProperty.call(last, 'top_list'),
         lastDate: last.date,
       };
     });
-    ok(`梯队图为**单条折线**（series 数 = ${ldr.seriesCount}）`, ldr.seriesCount === 1);
-    ok(`梯队图 x 轴为**类目轴**（一天一根竖线，实测 ${ldr.xType}，${ldr.xCatCount} 天）`,
-       ldr.xType === 'category' && ldr.xCatCount === ldr.expLvDays);
-    ok(`梯队图总点数 == 窗口各日层级数之和（${ldr.ptCount} vs ${ldr.expPts}）→ 每层一个点、一层不漏`,
-       ldr.expPts > 0 && ldr.ptCount === ldr.expPts);
-    ok(`梯队图无 null 断点（缺层不补点，折线直接连过去）`, ldr.anyNull === false);
-    // 🔴 关键回归：用户报「你这全是斜的」→ 同一天各层必须共享同一 x（竖直排列）
-    ok(`同一天各层**共享同一 x**（竖直，实测 ${ldr.dayXCount} 个 x / 应为 ${ldr.expLvDays} 天，单日最多 ${ldr.maxPerDay} 点）`,
-       ldr.verticalOk === true);
-    ok(`末条 ${ldr.lastDate} 点数 == 当天层级数（${JSON.stringify(ldr.lastPts)} vs ${JSON.stringify(ldr.expLastLv)}）`,
+    ok(`梯队图为**每层一条独立曲线**（series 数 = ${ldr.seriesCount}，层级 ${ldr.expLv.join('/')}）`,
+       ldr.seriesCount === ldr.expLv.length && ldr.seriesCount >= 2);
+    ok(`梯队图 series 名 = 各板数层级（${ldr.names.join(' / ')}）`,
+       ldr.names.length > 0 && ldr.names.every(n => /^\d+板$/.test(n)));
+    // 🔴 用户要求「只统计 4 板以上」
+    ok(`梯队**只统计 4 板以上**（无 <4 层级，实测越界 ${ldr.lowTotal} 个）`, ldr.lowTotal === 0);
+    ok(`梯队图**不再有**最高板/次高板/创业板三条线`, ldr.oldNames === false);
+    ok(`梯队图**不再有** visualMap（颜色由每层 LADDER_LEVEL_COLORS 决定）`, ldr.hasVisualMap === false);
+    ok(`每条 series 长度 == 窗口天数（${ldr.lens.join(',')} vs ${ldr.expLvDays}）`,
+       ldr.lensOk === true);
+    ok(`梯队图总点数 == 窗口各日层级数之和 + 0轴补点（${ldr.ptCount} vs ${ldr.expPts}+${ldr.expZero}）→ 每层一个点、一层不漏`,
+       ldr.expPts > 0 && ldr.ptCount === ldr.expPts + ldr.expZero);
+    // 🔴 用户要求「某天没有该层 → 曲线连接到 0 轴」
+    ok(`缺层点 Y=0 落到 0 轴（实测 ${ldr.zeroPts} 个，应为 ${ldr.expZero} 个）`,
+       ldr.zeroPts === ldr.expZero);
+    ok(`梯队数据**无 null 断点**（缺层用 0 轴点，不用 null）`, ldr.nullOk === true);
+    ok(`梯队曲线为平滑曲线（smooth=true，实测 ${JSON.stringify(ldr.smoothAll)}）`,
+       ldr.smoothAll.length > 0 && ldr.smoothAll.every(v => v === true));
+    // 🔴 关键回归：用户明确要求「排除掉创业板的部分」
+    ok(`梯队**只统计主板**（无创业板/科创板/北交所代码，实测越界 ${ldr.badTotal} 个）`,
+       ldr.badTotal === 0);
+    ok(`末条 ${ldr.lastDate} 各层点数 == 当天层级数（${JSON.stringify(ldr.lastPts)} vs ${JSON.stringify(ldr.expLastLv)}）`,
        JSON.stringify(ldr.lastPts) === JSON.stringify(ldr.expLastLv));
     ok(`末条 ${ldr.lastDate} 图上数字 == 各层家数（${JSON.stringify(ldr.lastCnts)} vs ${JSON.stringify(ldr.expCnts)}）`,
        JSON.stringify(ldr.lastCnts) === JSON.stringify(ldr.expCnts));
     ok(`梯队图 tooltip 用 axis 触发（悬浮某天出当天完整名单与概念）`, ldr.tooltipTrigger === 'axis');
-    // 🔴 用户要求：点击/悬浮要能看到「这个点上到底是哪些票和其所属概念」→ 实际调 formatter 验内容
+    // 🔴 用户要求：悬浮要能看到「这个点上到底是哪些票和其所属概念」→ 实际调 formatter 验内容
     // ⚠️ 窗口是 slice(-7)，lastIdx 是**窗口内**下标 → 取数据必须用同一个窗口，不能拿全量 D.ladder
     const tipChk = await page.evaluate(() => {
       const el = document.getElementById('echart-ladder');
       const inst = el && echarts.getInstanceByDom(el);
       const opt = inst ? inst.getOption() : null;
-      const s0 = opt && opt.series && opt.series[0];
-      const data = s0 ? (s0.data || []) : [];
-      if (!data.length) return { err: 'no data' };
-      const lastIdx = Math.max(...data.map(p => (Array.isArray(p.value) ? p.value[0] : 0)));
-      const params = data
-        .filter(p => Array.isArray(p.value) && p.value[0] === lastIdx)
-        .map((p, i) => ({ dataIndex: i, value: p.value, data: p }));
-      const html = opt.tooltip[0].formatter(params);
       const Dd = (typeof D !== 'undefined' && D) || {};
       const W = (Dd.ladder || []).slice(-7);          // ✅ 与图上同窗口
+      const lastIdx = W.length - 1;
       const row = W[lastIdx] || {};
+      // 每层一条 series → 每 series 取最后一天的点，组装成 axis 触发的 params
+      // ⚠️ Y=0 的「0 轴断档点」不算真实数据，不传给 formatter（真实图上 tooltip 也只给有数据的点）
+      const params = (opt ? opt.series : []).map((s, si) => {
+        const p = (s.data || [])[lastIdx];
+        return (p && p.value !== 0) ? { dataIndex: lastIdx, seriesIndex: si, value: p.value, data: p } : null;
+      }).filter(Boolean);
+      const html = opt.tooltip[0].formatter(params);
       const names = (row.levels || []).flatMap(v => (v.list || []).map(s => String(s.name || '').slice(0, 3)));
       const missing = names.filter(n => n && !html.includes(n));
       const inds = (row.levels || []).flatMap(v => (v.list || []).map(s => s.industry)).filter(Boolean);
@@ -467,19 +508,20 @@ async function shoot(page, tag, panel, label, w, h) {
        !tipChk.err && tipChk.nameTotal > 0 && tipChk.missing === 0);
     ok(`梯队 tooltip 列出**所属概念**（${tipChk.indTotal} 条，缺失 ${tipChk.indMissing} 条）`,
        !tipChk.err && tipChk.indMissing === 0);
-    // 每个点都必须有家数（cnt 为正整数）→ 防止 label 静默丢失/裁切
+    // 每个**真实点**（value>0）都必须有家数；0 轴断档点(cnt=0)不算
     const badCnt = await page.evaluate(() => {
       const el = document.getElementById('echart-ladder');
       const inst = el && echarts.getInstanceByDom(el);
       const opt = inst ? inst.getOption() : null;
-      const s0 = opt && opt.series && opt.series[0];
-      const bad = (s0 ? (s0.data || []) : []).filter(p => !p || !p.cnt || p.cnt < 1);
-      return { total: (s0 ? (s0.data || []).length : 0), bad: bad.length };
+      const all = (opt ? opt.series : []).flatMap(s => s.data || []);
+      const real = all.filter(p => p && p.value > 0);          // 真实点（排除 0 轴断档点）
+      const bad = real.filter(p => !p.cnt || p.cnt < 1);
+      return { total: real.length, bad: bad.length, zero: all.length - real.length };
     });
-    ok(`梯队图每个点都有家数（${badCnt.total} 个点，异常 ${badCnt.bad} 个）`,
+    ok(`梯队图每个**真实点**都有家数（${badCnt.total} 个点，异常 ${badCnt.bad} 个；另有 ${badCnt.zero} 个 0 轴点）`,
        badCnt.total > 0 && badCnt.bad === 0);
     ok(`梯队数据仍保留 top/second/*_list（未被误删）`, ldr.keepOld);
-    ok(`窗口内共 ${ldr.expLv.length} 个高度层级全部出点（${ldr.expLv.join('/')}）`, ldr.expLv.length > 0);
+    ok(`窗口内共 ${ldr.expLv.length} 个高度层级全部出线（${ldr.expLv.join('/')}）`, ldr.expLv.length > 0);
     // 防回归：note 文案里不许出现 Markdown 星号（HTML 不解析，会原样显示成 **文字**）
     const noteMd = await page.evaluate(() => {
       const el = document.querySelector('[data-page-node-id="ladderNote"]');

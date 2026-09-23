@@ -44,7 +44,7 @@ const codeOnly = body.replace(/<!--[\s\S]*?-->/g,'').replace(/\/\*[\s\S]*?\*\//g
   console.log('  '+k+': '+(codeOnly.includes(k)?'WARN 真代码里仍存在':'ok 已清除'));
 });
 
-console.log('\n--- 连板高度梯队：单条折线 · 每层一个点（2026-09-23 用户两次澄清）---');
+console.log('\n--- 连板高度梯队：主板 · 4板以上每层一条曲线 · 缺层落 0 轴（2026-09-23 用户第 5 次澄清）---');
 try{
   const L=(global.__D && global.__D.ladder)?global.__D.ladder.slice(-7):[];
   const last=L[L.length-1]||{};
@@ -54,8 +54,19 @@ try{
   console.log('  '+(okDesc?'OK  ':'FAIL ')+'levels 非空且降序');
   const allLv=[...new Set(L.flatMap(s=>(s.levels||[]).map(v=>v.boards)))].sort((a,b)=>b-a);
   const expPts=L.reduce((n,s)=>n+(s.levels||[]).length,0);
-  console.log('  '+(allLv.length?'OK  ':'FAIL ')+'窗口内高度层级='+allLv.length+' ['+allLv.join(',')+'] → 应有 '+expPts+' 个点（每层一个点）');
-  // 关键断言：末条必须能看到 3 板 / 4 板（用户报的正是这两个消失）
-  if(lv.includes(4)&&lv.includes(3)) console.log('  OK   末条同时含 4板/3板（用户报的缺失已修）');
-  else if(last.date) console.log('  --   末条 '+last.date+' 无 4板/3板（当日实际没有该层，非 bug）：levels='+lv.join(','));
+  console.log('  '+(allLv.length?'OK  ':'FAIL ')+'窗口内高度层级='+allLv.length+' ['+allLv.join(',')+']'
+    +' → series 应有 '+allLv.length+' 条、点共 '+expPts+' 个');
+  // 🔴 用户要求「只统计 4 板以上」
+  const low=L.flatMap(s=>(s.levels||[]).map(v=>v.boards)).filter(b=>b<4);
+  console.log('  '+(low.length===0?'OK  ':'FAIL ')+'只统计 4 板以上（<4 层级 '+low.length+' 个'
+    +(low.length?'：'+low.slice(0,6).join(','):'')+'）');
+  // 🔴 用户要求「排除创业板」→ levels 名单里**不许出现** 300/301/688/689/4xx/8xx/92xx
+  const bad=[];
+  L.forEach(s=>(s.levels||[]).forEach(v=>(v.list||[]).forEach(x=>{
+    const c=String(x.code||'');
+    if(c.startsWith('300')||c.startsWith('301')||c.startsWith('688')||c.startsWith('689')
+       ||c[0]==='4'||c[0]==='8'||c.startsWith('92')) bad.push(c);
+  })));
+  console.log('  '+(bad.length===0?'OK  ':'FAIL ')+'只统计主板（越界代码 '+bad.length+' 个'
+    +(bad.length?'：'+bad.slice(0,6).join(','):'')+'）');
 }catch(e){ console.log('  FAIL 梯队层级断言异常: '+e.message); }

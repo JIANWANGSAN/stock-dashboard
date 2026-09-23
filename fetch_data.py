@@ -110,6 +110,24 @@ def is_excluded(code, name=''):
     return False
 
 
+def is_cyb_bk(code):
+    """返回 True 表示该票属于**创业板/科创板/北交所**（非主板）。
+
+    🔴 2026-09-23 用户要求：「连板高度梯队」**只统计主板**，排除创业板。
+    ⚠️ 注意与 `is_excluded()` 的区别：全站口径里**创业板是保留的**（涨停判定要区分 20% 限幅），
+       本函数**仅用于连板梯队**的统计口径，别处不要拿它当全局过滤。
+    主板 = 沪市 600/601/603/605 + 深市 000/001/002/003。
+    """
+    c = str(code or '')
+    if c.startswith(('300', '301')):           # 创业板
+        return True
+    if c.startswith(('688', '689')):           # 科创板
+        return True
+    if c[:1] in ('4', '8') or c.startswith('92'):   # 北交所
+        return True
+    return False
+
+
 # 节点票池总市值上限（元）：只保留 200 亿以下的小盘弹性票
 NODE_CAP_LIMIT = 200 * 1e8
 
@@ -774,32 +792,45 @@ def fetch_dt_pool(date_yyyymmdd):
 
 
 def build_ladder(zt_hist, days):
-    """连板高度梯队：近 N 日「最高板 / 次高板 / …／最低板」折线（**逐层级全部出线**）。
+    """连板高度梯队：近 N 日「每一个板数层级各一条线」（2板一条、3板一条、4板一条…）。
 
     返回 [{date, top, second, cyb, top_n, second_n, cyb_n, *_names, *_list, levels}]
-      · top/second/cyb = 当日 最高板 / 次高板 / 创业板最高板（线的 Y 值）
+      · top/second/cyb = 当日 最高板 / 次高板 / 创业板最高板（**保留字段**，别处仍读）
       · *_n   = 该梯队**股票家数**（图上数字显示这个）
       · *_list = 结构化名单（name/code/market/boards/industry/zbc/is_yizi），供前端 tooltip
-      · levels = 🔴 **每个实际存在的高度层级各一条**（2026-09-23 用户要求），
-                形如 [{boards, n, list}]，boards 降序。
+      · levels = 🔴 **每个实际存在的高度层级各一条**，形如 [{boards, n, list}]，boards 降序。
 
-    🔴 为什么要 `levels`（2026-09-23 用户报「9-22 的 3板 和 4板 呢？」）：
-      原实现只取 `lbcs[0]`(最高) 与 `lbcs[1]`(次高) 两个**高度序号**，
-      于是当天存在的 **3板 / 4板 完全不出线**。
-      例：09-22 高度集合 = [6,5,4,3,2,1] → 图上只有 6 与 5 两条，
-          南华生物(4板)、博通集成/新华文轩/三羊马/大亚圣象(3板) **一个都看不到**。
-      教训：**「次高板」≠「第二高的那个层级之外都不画」** —— 用户要看的是**完整梯队台阶**。
+    🔴🔴 2026-09-23 用户最终口径（会话中第 5 次澄清，以此为准）：
+      **「不需要最高板和次高板了；我需要 2板以上每一层是一个线，
+         这样我可以看出一个时间段内连板高度的变化，排除掉创业板的部分」**
+      → 之后再次收窄：**「只统计 4 板以上」** + **「天与天之间用曲线连接」**。
+      · 图上**每层一条独立折线**（6板一条、5板一条、4板一条），纵横都是趋势线；
+      · **纵轴 = 板数位置**，点上的**数字 = 该层当日家数**；
+      · 🔴 **只保留 4 板及以上**（`levels` 门槛 `b >= 4`）—— 2板/3板 不进图；
+      · 缺层 → 该点 null，但 `connectNulls:true` → **线直接跨过去连上**（不断开，保证曲线连贯）；
+      · ⛔ 不再有「最高板 / 次高板 / 创业板」三条线的语义（前端连板图已不用这三条）；
+      · 🔴 **只统计主板票** —— 创业板(300/301)、科创板(688/689)、北交所(4/8/92)、ST 全部剔除。
+        注意：`is_excluded()` 只管 科创板/北交所/ST，**创业板本来是全站保留的**
+        （因为 ths_source 的涨停判定要区分 20% 限幅），所以这里必须**单独再排一次创业板**。
+      · `top` / `second` / `cyb` / `*_list` 字段**照旧产出**（节点/复盘/其它模块仍在读），
+        只是**连板图不再画它们**，且它们按**主板口径**重算，与 levels 保持一致。
+
+    ⚠️ 为什么要保留 top/second/cyb：跌停图 `dt_ladder` 与连板图共用 `drawLadderChart()`，
+        跌停图没有 levels、走老三条线分支 —— 但跌停图读的是它自己的数据，与这里无关。
+        另有别的模块读 ladder[*].top（如复盘文本），删字段会连带炸掉，故一律保留。
     """
     out = []
     for d in days:
-        pool = zt_hist.get(d, [])
+        pool_all = zt_hist.get(d, [])
+        # 🔴 只统计主板：排除创业板 / 科创板 / 北交所（ST 已在取数源头剔除）
+        pool = [s for s in pool_all if not is_cyb_bk(s.get('code'))]
         if not pool:
             continue
         lbcs = sorted({s['lbc'] for s in pool}, reverse=True)
         top = lbcs[0] if lbcs else 0
         second = lbcs[1] if len(lbcs) > 1 else 0
-        # 创业板高度：300/301 开头
-        cyb = [s['lbc'] for s in pool if str(s['code']).startswith(('300', '301'))]
+        # 创业板高度：口径保留（供别处读），但**已不参与连板图绘制**
+        cyb = [s['lbc'] for s in pool_all if str(s['code']).startswith(('300', '301'))]
         cyb_max = max(cyb) if cyb else 0
 
         def _is_cyb(s):
@@ -824,17 +855,18 @@ def build_ladder(zt_hist, days):
             # *_n = 该梯队**股票家数**（图上数字显示这个，而不是板数）
             'top_n': len([s for s in pool if s['lbc'] == top]) if top else 0,
             'second_n': len([s for s in pool if s['lbc'] == second]) if second else 0,
-            'cyb_n': len([s for s in pool if _is_cyb(s) and s['lbc'] == cyb_max]) if cyb_max else 0,
+            'cyb_n': len([s for s in pool_all if _is_cyb(s) and s['lbc'] == cyb_max]) if cyb_max else 0,
             'top_names': '、'.join([s['name'] for s in pool if s['lbc'] == top][:3]),
             'second_names': '、'.join([s['name'] for s in pool if s['lbc'] == second][:3]),
-            'cyb_names': '、'.join([s['name'] for s in pool if _is_cyb(s) and s['lbc'] == cyb_max][:2]),
+            'cyb_names': '、'.join([s['name'] for s in pool_all if _is_cyb(s) and s['lbc'] == cyb_max][:2]),
             'top_list': _rows(top),
             'second_list': _rows(second),
             'cyb_list': [r for r in _rows(cyb_max)
                          if str(r['code']).startswith(('300', '301'))] if cyb_max else [],
-            # 🔴 逐层级全出线（含 2 板起；1 板是首板，不属于「连板梯队」，不画）
+            # 🔴 逐层级全出线：**只保留 4 板及以上**（2026-09-23 用户：只统计4板以上）
+            #    1~3 板不进梯队图（4板以上才是市场真正的高度标）
             'levels': [{'boards': b, 'n': len(_rows(b)), 'list': _rows(b)}
-                       for b in lbcs if b >= 2],
+                       for b in lbcs if b >= 4],
         })
     return out
 
