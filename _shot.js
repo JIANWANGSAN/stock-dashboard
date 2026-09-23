@@ -386,61 +386,87 @@ async function shoot(page, tag, panel, label, w, h) {
       const expPts = W.reduce((n, s) => n + (s.levels || []).length, 0);
       const s0 = opt && opt.series && opt.series[0] ? opt.series[0] : null;
       const pts = s0 ? (s0.data || []) : [];
-      // 每个点 value = [x, 板数]
+      // 每个点 value = [日序, 板数]（类目轴 → 日序即日期下标）
       const ptList = pts.map(p => Array.isArray(p.value) ? p.value : null).filter(Boolean);
-      // 当天全部层级是否都出了点（末条）
+      // 末条（最后一天）的层级与家数：**同一天共享同一 x** → 直接按 x === lastIdx 过滤
+      const lastIdx = W.length - 1;
       const lastLv = (last.levels || []).map(v => v.boards).sort((a, b) => b - a);
-      const lastPts = ptList.filter(v => {
-        const xi = v[0];
-        // 末条占最后一个槽（SLOTS=4）→ x 落在 [ (n-1)*4 , n*4 )
-        const lo = (W.length - 1) * 4, hi = W.length * 4;
-        return xi >= lo && xi < hi;
-      }).map(v => v[1]).sort((a, b) => b - a);
-      // 末条各层家数（数字 label 取 cnt）
-      const lastCnts = pts.filter(p => {
-        const xi = Array.isArray(p.value) ? p.value[0] : -1;
-        const lo = (W.length - 1) * 4, hi = W.length * 4;
-        return xi >= lo && xi < hi;
-      }).map(p => p.cnt);
+      const lastPts = ptList.filter(v => v[0] === lastIdx).map(v => v[1]).sort((a, b) => b - a);
+      const lastCnts = pts.filter(p => Array.isArray(p.value) && p.value[0] === lastIdx).map(p => p.cnt);
       const expCnts = lastLv.map(b => (last.levels || []).find(v => v.boards === b).n);
-      // 横向错开：同一天的点 x 必须**互不相同**（否则又变成竖直堆叠）
-      const byDay = {};
-      ptList.forEach(v => { const k = Math.floor(v[0] / 4); (byDay[k] = byDay[k] || []).push(v[0]); });
-      const sameDayDistinct = Object.keys(byDay).every(k => {
-        const xs = byDay[k];
-        return new Set(xs).size === xs.length;
-      });
+      // 🔴 用户报「同一天的纵轴不应该是垂直的吗？你这全是斜的」→ 同一天必须**共享同一 x**
+      const dayXs = [...new Set(ptList.map(v => v[0]))];
+      const verticalOk = dayXs.length === W.length
+        && dayXs.every(d => Number.isInteger(d) && d >= 0 && d < W.length);
+      const maxPerDay = dayXs.map(d => ptList.filter(v => v[0] === d).length).reduce((a, b) => Math.max(a, b), 0);
       // 单条折线：series 数必须 == 1（退化回多条平行线即失败）
       const seriesCount = opt ? opt.series.length : -1;
-      // x 轴必须是数值轴（横向错开的前提）
+      // x 轴必须是**类目轴**（一天一根竖线）
       const xType = opt && opt.xAxis && opt.xAxis[0] ? opt.xAxis[0].type : null;
+      const xCatCount = opt && opt.xAxis && opt.xAxis[0] && opt.xAxis[0].data ? opt.xAxis[0].data.length : -1;
       return {
-        expLv, expPts, lastLv,
+        expLv, expPts, expLvDays: W.length,
         seriesCount, names: opt ? opt.series.map(s => s.name) : [],
         ptCount: pts.length,
         lastPts, expLastLv: lastLv,
         lastCnts, expCnts,
-        sameDayDistinct, xType,
+        verticalOk, dayXCount: dayXs.length, maxPerDay,
+        xType, xCatCount,
         anyNull: pts.some(p => p === null || p === undefined),
         tooltipTrigger: opt && opt.tooltip && opt.tooltip[0] ? opt.tooltip[0].trigger : null,
-        legendCount: opt && opt.legend && opt.legend[0] ? (opt.legend[0].data || []).length : -1,
         keepOld: Object.prototype.hasOwnProperty.call(last, 'second')
                  && Object.prototype.hasOwnProperty.call(last, 'top_list'),
         lastDate: last.date,
       };
     });
     ok(`梯队图为**单条折线**（series 数 = ${ldr.seriesCount}）`, ldr.seriesCount === 1);
-    ok(`梯队图 x 轴为数值轴（横向错开的前提，实测 ${ldr.xType}）`, ldr.xType === 'value');
+    ok(`梯队图 x 轴为**类目轴**（一天一根竖线，实测 ${ldr.xType}，${ldr.xCatCount} 天）`,
+       ldr.xType === 'category' && ldr.xCatCount === ldr.expLvDays);
     ok(`梯队图总点数 == 窗口各日层级数之和（${ldr.ptCount} vs ${ldr.expPts}）→ 每层一个点、一层不漏`,
        ldr.expPts > 0 && ldr.ptCount === ldr.expPts);
     ok(`梯队图无 null 断点（缺层不补点，折线直接连过去）`, ldr.anyNull === false);
-    // 关键回归：用户报的「9-22 缺 3板/4板」—— 末条必须把当天所有层级都画出来
+    // 🔴 关键回归：用户报「你这全是斜的」→ 同一天各层必须共享同一 x（竖直排列）
+    ok(`同一天各层**共享同一 x**（竖直，实测 ${ldr.dayXCount} 个 x / 应为 ${ldr.expLvDays} 天，单日最多 ${ldr.maxPerDay} 点）`,
+       ldr.verticalOk === true);
     ok(`末条 ${ldr.lastDate} 点数 == 当天层级数（${JSON.stringify(ldr.lastPts)} vs ${JSON.stringify(ldr.expLastLv)}）`,
        JSON.stringify(ldr.lastPts) === JSON.stringify(ldr.expLastLv));
     ok(`末条 ${ldr.lastDate} 图上数字 == 各层家数（${JSON.stringify(ldr.lastCnts)} vs ${JSON.stringify(ldr.expCnts)}）`,
        JSON.stringify(ldr.lastCnts) === JSON.stringify(ldr.expCnts));
-    ok(`同日各点 x 互不相同（真的横向错开，不是竖直堆叠）`, ldr.sameDayDistinct === true);
-    ok(`梯队图 tooltip 用 item 触发（点哪个点看哪层）`, ldr.tooltipTrigger === 'item');
+    ok(`梯队图 tooltip 用 axis 触发（悬浮某天出当天完整名单与概念）`, ldr.tooltipTrigger === 'axis');
+    // 🔴 用户要求：点击/悬浮要能看到「这个点上到底是哪些票和其所属概念」→ 实际调 formatter 验内容
+    // ⚠️ 窗口是 slice(-7)，lastIdx 是**窗口内**下标 → 取数据必须用同一个窗口，不能拿全量 D.ladder
+    const tipChk = await page.evaluate(() => {
+      const el = document.getElementById('echart-ladder');
+      const inst = el && echarts.getInstanceByDom(el);
+      const opt = inst ? inst.getOption() : null;
+      const s0 = opt && opt.series && opt.series[0];
+      const data = s0 ? (s0.data || []) : [];
+      if (!data.length) return { err: 'no data' };
+      const lastIdx = Math.max(...data.map(p => (Array.isArray(p.value) ? p.value[0] : 0)));
+      const params = data
+        .filter(p => Array.isArray(p.value) && p.value[0] === lastIdx)
+        .map((p, i) => ({ dataIndex: i, value: p.value, data: p }));
+      const html = opt.tooltip[0].formatter(params);
+      const Dd = (typeof D !== 'undefined' && D) || {};
+      const W = (Dd.ladder || []).slice(-7);          // ✅ 与图上同窗口
+      const row = W[lastIdx] || {};
+      const names = (row.levels || []).flatMap(v => (v.list || []).map(s => String(s.name || '').slice(0, 3)));
+      const missing = names.filter(n => n && !html.includes(n));
+      const inds = (row.levels || []).flatMap(v => (v.list || []).map(s => s.industry)).filter(Boolean);
+      const indMissing = inds.filter(x => !html.includes(x));
+      return {
+        date: row.date,
+        hasDate: html.includes(row.date),
+        nameTotal: names.length, missing: missing.length, missSample: missing.slice(0, 3),
+        indTotal: inds.length, indMissing: indMissing.length, indMissSample: indMissing.slice(0, 3),
+        hasTop: /最高/.test(html),
+      };
+    });
+    ok(`梯队 tooltip 含日期与「最高 X 板」（${tipChk.date}）`, !!tipChk.hasDate && !!tipChk.hasTop);
+    ok(`梯队 tooltip 列出当天**全部股票名**（${tipChk.nameTotal} 只，缺失 ${tipChk.missing} 只）`,
+       !tipChk.err && tipChk.nameTotal > 0 && tipChk.missing === 0);
+    ok(`梯队 tooltip 列出**所属概念**（${tipChk.indTotal} 条，缺失 ${tipChk.indMissing} 条）`,
+       !tipChk.err && tipChk.indMissing === 0);
     // 每个点都必须有家数（cnt 为正整数）→ 防止 label 静默丢失/裁切
     const badCnt = await page.evaluate(() => {
       const el = document.getElementById('echart-ladder');
