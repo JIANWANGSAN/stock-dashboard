@@ -735,7 +735,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.23-9';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.23-10';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -1263,11 +1263,13 @@ function drawLadderChart(el, prevChart, L, cfg){
     //     自行生成 2/4/6/8/10/12 这种**跳号**刻度，不合用户要求）。
     //   实现：`max` 动态取 `max(8, 当日最高板) + 1`，`interval:1` 强制逐整数 **硬出刻度**
     //     （⚠️ interval 对 **axisLabel + splitLine** 有效；对数值轴 `splitLine.customValues` 无效是另一回事）。
-    //   🔴 2026-09-23 追加（用户）：「1、2 两条横线删掉就行了，不需要」→ **刻度文字保留，只删 1/2 的横线**。
+    //   🔴 2026-09-23 最终口径（用户带图二次纠正）：「直接是0，上面就是4」
+    //     → **横线只保留 4 板及以上**；0 轴之上**直接跳到 4**，1/2/**3** 都**没有**横线；
+    //       **刻度文字仍然 1..N 全保留**（只删线，不删字）。
     //     ⚠️⚠️ **ECharts 5.4.3 版本坑（实测 4 种写法全无效）**：数值轴的
     //       `splitLine.interval`（函数/数组）、`splitLine.customValues`、`axisTick.interval`
-    //       **一律不生效** —— 加了照样画满所有横线。故**改用 `markLine` 精确画 3~max 的横线**
-    //       （与 v7/v9 时代同款解法），并把 `splitLine.show` 整体置 `false`。
+    //       **一律不生效** —— 加了照样画满所有横线。故改用 `graphic` 精确补画 4~max 的横线，
+    //       并把 `splitLine.show` 整体置 `false`。
     //   ⛔ 别写 `min:4`（最高板 ≤3 的日期点会落到 0 轴被裁掉）。
     yAxis: levelMode
       ? {type:'value', name:cfg.yName, min:0, interval:1, max:_ldrYMax,
@@ -1277,26 +1279,27 @@ function drawLadderChart(el, prevChart, L, cfg){
     // ⛔ 连板图**不用 visualMap**：只有一条线，颜色由 cfg.colors[0] 决定
     series
   }, {notMerge:true});   // ⚠️ 必须 notMerge：否则上一版遗留的 visualMap 等配置不会被清除（setOption 默认合并）
-  // ---- 连板图横向分隔线：只画 3 板及以上（用户：「1、2 两条横线删掉就行了，不需要」）----
+  // ---- 连板图横向分隔线：**只画 4 板及以上**（用户：「直接是0，上面就是4」）----
   //   ⚠️⚠️ 为何不用 ECharts 原生配置（本机 ECharts 5.4.3 **实测全部失败**）：
   //     · `splitLine.interval`（函数/数组）→ 不生效，仍画满所有横线；
   //     · `splitLine.customValues` / `axisTick.interval` → 同样不生效；
   //     · `series.markLine: {yAxis:v}` → **整条 markLine 根本不渲染**（换了 5 种写法全败）。
   //   ✅ 可靠解法：`splitLine.show=false` 关掉原生横线，再用 `graphic` 图元 + `convertToPixel`
-  //      在**已渲染**的坐标系上精确补画 3..max 的实线（实测位置分毫不差，且 1/2 板确实无横线）。
+  //      在**已渲染**的坐标系上精确补画 4..max 的实线（实测位置分毫不差，且 1/2/3 板确实无横线）。
   if(levelMode){
     chart.setOption({graphic: _ldrGridLines(chart, _ldrYMax)}, {notMerge:false});
   }
   return chart;
 }
-/* 生成连板图 3~YMax 的横向实线（`graphic` 图元数组）。
+/* 生成连板图 **4**~YMax 的横向实线（`graphic` 图元数组）。
+   ⛔ 起点必须是 4：用户要求 0 轴之上**直接跳到 4**，1/2/3 板一律不画线（刻度文字不受影响）。
    必须在 setOption(坐标系已就绪) 之后调用 —— `convertToPixel` 依赖已渲染的 grid。 */
 function _ldrGridLines(chart, yMax){
   let rect = null;
   try { rect = chart.getModel().getComponent('grid').coordinateSystem.getRect(); } catch(e){ return []; }
   if(!rect) return [];
   const arr = [];
-  for(let v = 3; v <= yMax; v++){
+  for(let v = 4; v <= yMax; v++){   // 🔴 4 起（用户：0 上面直接就是 4）
     let y;
     try { y = chart.convertToPixel({yAxisIndex:0}, v); } catch(e){ continue; }
     if(y == null || !isFinite(y)) continue;

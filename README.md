@@ -73,8 +73,16 @@
   字段：前端只用 `ladder[].top`（板数）/ `top_n`（家数）/ `top_list`（[{name,industry}]）；
   渲染走 `drawLadderChart()` 的 `levelMode:true` 分支（单 series + 类目轴 + `tooltip trigger:'axis'`）。
   - ⚠️ **`second` / `cyb` / `levels` 仍在 `data.json` 里**（其它模块读），**后端 `build_ladder()` 的 `levels` 门槛 `b >= 4` 保留不变** —— 只是连板图不再消费。
-  - ⚠️ **纵轴刻度只显示 >0 的整数**（`min:0, max:12, minInterval:1` + `formatter:v=>v>0?String(v):''`）；
+  - ⚠️ **纵轴刻度＝动态、逐整数、不跳号**：`max = Math.max(8, 窗口最高板 + 1)` + `interval:1` +
+    `formatter:v=>v>0?String(v):''` → 刻度 `1,2,3,...,N` **连续**（最高板 5 → 0/1/2/3/4/5；8 → 到 8）。
     ⛔ **不能写 `min:4`** —— 最高板为 3 板以下的日期，点会落到 0 轴被裁掉。
+    ⛔ 旧写法 `{min:0,max:12,minInterval:1}` 会让 ECharts 生成 **`2/4/6/8/10/12`（跳号）**，不合格。
+  - 🔴 **横向分隔线＝只画 4 板及以上**（2026-09-23 用户带图二次纠正：「**直接是0，上面就是4**」）：
+    0 轴之上**直接跳到 4**，**1/2/3 板都没有横线**；**刻度文字仍全保留**（只删线不删字）。
+    实现＝`splitLine:{show:false}` + `drawLadderChart()` 尾部 `_ldrGridLines(chart, _ldrYMax)` 用
+    **`graphic` 图元 + `convertToPixel({yAxisIndex:0}, v)`** 补画 `v=4..max`（起点必须是 4）。
+    ⛔ ECharts 5.4.3 上 `splitLine.interval`（函数/数组）/`customValues`/`axisTick.interval`
+    **全部不生效**，`series.markLine` **根本不渲染** —— 别回头试（详见 `项目约定.md` §3.1b）。
   - ⛔ **不要加 `visualMap`**（会覆盖线条颜色）；`setOption` 必须传 `{notMerge:true}`（否则旧配置残留）。
   - ⛔ **不要退回「每层一条独立曲线」（v7~v9）或「单条最高板主线套 4~9 台阶」（v8❌）** —— 见 `项目约定.md` §3.1b 沿革表。
   - 📌 **历史沿革**：v1~v6 反复试错（三线 / 平行线 / 单折线横向错开）→ v7~v9「每层一条独立曲线 + 删 0~3 空轴」（用户否掉）→ **v10 = 单条最高板线（当前口径）**。
