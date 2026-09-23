@@ -636,7 +636,7 @@
       <div class="card" data-page-node-id="4LDXHmInSblrqZKmH2SbLk">
         <div class="card-title" data-page-node-id="1JCFVjOuTeZMucS3Se0hZz">连板高度梯队 <span class="tag" data-page-node-id="SOrFifQLO9pb3LwuCUnCJ5">主板 · 4板以上 · 每层一条曲线</span></div>
         <div id="echart-ladder" data-page-node-id="UhbxgyC6bJyE7N4TacYG6c"></div>
-        <div class="note" data-page-node-id="ladderNote">纵轴＝板数（0/4/5/6/7/8/9），横轴＝日期：<b>4板以上每一层各是一条独立曲线</b>，用来<b>看一个时间段内连板高度的变化</b>。线贴在几就代表几板，<b>点上的数字＝该层当日家数</b>；<b>某天没有这一层，曲线就下探到 0 轴</b>，等它回来再从 0 轴升起。配色按<b>最高板优先</b>：最高板紫 → 红 → 黄 → 深蓝 → 绿 → 青 → 灰。只统计主板（不含创业板/科创板/北交所）。· <b>鼠标移到任意一天</b>弹出当天各层全部股票与所属概念</div>
+        <div class="note" data-page-node-id="ladderNote">纵轴＝板数（0/4/5/6/7/8/9），横轴＝日期：<b>4板以上每一层各是一条独立曲线</b>（6板紫 / 5板红 / 4板黄），用来<b>看一个时间段内连板高度的变化</b>。线贴在几就代表几板，<b>点上的数字＝该层当日家数</b>；<b>某天没有这一层，曲线就下探到 0 轴</b>，等它回来再从 0 轴升起。只统计主板（不含创业板/科创板/北交所）。· <b>鼠标移到任意一天</b>弹出当天各层全部股票与所属概念</div>
       </div>
       <div class="card" data-page-node-id="dtLadderCard">
         <div class="card-title" data-page-node-id="dtLadderTitle">跌停板梯队 <span class="tag" id="dt-note" data-page-node-id="dtNote">—</span></div>
@@ -735,7 +735,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.23-6';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.23-7';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -1204,19 +1204,32 @@ function drawLadderChart(el, prevChart, L, cfg){
         return lv ? {value:b, cnt:lv.n, list:lv.list} : {value:0, cnt:0, list:[], empty:true};
       }),
       connectNulls:true,        // 兼容保底（现已无 null，但留着防将来改回 null）
-      symbol:'circle', symbolSize:8,
+      symbol:'circle',
       // 0 轴上的「断档点」不画实心圆、也不标数字，避免视觉噪音
+      // ⚠️ symbolSize 用**函数**：本机 ECharts 5.4.3 下这种写法正常（逐点 label 正常显示）
       symbolSize:(v)=> (v && v.value===0) ? 0 : 8,
       lineStyle:{width:2.5,color:LADDER_LEVEL_COLORS[Math.min(i,LADDER_LEVEL_COLORS.length-1)]},
       itemStyle:{color:LADDER_LEVEL_COLORS[Math.min(i,LADDER_LEVEL_COLORS.length-1)],
                  borderColor:'#fff', borderWidth:1.5},
-      label:{show:true, position:'top', fontSize:11, fontWeight:'bold', color:'#374151',
-        // 数字 = **该层当日家数**；0 轴断档点不标
-        formatter:p=>{
-          const v=p.value; if(!v||v.cnt==null||!v.cnt) return '';
-          return v.cnt;
-        }}
+      // 🔴 横向网格线（用户：「0-3 的三条横轴也删掉」）：只有**最高板那条线**挂 markLine 即可，
+      //    避免三条线各画一遍重影（markLine 是 series 级，画在同一条水平线上）。
+      ...(i===0 ? { markLine:{
+        silent:true, symbol:'none', animation:false,
+        label:{show:false},                        // 不重复标数字（y 轴已有）
+        lineStyle:{color:'#E0E6F1', width:1, type:'solid'},
+        emphasis:{disabled:true},
+        data:[4,5,6,7,8,9].map(v=>({yAxis:v}))
+      }} : {})
     }));
+    // 逐点补 label：数字 = **该层当日家数**；0 轴断档点不标
+    //   ⚠️ 用逐点 label（而非 series 级 formatter）—— 后者在本机 ECharts 5.4.3 上不渲染（已实测）
+    series.forEach(s=>{
+      s.data = s.data.map(d => Object.assign({}, d, {
+        label: (d.value>0 && d.cnt) ? {show:true, formatter:String(d.cnt)} : {show:false}
+      }));
+    });
+    // 逐点 label 的公共样式（放在 series 级，逐点 label 会继承）
+    series.forEach(s=>{ s.label = {position:'top', distance:8, fontSize:11, fontWeight:'bold', color:'#374151'}; });
     xData = dates;
     xAxisCfg = {type:'category', data:xData, axisLabel:{fontSize:11}, axisTick:{show:false}};
   } else {
@@ -1239,11 +1252,12 @@ function drawLadderChart(el, prevChart, L, cfg){
       formatter:ps=>{
         if(!ps||!ps.length) return '';
         if(levelMode){
-          // 每层一条 series，ps 里每条 series 各一个点，但 dataIndex 都指向**同一天**
+          // 每层一条 series（同日各点 dataIndex 都指向同一天）→ 直接读当天的 `d.levels` 给全部层级
           const di = ps[0].dataIndex;
           const d=L[di]; if(!d) return '';
           const lv=(d.levels||[]).slice().sort((a,b)=>b.boards-a.boards);
           const nLv=lv.reduce((n,x)=>n+x.n,0);
+          // 层级标题色：按层级序位取 LADDER_LEVEL_COLORS（最高层=紫），与点/线颜色语义一致
           return `<div style="min-width:230px;white-space:normal;line-height:1.75;"><b>${d.date}</b>`
             + `<div style="margin-top:3px;color:#6b7280;">连板共 <b>${nLv}</b> 只 · 最高 <b>${d.top}${cfg.unit}</b></div>`
             + lv.map((v,vi)=>
@@ -1270,17 +1284,23 @@ function drawLadderChart(el, prevChart, L, cfg){
       }},
     legend:{data:legendData, top:0, right:0, itemWidth:14, itemHeight:8, textStyle:{fontSize:11},
       type:'scroll'},
-    grid: levelMode ? {left:40, right:40, top:44, bottom:30} : {left:40, right:24, top:44, bottom:30},
+    // ⚠️ levelMode 时 right 放宽到 56：曲线末端（最后一天）的「家数」标签靠右，
+    //    边界太窄会被裁掉（实测 right:40 时 09-23 的标签不见了）。
+    grid: levelMode ? {left:40, right:58, top:44, bottom:30} : {left:40, right:24, top:44, bottom:30},
     xAxis:xAxisCfg,
     // 纵轴（2026-09-23 用户指定）：**刻度固定为 0 / 4 / 5 / 6 / 7 / 8 / 9**
     //   · 0 必须有 —— 缺层要落到 0 轴（曲线下探到 0 再回升）
-    //   · 4 以下不画刻度（连板梯队只统计 ≥4 板）→ 用自定义 ticks 屏蔽 1/2/3
     //   · ⚠️ 不能只写 `min:4`：那样 0 轴点会被裁掉，缺层的「落 0」就看不见了
+    //   · 🔴 2026-09-23 追改：「0-3 的三条横轴也删掉，空轴不要保留」→ 1/2/3 既无横线也无刻度短线。
+    //     ⚠️ 实测（ECharts **5.4.3**）：数值轴的 `splitLine.interval`、`splitLine.customValues`、
+    //        `axisTick.interval` **全部不生效**（函数/数字都试过，仍画满 0~9 十条），只有 `show` 生效。
+    //     ✅ 因此：**splitLine 与 axisTick 都关掉**，横线改由 series 的 `markLine` 精确画
+    //        **4/5/6/7/8/9** 六条（0 那条由 x 轴线本体承担）。y 轴数字标签仍只显示 0 与 ≥4。
     yAxis: levelMode
       ? {type:'value', name:cfg.yName, min:0, max:9, interval:1,
          axisLabel:{fontSize:11, formatter:v=>(v===0||v>=4)?String(v):''},
-         axisTick:{show:true, interval:(idx)=>idx===0||idx>=4},
-         splitLine:{show:true}}
+         axisTick:{show:false},      // ⛔ 见上：interval 不生效 → 干脆不画刻度短线
+         splitLine:{show:false}}     // ⛔ 见上：interval 不生效 → 横线交给 markLine
       : {type:'value', name:cfg.yName, min:0, axisLabel:{fontSize:11}, minInterval:1},
     // ⛔ 连板图**不用 visualMap**：每层一条 series，颜色由各层自己的 LADDER_LEVEL_COLORS[i] 决定
     series

@@ -44,7 +44,7 @@ const codeOnly = body.replace(/<!--[\s\S]*?-->/g,'').replace(/\/\*[\s\S]*?\*\//g
   console.log('  '+k+': '+(codeOnly.includes(k)?'WARN 真代码里仍存在':'ok 已清除'));
 });
 
-console.log('\n--- 连板高度梯队：主板 · 4板以上每层一条曲线 · 缺层落 0 轴（2026-09-23 用户第 5 次澄清）---');
+console.log('\n--- 连板高度梯队：主板 · 4板以上 · 每层一条独立曲线（2026-09-23 用户第 14/15 条需求）---');
 try{
   const L=(global.__D && global.__D.ladder)?global.__D.ladder.slice(-7):[];
   const last=L[L.length-1]||{};
@@ -52,10 +52,11 @@ try{
   console.log('  末条 '+last.date+' levels='+JSON.stringify(lv));
   const okDesc = lv.length>0 && lv.every((v,i)=>i===0||lv[i-1]>v);
   console.log('  '+(okDesc?'OK  ':'FAIL ')+'levels 非空且降序');
+  // 🔴 v7 口径：每层一条独立曲线，每条只连自己那层（缺层落 0）
   const allLv=[...new Set(L.flatMap(s=>(s.levels||[]).map(v=>v.boards)))].sort((a,b)=>b-a);
   const expPts=L.reduce((n,s)=>n+(s.levels||[]).length,0);
   console.log('  '+(allLv.length?'OK  ':'FAIL ')+'窗口内高度层级='+allLv.length+' ['+allLv.join(',')+']'
-    +' → series 应有 '+allLv.length+' 条、点共 '+expPts+' 个');
+    +' → series 应有 '+allLv.length+' 条、真实点共 '+expPts+' 个');
   // 🔴 用户要求「只统计 4 板以上」
   const low=L.flatMap(s=>(s.levels||[]).map(v=>v.boards)).filter(b=>b<4);
   console.log('  '+(low.length===0?'OK  ':'FAIL ')+'只统计 4 板以上（<4 层级 '+low.length+' 个'
