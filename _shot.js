@@ -368,7 +368,7 @@ async function shoot(page, tag, panel, label, w, h) {
     ok(`K线涨停标黄：颜色为黄色 ${kline.color1}`, kline.color1 === '#facc15');
     ok(`K线涨停标黄：K线数值未被破坏 ${kline.val1}`, kline.val1 === '[8.04,8.04,8.04,8.04]');
 
-    // ── 连板高度梯队「逐层级全出线」（约定 §3.1b；2026-09-23 用户报「9-22 的 3板/4板呢」）──
+    // ── 连板高度梯队「单条折线 · 横向错开」（约定 §3.1b；2026-09-23 用户两次澄清）──
     // ⚠️ 测 ECharts 要**读 option**，不能截图（headless Edge 拍 canvas 会全白 → 假失败，见 §9.3.1）
     await page.click('.menu-item[data-panel="ladder"]');
     await sleep(600);
@@ -378,59 +378,82 @@ async function shoot(page, tag, panel, label, w, h) {
       const opt = inst ? inst.getOption() : null;
       const D_ = (typeof D !== 'undefined' && D) || {};
       const W = (D_.ladder || []).slice(-7);
-      // 期望：窗口内出现过的**全部 ≥2 板层级**各一条 series（不是固定 3 条）
+      const last = W[W.length - 1] || {};
+      // 期望：窗口内出现过的**全部 ≥2 板层级**（用于核对「一层都没漏」）
       const expLv = [...new Set(W.flatMap(s => (s.levels || []).map(v => v.boards)))]
         .sort((a, b) => b - a);
-      const names = opt ? opt.series.map(s => s.name) : [];
-      const last = W[W.length - 1] || {};
-      // 末条各层的家数（图上的数字）：series 顺序与 expLv 一致，
-      // **该日无此层 → 点不存在（null）**，此时期望值也应为 null（不是 0、不是缺失）。
-      const lastCounts = opt ? opt.series.map(s => {
-        const v = s.data[W.length - 1];
-        return v && typeof v === 'object' ? v.cnt : null;
-      }) : [];
-      // 期望：按 expLv 顺序，末条有该层则取 levels[].n，否则 null
-      const expCounts = expLv.map(b => {
-        const lv = (last.levels || []).find(v => v.boards === b);
-        return lv ? lv.n : null;
+      // 期望：窗口内**总点数** == 各日 levels 长度之和（每层一个点）
+      const expPts = W.reduce((n, s) => n + (s.levels || []).length, 0);
+      const s0 = opt && opt.series && opt.series[0] ? opt.series[0] : null;
+      const pts = s0 ? (s0.data || []) : [];
+      // 每个点 value = [x, 板数]
+      const ptList = pts.map(p => Array.isArray(p.value) ? p.value : null).filter(Boolean);
+      // 当天全部层级是否都出了点（末条）
+      const lastLv = (last.levels || []).map(v => v.boards).sort((a, b) => b - a);
+      const lastPts = ptList.filter(v => {
+        const xi = v[0];
+        // 末条占最后一个槽（SLOTS=4）→ x 落在 [ (n-1)*4 , n*4 )
+        const lo = (W.length - 1) * 4, hi = W.length * 4;
+        return xi >= lo && xi < hi;
+      }).map(v => v[1]).sort((a, b) => b - a);
+      // 末条各层家数（数字 label 取 cnt）
+      const lastCnts = pts.filter(p => {
+        const xi = Array.isArray(p.value) ? p.value[0] : -1;
+        const lo = (W.length - 1) * 4, hi = W.length * 4;
+        return xi >= lo && xi < hi;
+      }).map(p => p.cnt);
+      const expCnts = lastLv.map(b => (last.levels || []).find(v => v.boards === b).n);
+      // 横向错开：同一天的点 x 必须**互不相同**（否则又变成竖直堆叠）
+      const byDay = {};
+      ptList.forEach(v => { const k = Math.floor(v[0] / 4); (byDay[k] = byDay[k] || []).push(v[0]); });
+      const sameDayDistinct = Object.keys(byDay).every(k => {
+        const xs = byDay[k];
+        return new Set(xs).size === xs.length;
       });
+      // 单条折线：series 数必须 == 1（退化回多条平行线即失败）
+      const seriesCount = opt ? opt.series.length : -1;
+      // x 轴必须是数值轴（横向错开的前提）
+      const xType = opt && opt.xAxis && opt.xAxis[0] ? opt.xAxis[0].type : null;
       return {
-        expLv, names, seriesCount: names.length,
-        expCounts,
-        lastCounts,
-        // 末条实际有点的层级数（非 null 的个数）应 == 末条 levels 长度
-        lastNonNull: lastCounts.filter(v => v !== null).length,
-        lastLvN: (last.levels || []).length,
-        lastDate: last.date, lastLv: (last.levels || []).map(v => v.boards),
-        // 是否有某层在窗口中间断点（缺层日 data=null → 不画点、不标数字）
-        anyNullMid: opt ? opt.series.some(s => s.data.some(v => v === null || v === undefined)) : null,
-        // 🔴 2026-09-23 用户要求：缺层用折线连起来 → connectNulls 必须 **true**
-        connectNulls: opt ? opt.series.every(s => s.connectNulls === true) : null,
+        expLv, expPts, lastLv,
+        seriesCount, names: opt ? opt.series.map(s => s.name) : [],
+        ptCount: pts.length,
+        lastPts, expLastLv: lastLv,
+        lastCnts, expCnts,
+        sameDayDistinct, xType,
+        anyNull: pts.some(p => p === null || p === undefined),
+        tooltipTrigger: opt && opt.tooltip && opt.tooltip[0] ? opt.tooltip[0].trigger : null,
         legendCount: opt && opt.legend && opt.legend[0] ? (opt.legend[0].data || []).length : -1,
-        // data 层必须仍保留 top/second/cyb（其它代码可能还在读，别删）
         keepOld: Object.prototype.hasOwnProperty.call(last, 'second')
                  && Object.prototype.hasOwnProperty.call(last, 'top_list'),
+        lastDate: last.date,
       };
     });
-    ok(`梯队图 series 数 == 窗口层级数（${ldr.seriesCount} vs ${ldr.expLv.length}）→ 逐层级全出线`,
-       ldr.expLv.length > 0 && ldr.seriesCount === ldr.expLv.length);
-    ok(`梯队图 series 名 == 各层级（${JSON.stringify(ldr.names)}）`,
-       JSON.stringify(ldr.names) === JSON.stringify(ldr.expLv.map(b => b + '板')));
-    ok(`梯队图 >3 条线（证明不再只画 top/second/cyb 三条）`, ldr.seriesCount > 3);
-    ok(`梯队图例条数 == 层级数（${ldr.legendCount}）`, ldr.legendCount === ldr.expLv.length);
-    ok(`末条 ${ldr.lastDate} 图上数字 == 各层家数（${JSON.stringify(ldr.lastCounts)} vs ${JSON.stringify(ldr.expCounts)}）`,
-       JSON.stringify(ldr.lastCounts) === JSON.stringify(ldr.expCounts));
-    ok(`末条 ${ldr.lastDate} 有点的层级数 == levels 长度（${ldr.lastNonNull} vs ${ldr.lastLvN}）· 缺层应为 null 而非 0`,
-       ldr.lastNonNull === ldr.lastLvN);
+    ok(`梯队图为**单条折线**（series 数 = ${ldr.seriesCount}）`, ldr.seriesCount === 1);
+    ok(`梯队图 x 轴为数值轴（横向错开的前提，实测 ${ldr.xType}）`, ldr.xType === 'value');
+    ok(`梯队图总点数 == 窗口各日层级数之和（${ldr.ptCount} vs ${ldr.expPts}）→ 每层一个点、一层不漏`,
+       ldr.expPts > 0 && ldr.ptCount === ldr.expPts);
+    ok(`梯队图无 null 断点（缺层不补点，折线直接连过去）`, ldr.anyNull === false);
+    // 关键回归：用户报的「9-22 缺 3板/4板」—— 末条必须把当天所有层级都画出来
+    ok(`末条 ${ldr.lastDate} 点数 == 当天层级数（${JSON.stringify(ldr.lastPts)} vs ${JSON.stringify(ldr.expLastLv)}）`,
+       JSON.stringify(ldr.lastPts) === JSON.stringify(ldr.expLastLv));
+    ok(`末条 ${ldr.lastDate} 图上数字 == 各层家数（${JSON.stringify(ldr.lastCnts)} vs ${JSON.stringify(ldr.expCnts)}）`,
+       JSON.stringify(ldr.lastCnts) === JSON.stringify(ldr.expCnts));
+    ok(`同日各点 x 互不相同（真的横向错开，不是竖直堆叠）`, ldr.sameDayDistinct === true);
+    ok(`梯队图 tooltip 用 item 触发（点哪个点看哪层）`, ldr.tooltipTrigger === 'item');
+    // 每个点都必须有家数（cnt 为正整数）→ 防止 label 静默丢失/裁切
+    const badCnt = await page.evaluate(() => {
+      const el = document.getElementById('echart-ladder');
+      const inst = el && echarts.getInstanceByDom(el);
+      const opt = inst ? inst.getOption() : null;
+      const s0 = opt && opt.series && opt.series[0];
+      const bad = (s0 ? (s0.data || []) : []).filter(p => !p || !p.cnt || p.cnt < 1);
+      return { total: (s0 ? (s0.data || []).length : 0), bad: bad.length };
+    });
+    ok(`梯队图每个点都有家数（${badCnt.total} 个点，异常 ${badCnt.bad} 个）`,
+       badCnt.total > 0 && badCnt.bad === 0);
     ok(`梯队数据仍保留 top/second/*_list（未被误删）`, ldr.keepOld);
-    ok(`梯队图缺层用折线连接（connectNulls=true，全部 series）`, ldr.connectNulls === true);
-    // 关键回归：若当前窗口里某日同时有 4板与3板，必须真的出现这两条线
-    if (ldr.expLv.includes(4) && ldr.expLv.includes(3)) {
-      ok(`窗口内 4板/3板 均已成线（${ldr.names.join('/')}）`,
-         ldr.names.includes('4板') && ldr.names.includes('3板'));
-    } else {
-      console.log(`  · 窗口层级=${JSON.stringify(ldr.expLv)}（当日实际无 4板或3板，非 bug）`);
-    }
+    ok(`窗口内共 ${ldr.expLv.length} 个高度层级全部出点（${ldr.expLv.join('/')}）`, ldr.expLv.length > 0);
     // 防回归：note 文案里不许出现 Markdown 星号（HTML 不解析，会原样显示成 **文字**）
     const noteMd = await page.evaluate(() => {
       const el = document.querySelector('[data-page-node-id="ladderNote"]');

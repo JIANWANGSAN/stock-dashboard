@@ -44,10 +44,8 @@ const codeOnly = body.replace(/<!--[\s\S]*?-->/g,'').replace(/\/\*[\s\S]*?\*\//g
   console.log('  '+k+': '+(codeOnly.includes(k)?'WARN 真代码里仍存在':'ok 已清除'));
 });
 
-console.log('\n--- 连板高度梯队：逐层级全出线断言 ---');
+console.log('\n--- 连板高度梯队：单条折线 · 每层一个点（2026-09-23 用户两次澄清）---');
 try{
-  // ⚠️ 顶层 const 经 eval 后取不到（词法作用域隔离）→ 已在 eval 源码内部挂到 global.__LVCOL
-  const LVCOL = global.__LVCOL;
   const L=(global.__D && global.__D.ladder)?global.__D.ladder.slice(-7):[];
   const last=L[L.length-1]||{};
   const lv=(last.levels||[]).map(v=>v.boards);
@@ -55,9 +53,9 @@ try{
   const okDesc = lv.length>0 && lv.every((v,i)=>i===0||lv[i-1]>v);
   console.log('  '+(okDesc?'OK  ':'FAIL ')+'levels 非空且降序');
   const allLv=[...new Set(L.flatMap(s=>(s.levels||[]).map(v=>v.boards)))].sort((a,b)=>b-a);
-  console.log('  '+(allLv.length?'OK  ':'FAIL ')+'窗口内层级数='+allLv.length+' ['+allLv.join(',')+'] → 应画 '+allLv.length+' 条线');
-  console.log('  '+((LVCOL&&LVCOL.length>=3)?'OK  ':'FAIL ')+'层级配色表长度='+((LVCOL||[]).length));
-  // 关键断言：末条必须能看到 3 板 / 4 板（本次用户报的正是这两个消失）
+  const expPts=L.reduce((n,s)=>n+(s.levels||[]).length,0);
+  console.log('  '+(allLv.length?'OK  ':'FAIL ')+'窗口内高度层级='+allLv.length+' ['+allLv.join(',')+'] → 应有 '+expPts+' 个点（每层一个点）');
+  // 关键断言：末条必须能看到 3 板 / 4 板（用户报的正是这两个消失）
   if(lv.includes(4)&&lv.includes(3)) console.log('  OK   末条同时含 4板/3板（用户报的缺失已修）');
   else if(last.date) console.log('  --   末条 '+last.date+' 无 4板/3板（当日实际没有该层，非 bug）：levels='+lv.join(','));
 }catch(e){ console.log('  FAIL 梯队层级断言异常: '+e.message); }

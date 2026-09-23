@@ -634,9 +634,9 @@
              · `check_ladder.py` 第三道 `check_candidates()` 断言它的入池门槛。
            **绝不可顺手把后端 candidates 一起删掉。** -->
       <div class="card" data-page-node-id="4LDXHmInSblrqZKmH2SbLk">
-        <div class="card-title" data-page-node-id="1JCFVjOuTeZMucS3Se0hZz">连板高度梯队 <span class="tag" data-page-node-id="SOrFifQLO9pb3LwuCUnCJ5">逐层级全出线 · 颜色越深板数越高</span></div>
+        <div class="card-title" data-page-node-id="1JCFVjOuTeZMucS3Se0hZz">连板高度梯队 <span class="tag" data-page-node-id="SOrFifQLO9pb3LwuCUnCJ5">一条折线 · 点越高板数越高</span></div>
         <div id="echart-ladder" data-page-node-id="UhbxgyC6bJyE7N4TacYG6c"></div>
-        <div class="note" data-page-node-id="ladderNote">每一层板数（6板/5板/4板/3板/2板…）各一条线，颜色越深板数越高 · 当天没有该层的日子<b>折线直接跨过去连上</b>（不画点、不标数字）· 图上数字＝该层当日家数 · <b>点/悬浮任意日期</b>看当天各层股票与题材</div>
+        <div class="note" data-page-node-id="ladderNote">当天出现的每一层板数（6板/5板/4板/3板/2板…）各画一个点、连成<b>一条折线</b>：<b>点越高＝板数越高</b>、颜色越深，<b>数字＝该层当日家数</b>。当天没有的高度不画点，折线直接连过去 · <b>点/悬浮任意点</b>看该层股票与题材</div>
       </div>
       <div class="card" data-page-node-id="dtLadderCard">
         <div class="card-title" data-page-node-id="dtLadderTitle">跌停板梯队 <span class="tag" id="dt-note" data-page-node-id="dtNote">—</span></div>
@@ -735,7 +735,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.23-2';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.23-3';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -1131,6 +1131,8 @@ function renderMarketVolume(){
 let ladderChart=null, dtChart=null;
 
 // 连板层级配色：越高越深（深蓝 → 浅蓝）。第 7 层及以后统一最浅色。
+// ⚠️ 已退役（2026-09-23）：连板图改为**单条折线 + visualMap 按板数着色**后，
+//    不再需要「逐层配色表」。保留定义仅为兼容 `_smoke_init.js` 的取回断言，新代码请勿使用。
 const LADDER_LEVEL_COLORS=['#1d4ed8','#2563eb','#3b82f6','#60a5fa','#93c5fd','#bfdbfe','#dbeafe'];
 
 function drawLadderChart(el, prevChart, L, cfg){
@@ -1163,58 +1165,105 @@ function drawLadderChart(el, prevChart, L, cfg){
     ).join('');
   };
 
-  // ---- 逐层级模式（连板图）：每个高度一层，各画一条线 ----
+  // ---- 连板图：**单条连续折线**（2026-09-23 用户二次澄清）----
+  //   把「每个交易日 × 当天出现的每个高度（≥2板）」展开成一串点，**串成一条折线**：
+  //     · X = 日期槽内**横向错开**（同一天的各层从左到右排开，形成台阶式推进）
+  //     · Y = 板数（点落在几板的高度）
+  //     · 图上数字 = 该高度当日的**股票家数**
+  //     · 某层当日不存在 → 该层不产点，折线自然从上一个点斜到下一个点（不画缺口）
+  //   用户原话：「就是做成这样的折线连接」——参考图是**一条线**，不是 5 条平行线。
   const levelMode = !!(cfg.levelMode && L.some(s=>s.levels));
-  let series, legendData;
+  let series, legendData, xData, xAxisCfg;
   if(levelMode){
-    const allLevels = [...new Set(L.flatMap(s=>(s.levels||[]).map(v=>v.boards)))]
-      .sort((a,b)=>b-a);                      // 降序：高板在前
-    legendData = allLevels.map(b=>b+cfg.levelUnit);
-    // 每层一个点：data 里放该层的家数（图上线高 = 板数，但仍以板数为 Y 值）
-    series = allLevels.map((b,i)=>({
-      name: b+cfg.levelUnit, type:'line', smooth:true,
-      data: L.map(s=>{
-        const lv=(s.levels||[]).find(v=>v.boards===b);
-        return lv ? {value:b, cnt:lv.n, list:lv.list} : null;   // 该日无此层 → 断点
-      }),
-      // 🔴 2026-09-23 用户要求：缺层的日子**用折线连起来**（connectNulls:true），
-      //   不再断开。缺层的点本身仍是 data=null → **不画点、不标数字**（该日确实没有这一层），
-      //   只是线段跨过去连接前后两个有该层的交易日，走势连续、看得清台阶起伏。
-      connectNulls:true, symbol:'circle', symbolSize:8,
-      lineStyle:{width:2.5,color:LADDER_LEVEL_COLORS[Math.min(i,LADDER_LEVEL_COLORS.length-1)]},
-      itemStyle:{color:LADDER_LEVEL_COLORS[Math.min(i,LADDER_LEVEL_COLORS.length-1)]},
+    // 折线点：按日期顺序，同日高度从高到低；槽内横向错开避免同 x 竖直堆叠
+    const SLOTS = 4;                       // 每天占 4 个横坐标单位
+    const pts=[]; const slotTicks=[];
+    L.forEach((s,di)=>{
+      const lv=(s.levels||[]).slice().sort((a,b)=>b.boards-a.boards);
+      const base = di*SLOTS;
+      slotTicks.push({value: base + (SLOTS-1)/2, label:s.date.slice(5)});
+      lv.forEach((v,ci)=>{
+        // 槽内从左到右：高度从高到低（左高右低，视觉上像台阶往下走）
+        const off = lv.length>1 ? (ci*(SLOTS-1))/(lv.length-1) : (SLOTS-1)/2;
+        pts.push({value:[+(base+off).toFixed(3), v.boards],
+                  cnt:v.n, list:v.list, boards:v.boards, date:s.date});
+      });
+    });
+    series = [{
+      name: '连板高度',
+      type:'line', smooth:true, data: pts,
+      symbol:'circle', symbolSize:9,
+      // ⚠️ 颜色交给 visualMap（按板数深浅）→ 这里**不要再写死 itemStyle.color**，否则被覆盖成单色
+      itemStyle:{borderColor:'#fff', borderWidth:1.5},
       label:{show:true, position:'top', fontSize:11, fontWeight:'bold', color:'#374151',
-        // 数字 = **该层当日家数**（用户口径）；该日无此层则不标
+        // ⚠️ 开了 visualMap 后 value 是 [x, 板数] 数组，家数要从 **p.data.cnt** 取（不是 p.value.cnt）
         formatter:p=>{
-          const v=p.value; if(!v||v.cnt==null||!v.cnt) return '';
-          return v.cnt;
+          const c = (p.data && p.data.cnt!=null) ? p.data.cnt
+                  : (Array.isArray(p.value) ? null : p.value);
+          return (c==null||!c) ? '' : c;
         }}
-    }));
+    }];
+    legendData = ['连板高度'];
+    xData = null;
+    // ⚠️ 数值轴的 axisLabel.formatter 只对**实际渲染的刻度**调用，
+    //    所以不能靠 formatter 去命中槽心 —— 必须让**刻度本身落在槽心**。
+    //    槽心 = di*SLOTS + (SLOTS-1)/2 = di*4 + 1.5。
+    //    ECharts 数值轴从 `min` 起按 `interval` 生成刻度 → 把 min 设成第一个槽心 1.5，
+    //    刻度即为 1.5, 5.5, 9.5 …（正好每天一个）。为了让首末点不被裁掉，
+    //    用 min/max 扩到数据范围之外，但**刻度起点仍由 interval 对齐**，故改用 `min` 的
+    //    负偏移 + `axisLabel.formatter` 精确判定是否为槽心。
+    const firstCenter = 1.5;
+    xAxisCfg = {type:'value',
+                min: firstCenter - SLOTS,          // 留出左边距
+                max: (L.length-1)*SLOTS + 1.5 + (SLOTS-1)/2,   // 留出右边距
+                interval: SLOTS,
+                axisLabel:{fontSize:11, formatter:val=>{
+                  const di=Math.round((val-firstCenter)/SLOTS);
+                  const s=L[di];
+                  if(!s) return '';
+                  return Math.abs(val-(di*SLOTS+firstCenter))<0.01 ? s.date.slice(5) : '';
+                }},
+                axisTick:{show:false}, splitLine:{show:false}};
   } else {
     series = [ mk('top',cfg.colors[0],cfg.labels[0]),
                mk('second',cfg.colors[1],cfg.labels[1]),
                mk('cyb',cfg.colors[2],cfg.labels[2]) ];
     legendData = cfg.labels;
+    xData = dates;
+    xAxisCfg = {type:'category', data:xData, axisLabel:{fontSize:11}};
   }
 
   chart.setOption({
-    tooltip:{trigger:'axis', confine:true, enterable:true,      // enterable：内容多时可滚动查看
+    // 连板图（横向错开 + 单条折线）用 item 触发：点哪个点看哪个点的层级；
+    // 跌停图保持 axis 触发（三条线按日期对齐，一次列出三条）。
+    tooltip:{trigger: levelMode?'item':'axis', confine:true, enterable:true,   // enterable：内容多时可滚动查看
       backgroundColor:'rgba(255,255,255,.97)', borderColor:'#e5e7eb',
       textStyle:{color:'#111827',fontSize:12},
       extraCssText:'max-width:330px;max-height:68vh;overflow:auto;white-space:normal;-webkit-overflow-scrolling:touch;',
       formatter:ps=>{
         if(!ps||!ps.length) return '';
-        const d=L[ps[0].dataIndex]; if(!d) return '';
         if(levelMode){
-          // 逐层级模式：按板数从高到低逐层列名单（**每层都列，含 3板/4板**）
-          const lv=(d.levels||[]).slice().sort((a,b)=>b.boards-a.boards);
-          const nLv=lv.reduce((n,v)=>n+v.n,0);
-          return `<div style="min-width:200px;white-space:normal;line-height:1.7;"><b>${d.date}</b>`
-            + (cfg.extra?cfg.extra(d):'')
-            + `<div style="margin-top:3px;color:#6b7280;">连板共 <b>${nLv}</b> 只 · 最高 <b>${d.top}${cfg.unit}</b></div>`
-            + lv.map((v,idx)=>`<div style="margin-top:4px;"><b style="color:${LADDER_LEVEL_COLORS[Math.min(idx,LADDER_LEVEL_COLORS.length-1)]};">${v.boards}${cfg.unit} · ${v.n}只</b> ${fmtList(v.list)}</div>`).join('')
+          // item 触发：ps[0].value = [x, 板数]，取该点所在日期 + 该层名单
+          const p0=Array.isArray(ps)?ps[0]:ps;
+          const v=p0.value; if(!Array.isArray(v)) return '';
+          const d=(p0.data&&p0.data.date)||''; const cur=v[1];
+          const row=L.find(x=>x.date===d)||{};
+          const lv=(row.levels||[]).slice().sort((a,b)=>b.boards-a.boards);
+          const curLv=lv.find(x=>x.boards===cur)||(p0.data&&p0.data.list?{boards:cur,n:p0.data.cnt,list:p0.data.list}:null);
+          const nLv=lv.reduce((n,x)=>n+x.n,0);
+          return `<div style="min-width:210px;white-space:normal;line-height:1.7;"><b>${d}</b>`
+            + `<div style="margin-top:3px;color:#6b7280;">连板共 <b>${nLv}</b> 只 · 最高 <b>${row.top}${cfg.unit}</b></div>`
+            + (curLv?`<div style="margin-top:5px;padding:4px 6px;background:#eff6ff;border-radius:4px;"><b style="color:#1d4ed8;">${curLv.boards}${cfg.unit} · ${curLv.n}只</b></div>`
+              +`<div style="margin-top:3px;">`+ (curLv.list||[]).map(s=>
+                  `<span style="display:inline-block;margin:0 7px 3px 0;">${esc(s.name? String(s.name).slice(0,3):'')}`+
+                  `<span style="color:#9ca3af;font-size:11px;">(${s.boards}${cfg.unit}${s.industry?'\u00b7'+esc(s.industry):''})</span></span>`).join('')
+              +`</div>`:'')
+            + `<div style="margin-top:6px;color:#9ca3af;font-size:11px;">当天全部层级：${lv.map(x=>x.boards+'板·'+x.n+'只').join(' / ')}</div>`
             + `</div>`;
         }
+        const p0=ps[0];
+        const di = Array.isArray(p0.value) ? p0.value[0] : p0.dataIndex;
+        const d=L[di]; if(!d) return '';
         return `<div style="min-width:200px;white-space:normal;line-height:1.7;"><b>${d.date}</b>`
           + (cfg.extra?cfg.extra(d):'')
           + `<div style="margin-top:4px;"><b style="color:${cfg.colors[0]};">${cfg.labels[0]}</b> ${fmtList(d.top_list)}</div>`
@@ -1223,12 +1272,15 @@ function drawLadderChart(el, prevChart, L, cfg){
           + `</div>`;
       }},
     legend:{data:legendData, top:0, right:0, itemWidth:14, itemHeight:8, textStyle:{fontSize:11},
-      // 层级多时图例换行，避免挤出画布
       type:'scroll'},
-    grid:{left:40, right:24, top:44, bottom:30},
-    xAxis:{type:'category', data:dates, axisLabel:{fontSize:11}},
+    // 单条折线（连板图）右侧留宽：末条最右点的数字标签需要空间，否则被裁
+    grid: levelMode ? {left:40, right:52, top:44, bottom:30} : {left:40, right:24, top:44, bottom:30},
+    xAxis:xAxisCfg,
     // 纵轴**只保留整数**刻度（板数/连跌天数都是离散整数，不要小数）
     yAxis:{type:'value', name:cfg.yName, min:0, axisLabel:{fontSize:11}, minInterval:1},
+    // 连板图：点的**颜色随板数深浅**（越高越深）—— 用 visualMap 按 Y 值着色
+    ...(levelMode ? {visualMap:{show:false, dimension:1, min:1, max:7,
+        inRange:{color:['#93c5fd','#60a5fa','#3b82f6','#2563eb','#1d4ed8','#1e3a8a']}}} : {}),
     series
   });
   return chart;
