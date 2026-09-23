@@ -634,9 +634,9 @@
              · `check_ladder.py` 第三道 `check_candidates()` 断言它的入池门槛。
            **绝不可顺手把后端 candidates 一起删掉。** -->
       <div class="card" data-page-node-id="4LDXHmInSblrqZKmH2SbLk">
-        <div class="card-title" data-page-node-id="1JCFVjOuTeZMucS3Se0hZz">连板高度梯队 <span class="tag" data-page-node-id="SOrFifQLO9pb3LwuCUnCJ5">主板 · 4板以上 · 每层一条曲线</span></div>
+        <div class="card-title" data-page-node-id="1JCFVjOuTeZMucS3Se0hZz">连板高度梯队 <span class="tag" data-page-node-id="SOrFifQLO9pb3LwuCUnCJ5">主板 · 只跟踪最高板一条线</span></div>
         <div id="echart-ladder" data-page-node-id="UhbxgyC6bJyE7N4TacYG6c"></div>
-        <div class="note" data-page-node-id="ladderNote">纵轴＝板数（0/4/5/6/7/8/9），横轴＝日期：<b>4板以上每一层各是一条独立曲线</b>（6板紫 / 5板红 / 4板黄），用来<b>看一个时间段内连板高度的变化</b>。线贴在几就代表几板，<b>点上的数字＝该层当日家数</b>；<b>某天没有这一层，曲线就下探到 0 轴</b>，等它回来再从 0 轴升起。只统计主板（不含创业板/科创板/北交所）。· <b>鼠标移到任意一天</b>弹出当天各层全部股票与所属概念</div>
+        <div class="note" data-page-node-id="ladderNote">纵轴＝板数，横轴＝日期：<b>只画「当日最高板」这一条线</b>，用来<b>看最高板高度在一个时间段内的变化</b>。线上每个点的<b>数字＝当日最高板的家数</b>，<b>鼠标移到任意一天</b>弹出当天最高板的<b>全部股票与所属概念</b>。只统计主板（不含创业板/科创板/北交所）。</div>
       </div>
       <div class="card" data-page-node-id="dtLadderCard">
         <div class="card-title" data-page-node-id="dtLadderTitle">跌停板梯队 <span class="tag" id="dt-note" data-page-node-id="dtNote">—</span></div>
@@ -649,7 +649,7 @@
           <b data-page-node-id="6pI2MeAiWRgEuhTF3B1Dmh">节点口径（只看最高标）：</b><br data-page-node-id="OI2L8hel9XJ79wEtpSOrIp">
           · <span class="node-badge badge-break" style="padding:1px 6px;" data-page-node-id="oqskYZly3SBHvoqWyFWdrs">最高标断板</span> 最高标断板当日，取<b data-page-node-id="b2ELGkAsRoXzAG8jvsS7hk">当日首板</b>为节点票（断板日量 vs 涨停日量：缩量/暴量出货均落首板）<br data-page-node-id="5MDtoNpVcjwBZmUDnBhEHL">
           · <span class="node-badge badge-burst" style="padding:1px 6px;" data-page-node-id="nGTWqC0MVVfXcCL7SFbGJE">突破</span> 连板高度创阶段新高当日，取当日首板<br data-page-node-id="yiERxkoxhlkirxyR82d2lT">
-          · <span class="node-badge badge-cross" style="padding:1px 6px;" data-page-node-id="y1MAIUIFUQwWJ9OUryJmyO">穿越</span> 最高标梯队一个晋级、其余断板（并列最高标晋级 或 次高标晋级），取当日首板
+          · <span class="node-badge badge-cross" style="padding:1px 6px;" data-page-node-id="y1MAIUIFUQwWJ9OUryJmyO">穿越</span> 最高标跨过<b>昨日由别的票创下的天花板</b>（并列最高标晋级 或 次高标晋级），取当日首板；<b>同一只票自己往上打高度不算穿越</b>
         </div>
         <div id="nodes-box" data-page-node-id="z9RRNCOaFcrGLMcmV6RQFg"></div>
       </div>
@@ -735,7 +735,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.23-7';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.23-8';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -1123,28 +1123,20 @@ function renderMarketVolume(){
   });
 }
 
-/* ---- 模块2 梯队折线图（连板高度梯队 / 跌停板梯队 **共用同一套渲染**）----
-   🔴 连板图最终口径（2026-09-23 用户第 5 次澄清，以此为准）：
-      **「不需要最高板和次高板了；需要 2板以上每一层是一条线，
-         这样可以看出一个时间段内连板高度的变化，排除掉创业板的部分」**
-      → 之后再次收窄：**「只统计 4 板以上」** + **「天与天之间用曲线连接」**
-        + **「某天没有该层 → 曲线连接到 0 轴，等它回来再从 0 轴连起来」**
-        + **「Y 轴刻度 0/4/5/6/7/8/9」** + **「颜色按最高板优先：紫 → 红 → 黄 → 深蓝 → 绿 → 青 → 灰」**。
-      · 图上 = **每层一条独立曲线**（6板一条、5板一条、4板一条）；
-      · 纵轴 = **板数高度**（5板那条线就贴在 y=5），点上的**数字 = 该层当日家数**；
-      · 缺层 → 该点 **Y = 0**（落到 0 轴上），等这一层回来再从 0 轴升起（曲线连通、不断开）；
-      · 🔴 **只保留 4 板及以上**（后端 `levels` 门槛 `b>=4`）、**只统计主板**（创业板/科创板/北交所已剔除）；
-      · ⛔ 不再画「最高板 / 次高板 / 创业板」三条线（语义已弃用）。
-      跌停图（dt_ladder）没有 levels → 走老三条线分支，两图仍共用一个函数。 */
+/* ---- 模块2 梯队折线图（连板高度梯队 / 跌停板梯队 共用同一套渲染函数）----
+   🔴 连板图当前口径（**2026-09-23 用户最终要求，以此为准**）：
+      **「连板高度这个是改成只跟踪最高板的一条线」**
+      · 图上 = **只有一条线** —— 「当日最高板」的板数，平滑曲线连接；
+      · 纵轴 = 板数，点上的**数字 = 当日最高板的家数**；
+      · tooltip（鼠标移到任意一天）→ 当天最高板的**全部股票名 + 所属概念**；
+      · **只统计主板**（创业板/科创板/北交所已剔除），走 `D.ladder[*].top / top_n / top_list`。
+      ⛔ **被否掉的历代形态（绝对别走回去）**：
+        ① 只画「最高板 / 次高板 / 创业板」三条线
+        ② 「4板以上每一层一条独立曲线」（4板一条、5板一条、6板一条）—— 太乱，看不出结论
+        ③ 单条线 + 同日横向错开   ④ 单条线 + 同日共享 x（竖直）
+      跌停图（dt_ladder）本就无 levels → 走 `levelMode:false` 老三条线分支，两图共用本函数。
+   ⚠️ `data.ladder` / `build_ladder()` 必须保留（复盘文本、check_ladder.py 都还在读）。 */
 let ladderChart=null, dtChart=null;
-
-// 连板层级配色（2026-09-23 用户指定）：**按「最高板优先」分配** ——
-//   窗口内**实际出现的最高板**拿第 1 个颜色（紫），往下依次 红 → 黄 → 深蓝 → 绿 → 青 → 灰。
-//   ⚠️ 注意：**不是「板数 → 固定颜色」的绝对映射**，而是「相对窗口内最高板的序位」。
-//      · 若窗口最高是 6 板 → 6板紫 / 5板红 / 4板黄
-//      · 若窗口最高是 9 板 → 9板紫 / 8板红 / 7板黄 / 6板深蓝 / 5板绿 / 4板青
-//   颜色顺序由用户 2026-09-23 明确给定，**不要自行调整顺序**。
-const LADDER_LEVEL_COLORS=['#7c3aed','#dc2626','#eab308','#1e40af','#16a34a','#0891b2','#6b7280'];
 
 function drawLadderChart(el, prevChart, L, cfg){
   const chart = prevChart || echarts.init(el);
@@ -1176,60 +1168,40 @@ function drawLadderChart(el, prevChart, L, cfg){
     ).join('');
   };
 
-  // ---- 连板图：**每层一条独立曲线**（6板一条、5板一条、4板一条）----
-  //   · X = 日期（类目轴，一天一个刻度）· Y = 板数高度（5板那条线就贴在 y=5）
-  //   · 点上数字 = 该层当日**家数**（如 4板那天有 2 只 → 标 2）
-  //   · 🔴 缺层 → 该点 **Y = 0**（落到 0 轴上），等这一层回来再从 0 轴拉起来。
-  //     语义：0 = 「这一层今天断了/没有票」→ 曲线下探到 0 再回升，断档一眼可见。
-  //   · 🔴 只保留 4 板及以上（后端 levels 门槛 b>=4）
-  //   · 用途：**看一个时间段内连板高度的变化**（哪一层在变厚/变薄、哪层断了）
-  //   用户原话：「2板以上每一层是一个线，这样我可以看出一个时间段内连板高度的变化，排除掉创业板的部分」
-  //           → 收窄：「只统计4板以上」+「天与天之间曲线连接」
-  //           → 再收窄：「如果某一天没有4板，那就**连接到0轴**，等有4板再从0轴连起来」
-  //   ⛔ 被否掉的版本：① 只画最高板/次高板/创业板 三条（4板/3板 永远看不到）
-  //                    ② 把同日各层串成一条线（全是斜的，读不出哪根线是哪天）
-  //                    ③ 缺层用 null + connectNulls 跨过去（用户要的是**下探到 0 轴**）
-  const levelMode = !!(cfg.levelMode && L.some(s=>s.levels));
+  // ---- 连板图：**只跟踪「最高板」一条线**（2026-09-23 用户要求）----
+  //   · X = 日期（类目轴，一天一个刻度）· Y = **当日最高板的板数**
+  //   · 线上每个点的数字 = **当日最高板的家数**（如最高 6 板且有 1 只 → 标 1）
+  //   · 语义 = 「最高板高度在一个时间段内怎么变化」：升 → 情绪加速，降 → 退潮断板。
+  //   ⛔ 被否掉的版本：
+  //      ① 只画最高板/次高板/创业板 三条线  ② 「4板以上每一层一条独立曲线」（太乱、看不出结论）
+  //      ③ 单条线 + 同日横向错开            ④ 单条线 + 同日共享 x（竖直）
+  const levelMode = !!(cfg.levelMode && L.some(s=>s.top!=null));
+  // 纵轴上限：**动态**取「窗口内最高板 + 1」，且不小于 8（保证版面不抖）。
+  //   用户要求「纵坐标动态更新 … 最高板 5 板 → 0.4.5；最高板 8 板 → 0.4.5.6.7.8」
+  //   → 配合 `interval:1` 实现「从 0 起、逐整数、不跳号」的刻度。
+  const _ldrYMax = levelMode
+    ? Math.max(8, Math.max.apply(null, L.map(s=>+s.top||0)) + 1)
+    : undefined;
   let series, legendData, xData, xAxisCfg;
   if(levelMode){
-    // 窗口内出现过的**全部 ≥4 板层级**（后端已只统计主板），降序：高板在前
-    const allLevels = [...new Set(L.flatMap(s=>(s.levels||[]).map(v=>v.boards)))]
-      .sort((a,b)=>b-a);
-    legendData = allLevels.map(b=>b+cfg.levelUnit);
-    series = allLevels.map((b,i)=>({
-      name: b+cfg.levelUnit, type:'line', smooth:true,   // smooth：曲线
-      data: L.map(s=>{
-        const lv=(s.levels||[]).find(v=>v.boards===b);
-        // 🔴 该日没有这一层 → Y=0（落到 0 轴），曲线从 0 轴升起/回落
-        return lv ? {value:b, cnt:lv.n, list:lv.list} : {value:0, cnt:0, list:[], empty:true};
-      }),
-      connectNulls:true,        // 兼容保底（现已无 null，但留着防将来改回 null）
-      symbol:'circle',
-      // 0 轴上的「断档点」不画实心圆、也不标数字，避免视觉噪音
-      // ⚠️ symbolSize 用**函数**：本机 ECharts 5.4.3 下这种写法正常（逐点 label 正常显示）
-      symbolSize:(v)=> (v && v.value===0) ? 0 : 8,
-      lineStyle:{width:2.5,color:LADDER_LEVEL_COLORS[Math.min(i,LADDER_LEVEL_COLORS.length-1)]},
-      itemStyle:{color:LADDER_LEVEL_COLORS[Math.min(i,LADDER_LEVEL_COLORS.length-1)],
-                 borderColor:'#fff', borderWidth:1.5},
-      // 🔴 横向网格线（用户：「0-3 的三条横轴也删掉」）：只有**最高板那条线**挂 markLine 即可，
-      //    避免三条线各画一遍重影（markLine 是 series 级，画在同一条水平线上）。
-      ...(i===0 ? { markLine:{
-        silent:true, symbol:'none', animation:false,
-        label:{show:false},                        // 不重复标数字（y 轴已有）
-        lineStyle:{color:'#E0E6F1', width:1, type:'solid'},
-        emphasis:{disabled:true},
-        data:[4,5,6,7,8,9].map(v=>({yAxis:v}))
-      }} : {})
+    const topSeries = {
+      name: cfg.labels[0] || '最高板',
+      type: 'line',
+      smooth: true,                      // 用户要「平滑的曲线连接」
+      connectNulls: true,
+      symbol: 'circle', symbolSize: 8,
+      data: L.map(s=>({value: s.top||0, cnt: s.top_n||0, list: s.top_list||[]})),
+      lineStyle:{width:2.5, color:cfg.colors[0]},
+      itemStyle:{color:cfg.colors[0], borderColor:'#fff', borderWidth:1.5},
+    };
+    // 逐点 label：数字 = 当日最高板**家数**
+    //   ⚠️ 必须逐点 label（series 级 formatter 在本机 ECharts 5.4.3 上不渲染，已实测）
+    topSeries.data = topSeries.data.map(d => Object.assign({}, d, {
+      label: {show:true, formatter:String(d.cnt||0)}
     }));
-    // 逐点补 label：数字 = **该层当日家数**；0 轴断档点不标
-    //   ⚠️ 用逐点 label（而非 series 级 formatter）—— 后者在本机 ECharts 5.4.3 上不渲染（已实测）
-    series.forEach(s=>{
-      s.data = s.data.map(d => Object.assign({}, d, {
-        label: (d.value>0 && d.cnt) ? {show:true, formatter:String(d.cnt)} : {show:false}
-      }));
-    });
-    // 逐点 label 的公共样式（放在 series 级，逐点 label 会继承）
-    series.forEach(s=>{ s.label = {position:'top', distance:8, fontSize:11, fontWeight:'bold', color:'#374151'}; });
+    topSeries.label = {position:'top', distance:8, fontSize:11, fontWeight:'bold', color:'#374151'};
+    series = [topSeries];
+    legendData = [topSeries.name];
     xData = dates;
     xAxisCfg = {type:'category', data:xData, axisLabel:{fontSize:11}, axisTick:{show:false}};
   } else {
@@ -1252,24 +1224,20 @@ function drawLadderChart(el, prevChart, L, cfg){
       formatter:ps=>{
         if(!ps||!ps.length) return '';
         if(levelMode){
-          // 每层一条 series（同日各点 dataIndex 都指向同一天）→ 直接读当天的 `d.levels` 给全部层级
+          // 只跟最高板 → 直接读当天的 top / top_n / top_list
           const di = ps[0].dataIndex;
           const d=L[di]; if(!d) return '';
-          const lv=(d.levels||[]).slice().sort((a,b)=>b.boards-a.boards);
-          const nLv=lv.reduce((n,x)=>n+x.n,0);
-          // 层级标题色：按层级序位取 LADDER_LEVEL_COLORS（最高层=紫），与点/线颜色语义一致
-          return `<div style="min-width:230px;white-space:normal;line-height:1.75;"><b>${d.date}</b>`
-            + `<div style="margin-top:3px;color:#6b7280;">连板共 <b>${nLv}</b> 只 · 最高 <b>${d.top}${cfg.unit}</b></div>`
-            + lv.map((v,vi)=>
-                `<div style="margin-top:7px;"><b style="color:${LADDER_LEVEL_COLORS[Math.min(vi,LADDER_LEVEL_COLORS.length-1)]};">${v.boards}${cfg.unit} · ${v.n}只</b></div>`
-                + `<div>`+ (v.list||[]).map(s=>
-                    `<span style="display:inline-block;margin:1px 8px 1px 0;">`
-                    + `${esc(s.name?String(s.name).slice(0,3):'')}`
-                    + `<span style="color:#9ca3af;font-size:11px;">`
-                    + (s.industry?' · '+esc(s.industry):'')
-                    + `</span></span>`).join('')
-                + `</div>`
-              ).join('')
+          const lst = d.top_list || [];
+          return `<div style="min-width:230px;white-space:normal;line-height:1.75;">`
+            + `<b>${d.date}</b>`
+            + `<div style="margin-top:3px;">最高板 <b style="color:${cfg.colors[0]};font-size:14px;">${d.top||0}${cfg.unit}</b>`
+            + ` <span style="color:#6b7280;">· ${d.top_n||0} 只</span></div>`
+            + `<div style="margin-top:6px;">` + lst.map(s=>
+                `<span style="display:inline-block;margin:2px 10px 2px 0;">`
+                + `${esc(String(s.name||''))}`
+                + `<span style="color:#9ca3af;font-size:11px;">`
+                + (s.industry ? ' · '+esc(s.industry) : '')
+                + `</span></span>`).join('') + `</div>`
             + `</div>`;
         }
         const p0=ps[0];
@@ -1284,36 +1252,32 @@ function drawLadderChart(el, prevChart, L, cfg){
       }},
     legend:{data:legendData, top:0, right:0, itemWidth:14, itemHeight:8, textStyle:{fontSize:11},
       type:'scroll'},
-    // ⚠️ levelMode 时 right 放宽到 56：曲线末端（最后一天）的「家数」标签靠右，
-    //    边界太窄会被裁掉（实测 right:40 时 09-23 的标签不见了）。
-    grid: levelMode ? {left:40, right:58, top:44, bottom:30} : {left:40, right:24, top:44, bottom:30},
+    // ⚠️ levelMode 时 right 放宽到 34：线上末端（最后一天）的「家数」标签靠右，边界太窄会被裁掉（实测）。
+    grid: levelMode ? {left:40, right:34, top:44, bottom:30} : {left:40, right:24, top:44, bottom:30},
     xAxis:xAxisCfg,
-    // 纵轴（2026-09-23 用户指定）：**刻度固定为 0 / 4 / 5 / 6 / 7 / 8 / 9**
-    //   · 0 必须有 —— 缺层要落到 0 轴（曲线下探到 0 再回升）
-    //   · ⚠️ 不能只写 `min:4`：那样 0 轴点会被裁掉，缺层的「落 0」就看不见了
-    //   · 🔴 2026-09-23 追改：「0-3 的三条横轴也删掉，空轴不要保留」→ 1/2/3 既无横线也无刻度短线。
-    //     ⚠️ 实测（ECharts **5.4.3**）：数值轴的 `splitLine.interval`、`splitLine.customValues`、
-    //        `axisTick.interval` **全部不生效**（函数/数字都试过，仍画满 0~9 十条），只有 `show` 生效。
-    //     ✅ 因此：**splitLine 与 axisTick 都关掉**，横线改由 series 的 `markLine` 精确画
-    //        **4/5/6/7/8/9** 六条（0 那条由 x 轴线本体承担）。y 轴数字标签仍只显示 0 与 ≥4。
+    // 纵轴（2026-09-23 用户最终要求）：**板数轴，从 0 起、逐整数刻度**，只显示 >0 的刻度文案。
+    //   用户原话：「纵坐标动态更新，比如今天最高板是5板，纵坐标就要 0.4.5，最高板是8板就是 0.4.5.6.7.8」
+    //   → 即 **从 0 起、每个整数都出刻度、不跳号**（旧版 max:12+minInterval:1 会让 ECharts
+    //     自行生成 2/4/6/8/10/12 这种**跳号**刻度，不合用户要求）。
+    //   实现：`max` 动态取 `max(8, 当日最高板) + 1`，`interval:1` 强制逐整数 **硬出刻度**
+    //     （⚠️ interval 对 **axisLabel + splitLine** 有效；对数值轴 `splitLine.customValues` 无效是另一回事）。
+    //   ⛔ 别写 `min:4`（最高板 ≤3 的日期点会落到 0 轴被裁掉）；⛔ 别用 markLine 补横线（旧形态遗留）。
     yAxis: levelMode
-      ? {type:'value', name:cfg.yName, min:0, max:9, interval:1,
-         axisLabel:{fontSize:11, formatter:v=>(v===0||v>=4)?String(v):''},
-         axisTick:{show:false},      // ⛔ 见上：interval 不生效 → 干脆不画刻度短线
-         splitLine:{show:false}}     // ⛔ 见上：interval 不生效 → 横线交给 markLine
+      ? {type:'value', name:cfg.yName, min:0, interval:1, max:_ldrYMax,
+         axisLabel:{fontSize:11, formatter:v=>v>0?String(v):''}}
       : {type:'value', name:cfg.yName, min:0, axisLabel:{fontSize:11}, minInterval:1},
-    // ⛔ 连板图**不用 visualMap**：每层一条 series，颜色由各层自己的 LADDER_LEVEL_COLORS[i] 决定
+    // ⛔ 连板图**不用 visualMap**：只有一条线，颜色由 cfg.colors[0] 决定
     series
   }, {notMerge:true});   // ⚠️ 必须 notMerge：否则上一版遗留的 visualMap 等配置不会被清除（setOption 默认合并）
   return chart;
 }
 
-/* 连板高度梯队 —— **主板 · 4板以上每层一条独立曲线**（看一个时间段内连板高度的变化） */
+/* 连板高度梯队 —— **只跟踪「最高板」一条线**（看最高板高度在一个时间段内怎么变化） */
 function renderChart(){
   if(!D.ladder||!D.ladder.length) return;
   ladderChart = drawLadderChart(document.getElementById('echart-ladder'), ladderChart,
     D.ladder.slice(-7), {
-      labels:['最高板','次高板','创业板'], colors:['#2563eb','#059669','#ea580c'],
+      labels:['最高板'], colors:['#2563eb'],
       unit:'板', yName:'连板数',
       levelMode:true, levelUnit:'板'
     });

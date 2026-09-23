@@ -1876,15 +1876,26 @@ def detect_nodes(zt_hist, days):
 
         # ---- 2/3. 突破节点 & 穿越节点（互斥：突破优先）----
         # 突破：连板高度创 stage 新高（超过回看窗口内历史最高）
-        # 穿越：最高标跨越前期天花板 —— 今日最高板 > 昨日最高板，且由昨日最高标晋级而来
-        #       例：9/3 最高5板(国芳) → 9/4 国芳5进6断板、龙版接棒5板 → 9/7 龙版5进6，
-        #           跨过5板天花板成为6板 = 穿越节点，节点票取 9/7 当日首板。
+        # 穿越：最高标跨过**昨日的前期天花板**，且**不是自己往上打** ——
+        #   🔴 2026-09-23 用户补充规则：**「穿越自己不产生新节点」**
+        #      同一只票自己往上打高度（天花板＝它自己昨天的高度）**不算穿越**。
+        #      案例：· 华瓷 5板 是穿越了**澳弘电子**的 4板天花板 → 穿越节点 ✅
+        #            · 华瓷 6板 时昨日最高板只有它自己（5板）→ **自己往上打，不产节点** ❌
+        #     用户原话：「穿越自己不产生新节点，比如华瓷5板是穿越了澳弘电子，
+        #                6板是华瓷自己，那么就算往上打高度，不产生穿越节点」
+        #   ✅ 判据（见下方 `self_only`）：昨日最高板（max_prev）的持有者
+        #      **只有今日最高标自己一只** → 纯自续板 → 跳过，不出节点。
+        #      若昨日最高板是**并列**（含别的票），说明今天跨了别人的肩 → 仍算穿越。
+        #   原案例（仍成立）：9/3 最高5板(国芳) → 9/4 国芳5进6断板、龙版接棒5板
+        #         → 9/7 龙版5进6，跨过 5板天花板（天花板是国芳的，**他票**）= 穿越节点。
         hist_max = 0
         for j in range(max(0, i - BREAKOUT_LOOKBACK), i):
             for s in zt_hist.get(days[j], []):
                 hist_max = max(hist_max, s['lbc'])
         today_max = max((s['lbc'] for s in today_pool), default=0)
         first_boards = [s for s in today_pool if s['lbc'] == 1]
+        # 今日并列最高板的全部代码（可能多只）——判定「自穿越」时要用
+        top_codes = {s['code'] for s in today_pool if s['lbc'] == today_max}
 
         if hist_max > 0 and today_max > hist_max:
             # 突破节点：创阶段新高
@@ -1899,11 +1910,19 @@ def detect_nodes(zt_hist, days):
                     'desc': '连板高度由%d板突破至%d板 → 取当日首板' % (hist_max, today_max),
                 })
         elif max_prev >= 2 and today_max > max_prev:
-            # 穿越节点：今日最高标由昨日晋级而来，且跨过昨日最高板（前期天花板）
+            # 穿越节点：今日最高标由昨日晋级而来，且跨过**昨日最高板（前期天花板）**
             tops_today = [s for s in today_pool if s['lbc'] == today_max]
             crossed = [s for s in tops_today
                        if s['code'] in prev_map and prev_map[s['code']]['lbc'] < s['lbc']]
-            if crossed and first_boards:
+            # 🔴 2026-09-23 用户补充规则：**「穿越自己不产生新节点」**
+            #   判据：**昨日最高板（max_prev）的持有者只有今日最高标自己一只**
+            #     → 它今天只是把自己昨天的高度继续往上打 → **不产生穿越节点**。
+            #     · 华瓷 5板→6板：昨日(09-21) 5板只有华瓷 → self_only=True → 跳过 ✅
+            #     · 华瓷 4板→5板：昨日(09-18) 4板是「锡华科技 + 华瓷」并列
+            #       → prev_top_codes 有 2 只 → self_only=False → 仍算穿越（跨了同梯队的肩）✅
+            prev_top_codes = {s['code'] for s in prev_pool if s['lbc'] == max_prev}
+            self_only = bool(prev_top_codes & top_codes) and len(prev_top_codes) == 1
+            if crossed and first_boards and not self_only:
                 trig = crossed[0]
                 # replaced：昨日同处最高板、今日被甩在身后的票（若有）
                 replaced = [s['code'] for s in prev_pool

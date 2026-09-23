@@ -44,30 +44,34 @@ const codeOnly = body.replace(/<!--[\s\S]*?-->/g,'').replace(/\/\*[\s\S]*?\*\//g
   console.log('  '+k+': '+(codeOnly.includes(k)?'WARN 真代码里仍存在':'ok 已清除'));
 });
 
-console.log('\n--- 连板高度梯队：主板 · 4板以上 · 每层一条独立曲线（2026-09-23 用户第 14/15 条需求）---');
+console.log('\n--- 连板高度梯队：主板 · 只跟踪最高板一条线（2026-09-23 用户最终要求）---');
 try{
   const L=(global.__D && global.__D.ladder)?global.__D.ladder.slice(-7):[];
   const last=L[L.length-1]||{};
-  const lv=(last.levels||[]).map(v=>v.boards);
-  console.log('  末条 '+last.date+' levels='+JSON.stringify(lv));
-  const okDesc = lv.length>0 && lv.every((v,i)=>i===0||lv[i-1]>v);
-  console.log('  '+(okDesc?'OK  ':'FAIL ')+'levels 非空且降序');
-  // 🔴 v7 口径：每层一条独立曲线，每条只连自己那层（缺层落 0）
-  const allLv=[...new Set(L.flatMap(s=>(s.levels||[]).map(v=>v.boards)))].sort((a,b)=>b-a);
-  const expPts=L.reduce((n,s)=>n+(s.levels||[]).length,0);
-  console.log('  '+(allLv.length?'OK  ':'FAIL ')+'窗口内高度层级='+allLv.length+' ['+allLv.join(',')+']'
-    +' → series 应有 '+allLv.length+' 条、真实点共 '+expPts+' 个');
-  // 🔴 用户要求「只统计 4 板以上」
-  const low=L.flatMap(s=>(s.levels||[]).map(v=>v.boards)).filter(b=>b<4);
-  console.log('  '+(low.length===0?'OK  ':'FAIL ')+'只统计 4 板以上（<4 层级 '+low.length+' 个'
-    +(low.length?'：'+low.slice(0,6).join(','):'')+'）');
-  // 🔴 用户要求「排除创业板」→ levels 名单里**不许出现** 300/301/688/689/4xx/8xx/92xx
+  console.log('  末条 '+last.date+' top='+last.top+' top_n='+last.top_n
+    +' 名单='+JSON.stringify((last.top_list||[]).map(x=>x.name)));
+  // 🔴 单条线：每天必须有 top（板数）与 top_n（家数）
+  const badDay=L.filter(s=>!(s.top>=1) || !(s.top_n>=1));
+  console.log('  '+(badDay.length===0?'OK  ':'FAIL ')+'每天都有 top/top_n（异常 '+badDay.length
+    +' 天'+(badDay.length?'：'+badDay.map(s=>s.date).join(','):'')+'）');
+  // 🔴 top_n 必须 == top_list 长度（点上的数字 = 名单只数）
+  const mism=L.filter(s=>(s.top_n||0)!==((s.top_list||[]).length));
+  console.log('  '+(mism.length===0?'OK  ':'FAIL ')+'top_n == top_list.length（不符 '+mism.length
+    +' 天'+(mism.length?'：'+mism.map(s=>s.date+'('+s.top_n+'/'+(s.top_list||[]).length+')').join(','):'')+'）');
+  // 🔴 只统计主板：top_list 里不许出现 300/301/688/689/4xx/8xx/92xx
   const bad=[];
-  L.forEach(s=>(s.levels||[]).forEach(v=>(v.list||[]).forEach(x=>{
+  L.forEach(s=>(s.top_list||[]).forEach(x=>{
     const c=String(x.code||'');
     if(c.startsWith('300')||c.startsWith('301')||c.startsWith('688')||c.startsWith('689')
        ||c[0]==='4'||c[0]==='8'||c.startsWith('92')) bad.push(c);
-  })));
+  }));
   console.log('  '+(bad.length===0?'OK  ':'FAIL ')+'只统计主板（越界代码 '+bad.length+' 个'
     +(bad.length?'：'+bad.slice(0,6).join(','):'')+'）');
-}catch(e){ console.log('  FAIL 梯队层级断言异常: '+e.message); }
+  // 🔴 top 必须 == 当日涨停池真实最高连板（用 levels 交叉验证：levels 最高层 == top）
+  const badTop=L.filter(s=>{
+    const mx=Math.max(...((s.levels||[]).map(v=>v.boards)), 0);
+    return mx>0 && mx!==s.top;
+  });
+  console.log('  '+(badTop.length===0?'OK  ':'FAIL ')+'top == levels 最高层（不符 '+badTop.length
+    +' 天'+(badTop.length?'：'+badTop.map(s=>s.date+' top'+s.top+'/max'+Math.max(...((s.levels||[]).map(v=>v.boards)),0)).join(','):'')+'）');
+}catch(e){ console.log('  FAIL 最高板断言异常: '+e.message); }

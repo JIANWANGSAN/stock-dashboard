@@ -368,12 +368,10 @@ async function shoot(page, tag, panel, label, w, h) {
     ok(`K线涨停标黄：颜色为黄色 ${kline.color1}`, kline.color1 === '#facc15');
     ok(`K线涨停标黄：K线数值未被破坏 ${kline.val1}`, kline.val1 === '[8.04,8.04,8.04,8.04]');
 
-    // ── 连板高度梯队「每层一条独立曲线」（约定 §3.1b；2026-09-23 用户第 14/15 条需求）──
-    // 🔴 最终口径（v7 形态 + 删空轴）：
-    //   · **每层一条独立曲线**：6板紫 / 5板红 / 4板黄（颜色按「窗口内最高板序位」分配）
-    //   · 每条线**只连自己那一层**：该日没有这一层 → Y=0（落到 0 轴）
-    //   · 只统计主板（剔创业/科创/北交）+ 只 ≥4 板
-    //   · 纵轴刻度固定 0/4/5/6/7/8/9；**1/2/3 既无横线也无刻度**（用户：「空轴不要保留」）
+    // ── 连板高度梯队「只跟踪最高板一条线」（约定 §3.1b；2026-09-23 用户最终要求）──
+    //   · **只有一条线**：Y = 当日最高板的板数；点数字 = 当日最高板的家数
+    //   · 平滑曲线；X = 日期（7 天）；tooltip 列当天最高板全部股票 + 概念
+    //   · 只统计主板（剔创业/科创/北交）
     // ⚠️ 测 ECharts 要**读 option / ZRender 图元**，不能截图（headless Edge 拍 canvas 会全白，§9.3.1）
     await page.click('.menu-item[data-panel="ladder"]');
     await sleep(600);
@@ -384,184 +382,99 @@ async function shoot(page, tag, panel, label, w, h) {
       const D_ = (typeof D !== 'undefined' && D) || {};
       const W = (D_.ladder || []).slice(-7);
       const seriesAll = opt ? opt.series : [];
-      // 窗口内出现过的全部 ≥4 板层级（降序），= 期望的 series 列表
-      const expLv = [...new Set(W.flatMap(row => (row.levels || []).map(v => v.boards)))]
-        .sort((x, y) => y - x);
-      const names = seriesAll.map(s => s.name);
-      // 每条 series 长度 == 窗口天数
-      const lens = seriesAll.map(s => (s.data || []).length);
-      const lensOk = lens.length > 0 && lens.every(n => n === W.length);
-      // 逐点核对：每条系列的每一天 == 该层板数 或 0（缺层落 0）
-      const mismatch = [];
-      seriesAll.forEach(s => {
-        const b = parseInt(String(s.name).replace(/[^\d]/g, ''), 10);
-        W.forEach((row, i) => {
-          const lv = (row.levels || []).find(v => v.boards === b);
-          const exp = lv ? b : 0;
-          const got = s.data[i] && s.data[i].value;
-          if (got !== exp) mismatch.push({ lv: b, i, exp, got });
-        });
-      });
-      // 缺层点数 == Σ(每天缺失的层数)
-      let expZero = 0;
-      seriesAll.forEach(s => {
-        const b = parseInt(String(s.name).replace(/[^\d]/g, ''), 10);
-        W.forEach(row => { if (!(row.levels || []).some(v => v.boards === b)) expZero++; });
-      });
-      const zeroPts = seriesAll.reduce((n, s) => n + (s.data || []).filter(p => p && p.value === 0).length, 0);
-      // 只 ≥4 板 / 只主板
-      const lowLv = W.flatMap(row => (row.levels || []).map(v => v.boards)).filter(x => x < 4);
-      const badCodes = [];
-      W.forEach(row => (row.levels || []).forEach(v => (v.list || []).forEach(x => {
+      const expTop = W.map(r => r.top || 0);
+      const expCnt = W.map(r => r.top_n || 0);
+      const ys = (seriesAll[0] ? (seriesAll[0].data || []) : [])
+        .map(d => (d && typeof d === 'object') ? d.value : d);
+      // 逐点 label（ZRender tspan，按 style.fill == #374151 收「家数」）
+      const texts = [];
+      const walk = (e) => {
+        if (!e) return;
+        if (Array.isArray(e)) { e.forEach(walk); return; }
+        if ((e.type === 'text' || e.type === 'tspan') && e.style && e.style.text != null)
+          texts.push({ t: e.style.text, fill: String(e.style.fill).toLowerCase() });
+        (e.children || []).forEach(walk);
+      };
+      if (inst) inst.getZr().storage.getDisplayList().forEach(walk);
+      const cntLabels = texts.filter(x => x.fill === '#374151').map(x => x.t);
+      const yTexts = texts.filter(x => x.fill === '#6e7079').map(x => x.t);
+      const tt = opt && opt.tooltip && opt.tooltip[0];
+      // 只主板
+      const bad = [];
+      W.forEach(r => (r.top_list || []).forEach(x => {
         const c = String(x.code || '');
         if (c.startsWith('300') || c.startsWith('301') || c.startsWith('688') || c.startsWith('689')
-            || c[0] === '4' || c[0] === '8' || c.startsWith('92')) badCodes.push(c);
-      })));
-      // 逐点 label：真实点必须有家数且 == 该层当日家数；0 轴点不许标
-      const labBad = [];
-      seriesAll.forEach(s => {
-        const b = parseInt(String(s.name).replace(/[^\d]/g, ''), 10);
-        (s.data || []).forEach((p, i) => {
-          const lv = (W[i].levels || []).find(v => v.boards === b);
-          if (p && p.value > 0) {
-            if (!lv || !p.cnt || p.cnt !== lv.n) labBad.push({ lv: b, i, cnt: p.cnt, exp: lv && lv.n });
-            const shown = !!(p.label && p.label.show !== false && p.label.formatter);
-            if (!shown) labBad.push({ lv: b, i, noLabel: true });
-          } else if (p && p.label && p.label.show !== false && p.label.formatter) {
-            labBad.push({ lv: b, i, zeroLabeled: true });
-          }
-        });
-      });
-      const yax = (opt && opt.yAxis && opt.yAxis[0]) || {};
-      return {
-        dates: W.map(r => r.date),
-        seriesCount: seriesAll.length, names, expLv,
-        lensOk, lens, mismatch: mismatch.slice(0, 6), mismatchTotal: mismatch.length,
-        zeroPts, expZero,
-        lowTotal: lowLv.length,
-        badCodes: badCodes.slice(0, 6), badTotal: badCodes.length,
-        labBad: labBad.slice(0, 6), labBadTotal: labBad.length,
-        smoothAll: seriesAll.map(s => s.smooth),
-        lineColors: seriesAll.map(s => (s.lineStyle && s.lineStyle.color) || null),
-        itemColors: seriesAll.map(s => (s.itemStyle && s.itemStyle.color) || null),
-        yMin: yax.min, yMax: yax.max, yInterval: yax.interval,
-        hasVisualMap: !!(opt && opt.visualMap && opt.visualMap.length > 0),
-        oldNames: names.some(n => /最高板|次高板|创业板/.test(n)),
-        tooltipTrigger: opt && opt.tooltip && opt.tooltip[0] ? opt.tooltip[0].trigger : null,
-        keepOld: W.length > 0 && Object.prototype.hasOwnProperty.call(W[W.length - 1], 'top_list')
-                 && Object.prototype.hasOwnProperty.call(W[W.length - 1], 'second'),
-        lastDate: W.length ? W[W.length - 1].date : null,
-      };
-    });
-    ok(`梯队图为**每层一条独立曲线**（series 数 = ${ldr.seriesCount}，层级 ${ldr.expLv.join('/')}）`,
-       ldr.seriesCount === ldr.expLv.length && ldr.seriesCount >= 2);
-    ok(`梯队图 series 名 = 各板数层级（${ldr.names.join(' / ')}）`,
-       ldr.names.length > 0 && ldr.names.every(n => /^\d+板$/.test(n)));
-    ok(`梯队图**不再有**最高板/次高板/创业板三条线`, ldr.oldNames === false);
-    ok(`每条 series 长度 == 窗口天数（${ldr.lens.join(',')}）`, ldr.lensOk === true);
-    // 🔴 核心：每条线**只连自己那一层**，缺层落 0（实测逐点核对）
-    ok(`梯队每条线**只连自己那层**、缺层落 0（逐点核对 ${ldr.seriesCount}×7 格，错位 ${ldr.mismatchTotal} 处 `
-       + `${JSON.stringify(ldr.mismatch)}）`, ldr.mismatchTotal === 0);
-    ok(`梯队缺层点 Y=0 落到 0 轴（实测 ${ldr.zeroPts} 个，应为 ${ldr.expZero} 个）`, ldr.zeroPts === ldr.expZero);
-    ok(`梯队曲线为**平滑曲线**（smooth 全 true，实测 ${JSON.stringify(ldr.smoothAll)}）`,
-       ldr.smoothAll.length > 0 && ldr.smoothAll.every(v => v === true));
-    ok(`梯队**只统计 4 板以上**（无 <4 层级，实测越界 ${ldr.lowTotal} 个）`, ldr.lowTotal === 0);
-    ok(`梯队**只统计主板**（无创业板/科创板/北交所代码，实测越界 ${ldr.badTotal} 个）`, ldr.badTotal === 0);
-    ok(`梯队点数字 == 各层当日家数、且仅真实点标数字（异常 ${ldr.labBadTotal} 个 `
-       + `${JSON.stringify(ldr.labBad)}）`, ldr.labBadTotal === 0);
-    // 🔴 颜色：最高板紫 → 红 → 黄（按窗口内最高板序位）
-    {
-      const WANT = ['#7c3aed', '#dc2626', '#eab308', '#1e40af', '#16a34a', '#0891b2', '#6b7280'];
-      const exp = WANT.slice(0, ldr.seriesCount);
-      ok(`梯队配色按「最高板优先」依次取（实测 ${ldr.lineColors.join(' → ')}）`,
-         JSON.stringify(ldr.lineColors) === JSON.stringify(exp));
-      ok(`梯队**最高板（${ldr.expLv[0] || '-'}板）为紫色 #7c3aed**`, ldr.lineColors[0] === '#7c3aed');
-      ok(`梯队每层「线色 == 点色」`, JSON.stringify(ldr.itemColors) === JSON.stringify(ldr.lineColors));
-    }
-    ok(`梯队图**不再有** visualMap`, ldr.hasVisualMap === false);
-    ok(`梯队图 tooltip 用 axis 触发（悬浮某天出当天完整名单与概念）`, ldr.tooltipTrigger === 'axis');
-    ok(`梯队数据仍保留 top/second/*_list（未被误删）`, ldr.keepOld);
-    // 🔴 Y 轴：0/4/5/6/7/8/9；1/2/3 无横线也无刻度（用户：「空轴不要保留」）
-    //    ⚠️ getOption() **不回读函数**，故直接读 ZRender 图元。
-    //    ⚠️ 区分「y 轴刻度文字」与「曲线家数标签」必须按 fill 色：刻度 #6E7079，家数标签 #374151
-    const yRender = await page.evaluate(() => {
-      const el = document.getElementById('echart-ladder');
-      const inst = el && echarts.getInstanceByDom(el);
-      if (!inst) return { err: 'no chart' };
-      const list = inst.getZr().storage.getDisplayList(true);
-      const AXIS_FILL = '#6E7079';
-      const texts = [], hlines = [];
-      list.forEach(e => {
-        const st = e.style || {}, sh = e.shape || {};
-        if (typeof st.text === 'string' && st.text.length
-            && String(st.fill).toUpperCase() === AXIS_FILL) texts.push(st.text.trim());
-        if (typeof sh.x1 === 'number' && typeof sh.y1 === 'number'
-            && typeof sh.x2 === 'number' && typeof sh.y2 === 'number'
-            && Math.abs(sh.y1 - sh.y2) < 0.5 && Math.abs(sh.x2 - sh.x1) > 40) {
-          hlines.push(Math.round(sh.y1));
+          || c[0] === '4' || c[0] === '8' || c.startsWith('92')) bad.push(c);
+      }));
+      // note / tag
+      const noteEl = document.querySelector('[data-page-node-id="ladderNote"]');
+      const card = el && el.closest ? el.closest('.card') : null;
+      const tagEl = card ? card.querySelector('.tag') : null;
+      // tooltip 内容实测
+      let tipHtml = '';
+      try {
+        const fi = tt && tt.formatter;
+        if (typeof fi === 'function') {
+          tipHtml = String(fi([{ dataIndex: W.length - 1 }]) || '');
+        } else if (typeof fi === 'string') {
+          tipHtml = fi;
         }
-      });
-      const uniqNum = [...new Set(texts.filter(t => /^\d+$/.test(t)).map(Number))].sort((x, y) => x - y);
-      const uniqH = [...new Set(hlines)];
-      const pix = {};
-      for (let v = 0; v <= 9; v++) {
-        try { pix[v] = Math.round(inst.convertToPixel({ yAxisIndex: 0 }, v)); } catch (err) {}
-      }
-      const badPix = [1, 2, 3].map(v => pix[v]).filter(v => v != null);
-      const badHit = uniqH.filter(y => badPix.some(bp => Math.abs(y - bp) <= 2));
-      return { axisTexts: uniqNum, hlineCount: uniqH.length, badHitCount: badHit.length };
-    });
-    ok(`梯队 Y 轴刻度文字 = ${JSON.stringify(yRender.axisTexts)}（应为 [0,4,5,6,7,8,9]）`,
-       JSON.stringify(yRender.axisTexts) === JSON.stringify([0, 4, 5, 6, 7, 8, 9]));
-    ok(`梯队 1/2/3 刻度位置**无横线**（命中 ${yRender.badHitCount} 条；横线共 ${yRender.hlineCount} 条 = markLine 6 + x轴线 1）`,
-       yRender.badHitCount === 0 && yRender.hlineCount === 7);
-    ok(`梯队 Y 轴范围 min=0 / max=9 / interval=1`, ldr.yMin === 0 && ldr.yMax === 9 && ldr.yInterval === 1);
-    // 🔴 tooltip 必须给「当天全部层级」的完整名单
-    const tipChk = await page.evaluate(() => {
-      const el = document.getElementById('echart-ladder');
-      const inst = el && echarts.getInstanceByDom(el);
-      const opt = inst ? inst.getOption() : null;
-      const Dd = (typeof D !== 'undefined' && D) || {};
-      const W = (Dd.ladder || []).slice(-7);
-      const lastIdx = W.length - 1;
-      const row = W[lastIdx] || {};
-      const params = (opt.series || []).map((s, si) => {
-        const p = (s.data || [])[lastIdx];
-        return (p && p.value !== 0) ? { dataIndex: lastIdx, seriesIndex: si, value: p.value, data: p } : null;
-      }).filter(Boolean);
-      const html = opt.tooltip[0].formatter(params);
-      const names = (row.levels || []).flatMap(v => (v.list || []).map(s => String(s.name || '').slice(0, 3)));
-      const missing = names.filter(n => n && !html.includes(n));
-      const inds = (row.levels || []).flatMap(v => (v.list || []).map(s => s.industry)).filter(Boolean);
-      const indMissing = inds.filter(x => !html.includes(x));
-      const lvTitles = (row.levels || []).map(v => `${v.boards}板 · ${v.n}只`);
-      const lvMissing = lvTitles.filter(t => !html.includes(t));
+      } catch (e) { tipHtml = 'ERR:' + e.message; }
+      const lastRow = W[W.length - 1] || {};
       return {
-        date: row.date, hasDate: html.includes(row.date), hasTop: /最高/.test(html),
-        nameTotal: names.length, missing: missing.length,
-        indTotal: inds.length, indMissing: indMissing.length,
-        lvTotal: lvTitles.length, lvMissing: lvMissing.length, lvMissSample: lvMissing.slice(0, 3),
+        seriesCount: seriesAll.length,
+        names: seriesAll.map(s2 => s2.name),
+        lens: seriesAll.map(s2 => (s2.data || []).length),
+        ys, expTop, expCnt,
+        sameTop: JSON.stringify(ys) === JSON.stringify(expTop),
+        cntLabels, yTexts,
+        cntOk: JSON.stringify(cntLabels.slice(0, expCnt.length)) === JSON.stringify(expCnt.map(String)),
+        smooth: seriesAll[0] ? seriesAll[0].smooth : null,
+        lineColor: seriesAll[0] && seriesAll[0].lineStyle ? seriesAll[0].lineStyle.color : null,
+        hasVisualMap: !!(opt && opt.visualMap && opt.visualMap.length > 0),
+        tooltipTrigger: tt ? tt.trigger : null,
+        badTotal: bad.length,
+        noteTxt: noteEl ? noteEl.textContent : '',
+        noteHasMd: noteEl ? /\*\*/.test(noteEl.innerHTML) : false,
+        tagTxt: tagEl ? tagEl.textContent : '',
+        days: W.length,
+        lastDate: lastRow.date, lastTop: lastRow.top, lastCnt: lastRow.top_n,
+        lastNames: (lastRow.top_list || []).map(x => x.name),
+        tipHasDate: !!lastRow.date && tipHtml.includes(lastRow.date),
+        tipHasLastNames: (lastRow.top_list || []).every(x => tipHtml.includes(String(x.name))),
+        tipNameMissing: (lastRow.top_list || []).filter(x => !tipHtml.includes(String(x.name))).length,
+        keepOld: !!(opt && (D_.ladder || []).length && (D_.ladder[(D_.ladder || []).length - 1] || {}).top_list),
       };
     });
-    ok(`梯队 tooltip 含日期与「最高 X 板」（${tipChk.date}）`, !!tipChk.hasDate && !!tipChk.hasTop);
-    ok(`梯队 tooltip 列出当天**全部层级**（${tipChk.lvTotal} 层，缺失 ${tipChk.lvMissing} 层 `
-       + `${JSON.stringify(tipChk.lvMissSample)}）`, tipChk.lvTotal > 0 && tipChk.lvMissing === 0);
-    ok(`梯队 tooltip 列出当天**全部股票名**（${tipChk.nameTotal} 只，缺失 ${tipChk.missing} 只）`,
-       tipChk.nameTotal > 0 && tipChk.missing === 0);
-    ok(`梯队 tooltip 列出**所属概念**（${tipChk.indTotal} 条，缺失 ${tipChk.indMissing} 条）`,
-       tipChk.indMissing === 0);
-    // 防回归：note 文案无 Markdown 星号；卡片 tag 反映口径
-    const noteMd = await page.evaluate(() => {
-      const el = document.querySelector('[data-page-node-id="ladderNote"]');
-      return el ? { txt: el.textContent, star: /\*\*/.test(el.innerHTML) } : null;
-    });
-    ok(`梯队 note 文案无 Markdown 星号残留（HTML 不解析 **）`, !!noteMd && !noteMd.star);
-    const tagTxt = await page.evaluate(() => {
-      const el = document.querySelector('[data-page-node-id="SOrFifQLO9pb3LwuCUnCJ5"]');
-      return el ? el.textContent : '';
-    });
-    ok(`梯队卡片 tag = 「每层一条曲线」（实测「${tagTxt}」）`, /每层一条曲线/.test(tagTxt));
 
+    ok(`梯队图**只有一条线**（series 数 = ${ldr.seriesCount}）`, ldr.seriesCount === 1);
+    ok(`梯队线名 = 「最高板」（实测「${ldr.names[0]}」）`, ldr.names[0] === '最高板');
+    ok(`梯队线每天一个点（${JSON.stringify(ldr.lens)} 应为 [${ldr.days}]）`,
+      ldr.lens.length === 1 && ldr.lens[0] === ldr.days);
+    ok(`梯队 Y 值 == 各日最高板板数（实测 ${JSON.stringify(ldr.ys)}）`, ldr.sameTop);
+    ok(`梯队点数字 == 各日最高板家数（实测 ${JSON.stringify(ldr.cntLabels)}，应为 ${JSON.stringify(ldr.expCnt)}）`, ldr.cntOk);
+    ok(`梯队曲线为**平滑曲线**（smooth = ${ldr.smooth}）`, ldr.smooth === true);
+    ok(`梯队线色 = #2563eb（实测 ${ldr.lineColor}）`, String(ldr.lineColor).toLowerCase() === '#2563eb');
+    ok(`梯队图**不再有** visualMap`, ldr.hasVisualMap === false);
+    ok(`梯队图 tooltip 用 axis 触发`, ldr.tooltipTrigger === 'axis');
+    ok(`梯队**只统计主板**（越界代码 ${ldr.badTotal} 个）`, ldr.badTotal === 0);
+    ok(`梯队数据仍保留 top/top_list（未被误删）`, ldr.keepOld === true);
+    ok(`梯队 note 文案无 Markdown 星号残留`, ldr.noteHasMd === false);
+    ok(`梯队 card tag = 「只跟踪最高板一条线」（实测「${ldr.tagTxt}」）`, /只跟踪最高板一条线/.test(ldr.tagTxt));
+    ok(`梯队 note 提到「只画最高板这一条线」`, /最高板/.test(ldr.noteTxt) && /一条线/.test(ldr.noteTxt));
+    ok(`梯队 Y 轴刻度只显示 >0 整数（实测 ${JSON.stringify(ldr.yTexts.filter(t => /^\d+$/.test(t))) }）`,
+      ldr.yTexts.filter(t => /^\d+$/.test(t)).every(t => Number(t) >= 1));
+    // 2026-09-23 用户原话：「纵坐标动态更新，最高板 5 板 → 0.4.5；最高板 8 板 → 0.4.5.6.7.8」
+    //   → 刻度必须 **从 1 起、逐整数、不跳号**（旧版 auto 刻度是 2/4/6/8/10/12，跳号，不合格）
+    const yInts = ldr.yTexts.filter(t => /^\d+$/.test(t)).map(Number).sort((a, b) => a - b);
+    const yConsec = yInts.length > 0 && yInts.every((v, i) => i === 0 ? v === 1 : v === yInts[i - 1] + 1);
+    ok(`梯队 Y 轴刻度**逐整数不跳号**（实测 ${JSON.stringify(yInts)}）`, yConsec);
+    // 纵轴上限须 ≥ 窗口内最高板（保证最高板那一天的点不被挤出画布）
+    const yMaxOk = yInts.length > 0 && yInts[yInts.length - 1] >= Math.max.apply(null, ldr.expTop);
+    ok(`梯队 Y 轴上限 ≥ 窗口最高板 ${Math.max.apply(null, ldr.expTop)} 板（实测上限 ${yInts[yInts.length - 1]}）`, yMaxOk);
+    ok(`梯队 tooltip 含日期（${ldr.lastDate}）`, ldr.tipHasDate);
+    ok(`梯队 tooltip 列出当天最高板**全部股票**（${ldr.lastNames.join('、')}，缺失 ${ldr.tipNameMissing}）`,
+      ldr.lastNames.length > 0 && ldr.tipNameMissing === 0);
     // ── 连板候选池「已删」（2026-09-23 用户要求）──
     // ⚠️ 只删**前端展示**；后端 data.candidates 必须照旧全量产出（竞价核对/推荐/模块4兜底都读它）
     const candChk = await page.evaluate(() => ({
