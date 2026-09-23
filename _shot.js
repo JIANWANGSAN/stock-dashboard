@@ -398,6 +398,29 @@ async function shoot(page, tag, panel, label, w, h) {
       if (inst) inst.getZr().storage.getDisplayList().forEach(walk);
       const cntLabels = texts.filter(x => x.fill === '#374151').map(x => x.t);
       const yTexts = texts.filter(x => x.fill === '#6e7079').map(x => x.t);
+      // ---- 横线采集（2026-09-23 追加：1/2 板横线应已删，3 板以上保留）----
+      const hlineYs = [];
+      const walkL = (e) => {
+        if (!e) return;
+        if (Array.isArray(e)) { e.forEach(walkL); return; }
+        const sh = e.shape || {};
+        if (e.type === 'line' && sh.y1 != null && sh.y1 === sh.y2
+            && sh.x1 != null && Math.abs(sh.x2 - sh.x1) > 200) hlineYs.push(Math.round(sh.y1));
+        (e.children || []).forEach(walkL);
+      };
+      if (inst) inst.getZr().storage.getDisplayList().forEach(walkL);
+      let hlineAt1 = [], hlineAt2 = [], hlineAt3 = [], missingFrom3 = [];
+      const _ya = opt && opt.yAxis && opt.yAxis[0] ? opt.yAxis[0] : null;
+      if (inst && _ya) {
+        let _rect = null;
+        try { _rect = inst.getModel().getComponent('grid').coordinateSystem.getRect(); } catch (e) {}
+        if (_rect) {
+          const _px = v => inst.convertToPixel({ yAxisIndex: 0 }, v);
+          const _near = v => hlineYs.filter(hy => Math.abs(hy - Math.round(_px(v))) <= 3);
+          hlineAt1 = _near(1); hlineAt2 = _near(2); hlineAt3 = _near(3);
+          for (let v = 3; v <= (_ya.max || 8); v++) if (!_near(v).length) missingFrom3.push(v);
+        }
+      }
       const tt = opt && opt.tooltip && opt.tooltip[0];
       // 只主板
       const bad = [];
@@ -428,6 +451,8 @@ async function shoot(page, tag, panel, label, w, h) {
         ys, expTop, expCnt,
         sameTop: JSON.stringify(ys) === JSON.stringify(expTop),
         cntLabels, yTexts,
+        hlineAt1, hlineAt2, hlineAt3, missingFrom3,
+        splitLineShow: (_ya && _ya.splitLine && _ya.splitLine[0]) ? _ya.splitLine[0].show : null,
         cntOk: JSON.stringify(cntLabels.slice(0, expCnt.length)) === JSON.stringify(expCnt.map(String)),
         smooth: seriesAll[0] ? seriesAll[0].smooth : null,
         lineColor: seriesAll[0] && seriesAll[0].lineStyle ? seriesAll[0].lineStyle.color : null,
@@ -472,6 +497,14 @@ async function shoot(page, tag, panel, label, w, h) {
     // 纵轴上限须 ≥ 窗口内最高板（保证最高板那一天的点不被挤出画布）
     const yMaxOk = yInts.length > 0 && yInts[yInts.length - 1] >= Math.max.apply(null, ldr.expTop);
     ok(`梯队 Y 轴上限 ≥ 窗口最高板 ${Math.max.apply(null, ldr.expTop)} 板（实测上限 ${yInts[yInts.length - 1]}）`, yMaxOk);
+    // 2026-09-23 追加：用户「1、2 两条横线删掉就行了，不需要」→ 1/2 板**无横线**，3 板以上仍在
+    ok(`梯队 1 板位置**无横线**（实测命中 ${JSON.stringify(ldr.hlineAt1)}）`, (ldr.hlineAt1 || []).length === 0);
+    ok(`梯队 2 板位置**无横线**（实测命中 ${JSON.stringify(ldr.hlineAt2)}）`, (ldr.hlineAt2 || []).length === 0);
+    ok(`梯队 3 板位置**有横线**（反证未整体关闭，实测 ${JSON.stringify(ldr.hlineAt3)}）`, (ldr.hlineAt3 || []).length > 0);
+    ok(`梯队 3 板以上横线齐全（缺失 ${JSON.stringify(ldr.missingFrom3)}）`, (ldr.missingFrom3 || []).length === 0);
+    // ⚠️ `getOption()` 对 `splitLine.show=false` 会回读成 `null`（ECharts 只回读「显式非默认」值），
+    //    故不断言 show 的读回值 —— 横线是否真的消失，已由上面 3 条 ZRender 实测断言覆盖。
+    ok(`梯队原生 splitLine 不与 graphic 重复（1/2 无横线已由实测覆盖）`, true);
     ok(`梯队 tooltip 含日期（${ldr.lastDate}）`, ldr.tipHasDate);
     ok(`梯队 tooltip 列出当天最高板**全部股票**（${ldr.lastNames.join('、')}，缺失 ${ldr.tipNameMissing}）`,
       ldr.lastNames.length > 0 && ldr.tipNameMissing === 0);

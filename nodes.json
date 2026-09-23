@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-23 17:07:08",
+  "updated": "2026-09-23 17:44:38",
   "nodes": [
     {
       "id": "BREAK_20260923_001216",
@@ -2191,7 +2191,7 @@
           "amount": 667881090.0,
           "total_cap": 4448905000.0,
           "total_cap_yi": 44.49,
-          "is_yizi": true,
+          "is_yizi": false,
           "folded": true
         },
         {

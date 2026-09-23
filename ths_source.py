@@ -248,7 +248,12 @@ def fetch_zt_pool(date_yyyymmdd):
             'last_seal': lbt,                                   # 最后封板时间 HHMMSS
             'seal_fund': float(s.get('order_amount') or 0),      # 封单额（元）
             'zbc': 0,                                            # 炸板次数（THS 在炸板池，不在此）
-            'is_yizi': bool(fbt and fbt <= 93005),
+            # 🔴 一字板判据（2026-09-23 用户口径：**以封板时间为准**）：
+            #   ① 首次封板时间 ≤ 09:30:05（开盘即封 / 竞价一字）
+            #   ② **且 last_seal == first_seal**（全天**从未开板**）
+            #   ⛔ 旧写法只判 ① → 把「9:25 竞价封板、盘中炸板又回封」的票（如 09-23 南威软件
+            #      92501 封板但 95837 再封）**误标成一字板**。用户明确要求一字板 = 封板到收盘。
+            'is_yizi': bool(fbt and fbt <= 93005 and lbt == fbt),
             'industry': '',                                       # THS 无截断行业；题材见 concepts
             'concepts': [x for x in (rtype or '').split('+') if x],
             'reason_info': rinfo,
