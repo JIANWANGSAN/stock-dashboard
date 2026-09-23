@@ -636,7 +636,7 @@
       <div class="card" data-page-node-id="4LDXHmInSblrqZKmH2SbLk">
         <div class="card-title" data-page-node-id="1JCFVjOuTeZMucS3Se0hZz">连板高度梯队 <span class="tag" data-page-node-id="SOrFifQLO9pb3LwuCUnCJ5">逐层级全出线 · 颜色越深板数越高</span></div>
         <div id="echart-ladder" data-page-node-id="UhbxgyC6bJyE7N4TacYG6c"></div>
-        <div class="note" data-page-node-id="ladderNote">每一层板数（6板/5板/4板/3板/2板…）各一条线，当天没有该层就断开 · 图上数字＝该层当日家数 · <b>点/悬浮任意日期</b>看当天各层股票与题材</div>
+        <div class="note" data-page-node-id="ladderNote">每一层板数（6板/5板/4板/3板/2板…）各一条线，颜色越深板数越高 · 当天没有该层的日子<b>折线直接跨过去连上</b>（不画点、不标数字）· 图上数字＝该层当日家数 · <b>点/悬浮任意日期</b>看当天各层股票与题材</div>
       </div>
       <div class="card" data-page-node-id="dtLadderCard">
         <div class="card-title" data-page-node-id="dtLadderTitle">跌停板梯队 <span class="tag" id="dt-note" data-page-node-id="dtNote">—</span></div>
@@ -735,7 +735,7 @@
 const D = window.DASHBOARD_DATA || null;
 const TYPE_BADGE = {'最高标断板节点':'badge-break','突破节点':'badge-burst','穿越节点':'badge-cross'};
 const TYPE_LABEL = {'最高标断板节点':'最高标断板','突破节点':'突破','穿越节点':'穿越'};
-const PAGE_VER = 'v2026.09.23-1';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
+const PAGE_VER = 'v2026.09.23-2';   // 页面版本（显示在页脚，便于确认浏览器是否加载到最新）
 const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const clean = s => (s||'').replace(/\s+/g,'');   // 去股票名内空格
 
@@ -1177,7 +1177,10 @@ function drawLadderChart(el, prevChart, L, cfg){
         const lv=(s.levels||[]).find(v=>v.boards===b);
         return lv ? {value:b, cnt:lv.n, list:lv.list} : null;   // 该日无此层 → 断点
       }),
-      connectNulls:false, symbol:'circle', symbolSize:8,
+      // 🔴 2026-09-23 用户要求：缺层的日子**用折线连起来**（connectNulls:true），
+      //   不再断开。缺层的点本身仍是 data=null → **不画点、不标数字**（该日确实没有这一层），
+      //   只是线段跨过去连接前后两个有该层的交易日，走势连续、看得清台阶起伏。
+      connectNulls:true, symbol:'circle', symbolSize:8,
       lineStyle:{width:2.5,color:LADDER_LEVEL_COLORS[Math.min(i,LADDER_LEVEL_COLORS.length-1)]},
       itemStyle:{color:LADDER_LEVEL_COLORS[Math.min(i,LADDER_LEVEL_COLORS.length-1)]},
       label:{show:true, position:'top', fontSize:11, fontWeight:'bold', color:'#374151',

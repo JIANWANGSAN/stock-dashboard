@@ -402,8 +402,10 @@ async function shoot(page, tag, panel, label, w, h) {
         lastNonNull: lastCounts.filter(v => v !== null).length,
         lastLvN: (last.levels || []).length,
         lastDate: last.date, lastLv: (last.levels || []).map(v => v.boards),
-        // 是否有某层在窗口中间断点（connectNulls 必须 false，断层才可见）
+        // 是否有某层在窗口中间断点（缺层日 data=null → 不画点、不标数字）
         anyNullMid: opt ? opt.series.some(s => s.data.some(v => v === null || v === undefined)) : null,
+        // 🔴 2026-09-23 用户要求：缺层用折线连起来 → connectNulls 必须 **true**
+        connectNulls: opt ? opt.series.every(s => s.connectNulls === true) : null,
         legendCount: opt && opt.legend && opt.legend[0] ? (opt.legend[0].data || []).length : -1,
         // data 层必须仍保留 top/second/cyb（其它代码可能还在读，别删）
         keepOld: Object.prototype.hasOwnProperty.call(last, 'second')
@@ -421,6 +423,7 @@ async function shoot(page, tag, panel, label, w, h) {
     ok(`末条 ${ldr.lastDate} 有点的层级数 == levels 长度（${ldr.lastNonNull} vs ${ldr.lastLvN}）· 缺层应为 null 而非 0`,
        ldr.lastNonNull === ldr.lastLvN);
     ok(`梯队数据仍保留 top/second/*_list（未被误删）`, ldr.keepOld);
+    ok(`梯队图缺层用折线连接（connectNulls=true，全部 series）`, ldr.connectNulls === true);
     // 关键回归：若当前窗口里某日同时有 4板与3板，必须真的出现这两条线
     if (ldr.expLv.includes(4) && ldr.expLv.includes(3)) {
       ok(`窗口内 4板/3板 均已成线（${ldr.names.join('/')}）`,
@@ -428,6 +431,12 @@ async function shoot(page, tag, panel, label, w, h) {
     } else {
       console.log(`  · 窗口层级=${JSON.stringify(ldr.expLv)}（当日实际无 4板或3板，非 bug）`);
     }
+    // 防回归：note 文案里不许出现 Markdown 星号（HTML 不解析，会原样显示成 **文字**）
+    const noteMd = await page.evaluate(() => {
+      const el = document.querySelector('[data-page-node-id="ladderNote"]');
+      return el ? { txt: el.textContent, star: /\*\*/.test(el.innerHTML) } : null;
+    });
+    ok(`梯队 note 文案无 Markdown 星号残留（HTML 不解析 **）`, !!noteMd && !noteMd.star);
 
     // ── 连板候选池「已删」（2026-09-23 用户要求）──
     // ⚠️ 只删**前端展示**；后端 data.candidates 必须照旧全量产出（竞价核对/推荐/模块4兜底都读它）
