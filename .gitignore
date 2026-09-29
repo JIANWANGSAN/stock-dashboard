@@ -1,0 +1,35 @@
+# ---- Python ----
+# 不带斜杠：`.venv` 可能是符号链接，而 `.venv/` 带斜杠只匹配目录，
+# 会让符号链接漏网、被当 gitlink 提交成一条断链。
+.venv
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# ---- 前端 ----
+node_modules
+dist/
+.vite/
+
+# ---- 凭据 / 本机配置 ----
+# LLM 的 key 放在仓库外（见 README「快速开始」）。这里兜底：任何 .env 都不进 git。
+.env
+.env.*
+!.env.example
+
+# ---- 用户数据 ----
+# 复盘结果落在 ~/.duanxian-agents/，不在仓库里。兜底：万一有人把数据目录软链进来。
+.duanxian-agents/
+
+# ---- vr/ 的运行时缓存 ----
+# 资讯雷达抓来的第三方新闻正文，可再生、且是别人的内容。
+# 上游 vr/ 把它写在仓库内（HERE/.cache），只能在这里挡。
+vr/.cache/
+
+# ---- macOS ----
+.DS_Store
+dist-astock/
+.local/
+# Local build artifacts
+packaging/macos/
