@@ -52,6 +52,11 @@ function NodeCard({ n }: { n: NodePoolNode }) {
           {TYPE_LABEL[n.type] || n.type}
         </span>
         <span className="font-mono text-xs text-muted-foreground">{n.date}</span>
+        {n.trigger_yin === true && (
+          <span className="rounded-full bg-emerald-600/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-600">
+            减分
+          </span>
+        )}
         {n.top_related && (
           <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] text-amber-600">当前最高标血统</span>
         )}

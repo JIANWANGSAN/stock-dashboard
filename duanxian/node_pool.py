@@ -195,9 +195,21 @@ def detect_nodes(zt_hist: dict, days: list) -> list:
             tops_today = [s for s in today_pool if s["lbc"] == today_max]
             crossed = [s for s in tops_today
                        if s["code"] in prev_map and prev_map[s["code"]]["lbc"] < s["lbc"]]
-            # 🔴 穿越自己不产生新节点
+            # 🔴 穿越自己不产生新节点 —— 但「自己」指**这轮梯队里该天花板高度的首创者**。
+            #   判法：从昨日往回走，只要当日最高板仍 ≥ max_prev（本轮梯队未塌），就把
+            #   到达过该高度（≥max_prev）的票都记入 ceiling_setters；一塌（<max_prev）即停，
+            #   更早旧周期的高度不算。setters 里除今天最高标外还有别人（新华文轩先到 5 板、
+            #   新华传媒后到再破）→ 是跨别人的旗 → 出穿越节点；只有它自己（华瓷 5→6，
+            #   5 板从头到尾自己爬的）→ 自己往上打，不出。
             prev_top_codes = {s["code"] for s in prev_pool if s["lbc"] == max_prev}
-            self_only = bool(prev_top_codes & top_codes) and len(prev_top_codes) == 1
+            ceiling_setters = set(prev_top_codes)
+            for j in range(i - 1, max(0, i - BREAKOUT_LOOKBACK) - 1, -1):
+                day_pool = zt_hist.get(days[j], [])
+                day_max = max((s["lbc"] for s in day_pool), default=0)
+                if day_max < max_prev:
+                    break  # 本轮梯队在此塌到天花板以下
+                ceiling_setters |= {s["code"] for s in day_pool if s["lbc"] >= max_prev}
+            self_only = bool(ceiling_setters) and ceiling_setters == top_codes
             if crossed and first_boards and not self_only:
                 trig = crossed[0]
                 replaced = [s["code"] for s in prev_pool
@@ -319,6 +331,39 @@ def _annotate_stock(s, today_pool, node_date, days, zt_hist):
 
 
 # ---------------------------------------------------------------- 对外入口
+def _trigger_ohlc(code: str, start: str, end: str, cache_dir: str):
+    """触发票 [start, end] 日K的开/收（腾讯 hist 源，与本仓库其他日K同源）。
+
+    落盘永久缓存（历史事实不会变）。取数失败返回 None —— 上层如实标 unknown，
+    绝不把"取不到"当成"没收阴"。
+    """
+    p = os.path.join(cache_dir, "kline_%s_%s_%s.json" % (code, start, end))
+    if os.path.isfile(p):
+        try:
+            with open(p, encoding="utf-8") as fh:
+                rows = json.load(fh)
+            if isinstance(rows, list):
+                return rows
+        except Exception:  # noqa: BLE001  坏缓存当没缓存
+            pass
+    try:
+        import akshare as ak
+
+        sym = ("sh" if str(code).startswith(("6", "9")) else "sz") + str(code).zfill(6)
+        df = ak.stock_zh_a_hist_tx(symbol=sym, start_date=start.replace("-", ""),
+                                   end_date=end.replace("-", ""))
+        rows = [{"date": str(r["date"]), "open": float(r["open"]), "close": float(r["close"])}
+                for _, r in df.iterrows()] if df is not None and len(df) else []
+    except Exception:  # noqa: BLE001
+        return None
+    try:
+        with open(p, "w", encoding="utf-8") as fh:
+            json.dump(rows, fh, ensure_ascii=False)
+    except Exception:  # noqa: BLE001
+        pass
+    return rows
+
+
 def build_node_pool(end_date: Optional[str] = None, force: bool = False) -> dict:
     """生成节点票池。失败（数据不可用）时返回 available=False，不抛异常。"""
     if not end_date:
@@ -362,6 +407,20 @@ def build_node_pool(end_date: Optional[str] = None, force: bool = False) -> dict
         n["stocks"] = annotated
         n["trigger"] = _annotate_trigger(n.get("trigger"), today_pool)
         nodes.append(n)
+
+    # 触发票在节点日收阴（收<开）→ 该节点减分。取不到日K如实标 None，不当成没收阴。
+    for n in nodes:
+        trig = n.get("trigger") or {}
+        n["trigger_yin"] = None
+        if trig.get("code"):
+            rows = _trigger_ohlc(str(trig["code"]), days[0], end_date, cache_dir)
+            for r in rows or []:
+                if str(r.get("date", "")).replace("-", "") == n["date"].replace("-", ""):
+                    n["trigger_yin"] = bool(r["close"] < r["open"])
+                    break
+        if n["trigger_yin"]:
+            n["penalty"] = "减分"
+            n["desc"] = (n.get("desc") or "") + "｜触发票节点日收阴，减分"
 
     apply_focus(nodes)
 

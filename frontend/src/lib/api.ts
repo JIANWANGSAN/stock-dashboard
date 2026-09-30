@@ -227,6 +227,7 @@ export interface NodePoolNode {
   trigger: NodeTrigger | null; volume_ratio: number | null;
   pool_type: string; stocks: NodePoolStock[]; replaced: string[];
   desc: string; top_related?: boolean;
+  trigger_yin?: boolean | null; penalty?: string;   // 触发票节点日收阴 → 减分
 }
 export interface NodePoolData {
   schema?: number; available: boolean; reason?: string;
