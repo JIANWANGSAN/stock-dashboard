@@ -1,0 +1,19 @@
+{
+  "_comment": "后端 8910，前端 dev 5910（vite 把 /api 全部代理到后端）。日常只跑后端就够——它直接服务 frontend/dist；只有要改前端时才需要 dev server。后端换端口：VIBE_PORT=xxxx，同时改这里和 vite.config.ts 的代理目标。",
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Vibe-Astock 前端",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "5910", "--strictPort"],
+      "cwd": "frontend",
+      "port": 5910
+    },
+    {
+      "name": "Agent 后端",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "exec .venv/bin/python server.py"],
+      "port": 8910
+    }
+  ]
+}

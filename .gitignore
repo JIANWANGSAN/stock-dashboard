@@ -1,50 +1,39 @@
-# Python
+# ---- Python ----
+# 不带斜杠：`.venv` 可能是符号链接，而 `.venv/` 带斜杠只匹配目录，
+# 会让符号链接漏网、被当 gitlink 提交成一条断链。
+.venv
 __pycache__/
-*.pyc
-*.pyo
-.venv/
-venv/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
 
-# 本地工具目录
-.workbuddy/
+# ---- 前端 ----
+node_modules
+dist/
+.vite/
 
-# 视觉验收截图（`_shot.js` 的产物，可随时重跑，不入库）
-.shots/
+# ---- 凭据 / 本机配置 ----
+# LLM 的 key 放在仓库外（见 README「快速开始」）。这里兜底：任何 .env 都不进 git。
+.env
+.env.*
+!.env.example
 
-# 运行期缓存（可自动重建，不必入库）
-.seal_cache.json
-.stock_cache.json
-.module4_kline_cache.json
-.mx_members_cache.json
+# ---- 用户数据 ----
+# 复盘结果落在 ~/.duanxian-agents/，不在仓库里。兜底：万一有人把数据目录软链进来。
+.duanxian-agents/
 
-# 体积大且可重建的中间产物
-review_dump.json
+# ---- vr/ 的运行时缓存 ----
+# 资讯雷达抓来的第三方新闻正文，可再生、且是别人的内容。
+# 上游 vr/ 把它写在仓库内（HERE/.cache），只能在这里挡。
+vr/.cache/
 
-# 自动化跑复盘时落盘的临时中间文件与当次复盘草稿
-#   —— 规则：下划线开头的 .py/.json 一律视为当次临时产物，不入库
-#   —— 例外：_tags_dump.py 是盘后复盘 B 段的**正式工具**（给涨停/炸板/跌停池补概念标签），必须入库
-_*.py
-!_tags_dump.py
-_*.json
-_*.html
-_review_today.md
-
-# ⚠️ 备份/临时产物：下划线开头的 .js 是**正式文件**（_shot.js / _smoke_init.js）不能整类忽略，
-#    所以这里显式排除临时备份类。2026-09-22 事故：临时备份 `_bak_data.js` 被 15:35 备份任务
-#    的 `git add -A` 一并提交进公开仓库 → 临时文件请一律放**系统临时目录**，别留在项目根目录。
-_bak_*
-_tmp_*
-_tmp*
-_*_bak.*
-
-# 验证脚本的日志输出（_shot.log / _smoke.log / _fetch.log），每次重跑都会覆盖，不入库
-_chk.js
-_*.log
-
-# 系统
+# ---- macOS ----
 .DS_Store
-Thumbs.db
+dist-astock/
+.local/
+# Local build artifacts
+packaging/macos/
 
-# 自我改进 skill 的本地学习日志（self-improving-agent）
-#   默认保持 per-developer、不入库（可能含上下文噪声；要团队共享再放开）
-.learnings/
+# 云托管访问密钥（随沙箱上传，不进 git）
+va_auth.key
+start_cloud.sh

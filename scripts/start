@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+for PY in "$ROOT/.venv/bin/python" python3.12 python3.11 python3; do
+  if "$PY" -c 'import sys; sys.exit(sys.version_info < (3,10))' >/dev/null 2>&1; then
+    exec "$PY" "$ROOT/scripts/manage.py" start "$@"
+  fi
+done
+printf '%s\n' '请先安装 Python 3.10 或更高版本（推荐 3.12），再重新打开启动器。' >&2
+exit 1
