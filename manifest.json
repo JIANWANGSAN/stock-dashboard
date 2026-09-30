@@ -1,0 +1,19 @@
+{
+  "name": "A股短线仪表盘",
+  "short_name": "A股仪表盘",
+  "description": "A股短线复盘：连板梯队、节点票池、题材轮动、次日推荐",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f6fa",
+  "theme_color": "#1f2937",
+  "icons": [
+    {
+      "src": "dashboard_icon.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
