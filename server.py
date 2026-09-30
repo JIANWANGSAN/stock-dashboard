@@ -421,6 +421,26 @@ def _capture_backtest_corpus(date: str) -> None:
         print(f"⚠️ 回测语料捕获异常：{type(exc).__name__}: {exc}")
 
 
+def _refresh_node_pool(date: str) -> None:
+    """收盘定稿后强制重算节点票池（force 越过缓存）。
+
+    ⚠️ 节点票池原本只在**打开页面**时按需计算（当日缓存 5 分钟新鲜、往日 24 小时
+    新鲜）—— 盘中打开页面算出的盘中版会被缓存住，收盘后看不到新节点。挂在复盘
+    完成之后（收盘后必然触发一次），节点页就不再依赖「有人打开才更新」。
+    失败只记日志，绝不影响复盘本身。
+    """
+    try:
+        from duanxian.node_pool import build_node_pool
+
+        r = build_node_pool(date, force=True)
+        if r.get("available"):
+            print(f"✅ 节点票池已重算（end={r.get('end_date')}，{r.get('node_count')} 个节点）")
+        else:
+            print(f"⚠️ 节点票池重算不可用：{r.get('reason')}")
+    except Exception as exc:  # noqa: BLE001
+        print(f"⚠️ 节点票池重算异常：{type(exc).__name__}: {exc}")
+
+
 def _run_review(date: str, job_id: str) -> None:
     try:
         # 先体检输入 —— 核心数据取不到就别跑。喂空数据进去，模型会硬凑出
@@ -441,6 +461,7 @@ def _run_review(date: str, job_id: str) -> None:
         _capture_theme_reasons()     # 题材串同理（问财只给最近交易日）
         _capture_archive(date)           # 原始数据永久归档（零额外请求，走已有缓存）
         _capture_backtest_corpus(date)   # 复盘写完再囤语料，失败也不影响已产出的复盘
+        _refresh_node_pool(date)         # 收盘后强制重算节点票池（force 越过缓存），失败不影响复盘
     except Exception as exc:  # noqa: BLE001
         with _lock:
             if _job["job_id"] == job_id:

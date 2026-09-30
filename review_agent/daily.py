@@ -294,6 +294,18 @@ class Daily:
             post = capture_bounded(date, check=check)
             atomic_write(str(directory / "post_review.json"), post)
             incomplete = [name for name, result in post.items() if not result.get("ok")]
+            # 收盘定稿后强制重算节点票池（force 越过缓存），节点页不依赖「有人打开才更新」；
+            # 失败只记日志，绝不影响已保存的复盘。
+            try:
+                from duanxian.node_pool import build_node_pool
+
+                r = build_node_pool(date, force=True)
+                if r.get("available"):
+                    print(f"✅ 节点票池已重算（end={r.get('end_date')}，{r.get('node_count')} 个节点）")
+                else:
+                    print(f"⚠️ 节点票池重算不可用：{r.get('reason')}")
+            except Exception as exc:  # noqa: BLE001
+                print(f"⚠️ 节点票池重算异常：{type(exc).__name__}: {exc}")
             self._finish(running=False, status="complete", stage="复盘已保存", error=None,
                          state_warning=("后续归档/核验未完成：" + "、".join(incomplete)) if incomplete else None)
         except (EvidenceError, LlmConfigError) as exc:
