@@ -20,6 +20,7 @@ from urllib.parse import urlparse
 from fastapi import Body, FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware import Middleware
 
 from duanxian import live_emotion, overseas, preflight, reflection, review_store, trade_calendar
 from duanxian.review_store import md_to_html as _md_to_html, strip_prefix as _strip_prefix
@@ -1707,6 +1708,58 @@ def _mount_static() -> None:
         print(f"ℹ️ 未找到前端构建产物（{_DIST}）。请先执行："
               f"cd frontend && npm install && npm run build")
         return
+
+    #⛔ 本地/自用部署必须禁缓存：dist 里是带hash 的**同路径覆盖**文件，
+    # 若响应头没有 Cache-Control，浏览器会在重新 npm run build 之后
+    # 继续用启发式缓存的旧 bundle→「代码改了页面没变」的最难查根因。
+    # 实现要点（两条都踩过，别改回去）：
+    # 1) 用**纯 ASGI 中间件**，不要用 @app.middleware("http")。后者基于
+    #    BaseHTTPMiddleware，会重包一层响应，headers 修改实测不落到最终响应。
+    # 2) 不要覆写 StaticFiles.file_response —— Starlette 1.7 不走该方法，静默失效。
+    _STATIC_EXT = (".html", ".js", ".css", ".json", ".svg", ".png", ".jpg",
+                   ".jpeg", ".gif", ".ico", ".webp", ".woff", ".woff2", ".webmanifest")
+
+    class _NoStoreMiddleware:
+        """给静态资源响应追加禁缓存头（只改 header，不动 body）。"""
+
+        def __init__(self, app):
+            self.app = app
+
+        async def __call__(self, scope, receive, send):
+            if scope.get("type") != "http":
+                await self.app(scope, receive, send)
+                return
+            path = scope.get("path", "")
+            # ⚠️ SPA 根路径是 "/"（**不以 .html 结尾**），恰恰是浏览器最常缓存、
+            # 且唯一指向「当前 bundle hash」的那一个 —— 只判后缀会漏掉它。
+            # 无后缀的一律当静态资源处理（/api/ 与 /assets 已分别排除）。
+            is_api = path.startswith("/api")
+            is_static = (
+                path.startswith("/assets")
+                or (not is_api and "." not in path.rsplit("/", 1)[-1])
+                or path.endswith(_STATIC_EXT)
+            )
+            if not is_static:
+                await self.app(scope, receive, send)
+                return
+            _DROP = (b"cache-control", b"etag", b"last-modified", b"expires")
+
+            async def send_wrapper(message):
+                if message.get("type") == "http.response.start":
+                    headers = [(k, v) for k, v in message.get("headers", [])
+                               if k.lower() not in _DROP]
+                    headers.append((b"cache-control", b"no-store, no-cache, must-revalidate"))
+                    headers.append((b"pragma", b"no-cache"))
+                    headers.append((b"expires", b"0"))
+                    message["headers"] = headers
+                await send(message)
+
+            await self.app(scope, receive, send_wrapper)
+
+    #插到最外层（index 0），并把已构建的 middleware_stack 置空强制重建
+    app.user_middleware.insert(0, Middleware(_NoStoreMiddleware))
+    app.middleware_stack = None
+
     app.mount("/assets", StaticFiles(directory=os.path.join(_DIST, "assets")),
               name="assets")
 
@@ -1718,6 +1771,8 @@ def _mount_static() -> None:
         candidate = safe_join(_DIST, full_path) if full_path else None
         if candidate and os.path.isfile(candidate):
             return FileResponse(candidate)
+        # index.html 尤其不能缓存：它是唯一指向「当前 bundle hash」的地方，
+        # 缓存住它 = 页面永远停在旧 bundle（禁缓存头见上面的 _no_store_static）。
         return FileResponse(os.path.join(_DIST, "index.html"))
 
     print(f"✓ React 构建产物已挂载（{_DIST}）")

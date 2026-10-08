@@ -27,13 +27,14 @@ const UP = "#e11d48";
 const DOWN = "#059669";
 
 /** 触发票与节点票共有的属性 → 高亮（这是「同源信号」，不是推荐）。 */
-type Shared = { pinyin?: boolean; region?: boolean; concepts?: Set<string> };
+type Shared = { pinyin?: boolean; region?: boolean; industry?: boolean; concepts?: Set<string> };
 
 function sharedWith(trigger: NodePoolNode["trigger"], s: NodePoolStock): Shared {
   const out: Shared = { concepts: new Set<string>() };
   if (!trigger) return out;
   if (s.pinyin && trigger.pinyin && s.pinyin === trigger.pinyin) out.pinyin = true;
   if (s.region && trigger.region && s.region === trigger.region) out.region = true;
+  if (s.industry && trigger.industry && s.industry === trigger.industry) out.industry = true;
   const tset = new Set(trigger.concepts ?? []);
   for (const c of s.concepts ?? []) if (tset.has(c)) out.concepts!.add(c);
   return out;
@@ -55,20 +56,24 @@ function Tag({ text, hit, title }: { text: string; hit?: boolean; title?: string
   );
 }
 
-/** 缩写 / 地域 / 概念 三件套，命中触发票同名属性时高亮（琥珀）。 */
-function TagGroup({ sh, pinyin, region, concepts, forceHit }: {
-  sh?: Shared; pinyin?: string; region?: string; concepts?: string[]; forceHit?: boolean;
+/** 缩写 / 地域 / 行业 / 概念 四件套，命中触发票同名属性时高亮（琥珀）。 */
+function TagGroup({ sh, pinyin, region, industry, concepts, forceHit }: {
+  sh?: Shared; pinyin?: string; region?: string; industry?: string; concepts?: string[]; forceHit?: boolean;
 }) {
   const list = concepts ?? [];
   const hit = (k: string) => forceHit || !!sh?.concepts?.has(k);
+  const any = !!(pinyin || region || industry || list.length);
   return (
     <span className="flex flex-wrap items-center gap-1">
       {pinyin && <Tag text={pinyin} hit={forceHit || sh?.pinyin} title="拼音缩写" />}
       {region && <Tag text={region} hit={forceHit || sh?.region} title="所属地域" />}
+      {industry && (
+        <Tag text={industry} hit={forceHit || sh?.industry} title="所属行业" />
+      )}
       {list.map((c) => (
         <Tag key={c} text={c} hit={hit(c)} title="所属概念" />
       ))}
-      {!pinyin && !region && !list.length && (
+      {!any && (
         <span className="text-xs text-muted-foreground/50">无标签</span>
       )}
     </span>
@@ -242,7 +247,13 @@ function StockRow({ s, sh, onPick }: { s: NodePoolStock; sh: Shared; onPick: () 
           {s.is_yizi && (
             <span className="whitespace-nowrap rounded bg-rose-500/15 px-1 text-[10px] text-rose-500">一字</span>
           )}
-          <TagGroup sh={sh} pinyin={s.pinyin} region={s.region} concepts={s.concepts} />
+          <TagGroup
+            sh={sh}
+            pinyin={s.pinyin}
+            region={s.region}
+            industry={s.industry}
+            concepts={s.concepts}
+          />
         </div>
       </td>
       <td className="px-2 py-1.5 font-mono">{s.boards}板</td>
@@ -290,7 +301,13 @@ function NodeCard({ n, onPick }: { n: NodePoolNode; onPick: (code: string, name:
               {trig.is_yizi && (
                 <span className="whitespace-nowrap rounded bg-rose-500/15 px-1 text-[10px] text-rose-500">一字</span>
               )}
-              <TagGroup pinyin={trig.pinyin} region={trig.region} concepts={trig.concepts} forceHit />
+              <TagGroup
+                pinyin={trig.pinyin}
+                region={trig.region}
+                industry={trig.industry}
+                concepts={trig.concepts}
+                forceHit
+              />
             </span>
           </span>
         )}
