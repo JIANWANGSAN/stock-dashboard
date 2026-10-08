@@ -292,18 +292,43 @@ function executableDirs(env: NodeJS.ProcessEnv, platform: NodeJS.Platform): stri
 export function workBuddyCliCandidates(
   env: NodeJS.ProcessEnv = process.env, platform: NodeJS.Platform = process.platform,
 ): string[] {
+  //⛔ 自定义安装目录（中文/非 C 盘）必须支持：
+  // WorkBuddy 可以装到任意盘（如 D:\软件\WorkBuddy），而下面的官方布局候选
+  // 只覆盖 C 盘的两个默认位置 → CLI明明装着却报「未安装」。
+  // 优先级：显式 env > 各盘默认根目录。
+  const explicit = [env.WORKBUDDY_HOME, env.WORKBUDDY_INSTALL_DIR]
+    .map((v) => String(v ?? "").trim())
+    .filter(Boolean);
+
   if (platform === "darwin") {
     return [
+      ...explicit.map((root) => path.join(root, "Contents", "Resources", "app.asar.unpacked", "cli", "bin", "codebuddy")),
+      ...explicit.map((root) => path.join(root, "resources", "app.asar.unpacked", "cli", "bin", "codebuddy")),
       "/Applications/WorkBuddy.app/Contents/Resources/app.asar.unpacked/cli/bin/codebuddy",
       path.join(String(env.HOME || os.homedir()), "Applications/WorkBuddy.app/Contents/Resources/app.asar.unpacked/cli/bin/codebuddy"),
     ];
   }
-  if (platform !== "win32") return [];
+  if (platform !== "win32") {
+    // Linux/其他：也尊重显式 env
+    return explicit.map((root) => path.join(root, "resources", "app.asar.unpacked", "cli", "bin", "codebuddy"));
+  }
   const p = path.win32;
   const roots = [
+    ...explicit,
     env.LOCALAPPDATA ? p.join(env.LOCALAPPDATA, "Programs", "WorkBuddy") : "",
     env.ProgramFiles ? p.join(env.ProgramFiles, "WorkBuddy") : "C:\\Program Files\\WorkBuddy",
     env["ProgramFiles(x86)"] ? p.join(env["ProgramFiles(x86)"]!, "WorkBuddy") : "C:\\Program Files (x86)\\WorkBuddy",
+    // 非 C 盘安装：WorkBuddy 常装在 D:\软件\WorkBuddy 这类路径下。
+    // 盘符从**运行本桥的 node 可执行文件所在盘**推断（CLI 与 WorkBuddy 同盘），
+    // 再补 D/E/F 常见盘。注意：这是 ESM，**不能用 __filename/__dirname**（未定义会直接抛错）。
+    ...[process.execPath]
+      .map((exe) => p.parse(exe).root)
+      .filter(Boolean)
+      .flatMap((drive: string) => [p.join(drive, "软件", "WorkBuddy"), p.join(drive, "WorkBuddy")]),
+    ...["D:", "E:", "F:"].flatMap((d) => [
+      p.join(d + "\\", "软件", "WorkBuddy"),
+      p.join(d + "\\", "WorkBuddy"),
+    ]),
   ].filter(Boolean);
   return [...new Set(roots)].flatMap((root) => {
     const binDir = p.join(root, "resources", "app.asar.unpacked", "cli", "bin");

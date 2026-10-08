@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import datetime
+import json
 import logging
+import re
 import threading
 from typing import Optional
 
@@ -12,10 +14,72 @@ logger = logging.getLogger(__name__)
 from .util import china_now, china_today, is_a_share_closed, is_weekend
 
 _REF_STOCK = "sh600000"  # 浦发银行，流动性好、每个交易日都有，用来取真实交易日序列
+_THS_INDEX_URL = "https://d.10jqka.com.cn/v6/line/zs_1A0001/01/last.js"  # 同花顺上证指数日K
+_THS_ENVELOPE = re.compile(r'quotebridge_v6_line_zs_1A0001_01_last\((\{.*\})\);?\s*', re.S)
 
 
-def _ref_dates(start: str, end: str) -> list[str]:
-    """参考股在 [start, end] 区间内的真实交易日（升序，YYYY-MM-DD）。失败返回空表。"""
+def _ths_index_dates() -> list[str]:
+    """同花顺上证指数日K 里的真实交易日（升序，YYYY-MM-DD）。失败返回空表。
+
+    ⛔ 排第一的原因：akshare 的腾讯日K（``_ref_tencent_dates``）在长假后会**卡在
+    假期前最后一个交易日不更新**（实测 2026-10-08 仍只到 09-30），导致交易日历把
+    10-01~10-08 全当假期、节点/复盘窗口看不到当天。同花顺指数日K 盘后即更新，
+    当天定稿后能立刻看到，是这里更可靠的主源。固定 JSONP 信封、只解析日期列，
+    不执行任何远端 JS。
+    """
+    try:
+        from . import fetchers as dr
+
+        response = dr._direct_get(
+            _THS_INDEX_URL,
+            headers={"User-Agent": "Mozilla/5.0", "Referer": "https://stockpage.10jqka.com.cn/"},
+            timeout=12,
+        )
+        response.raise_for_status()
+        match = _THS_ENVELOPE.fullmatch(response.text)
+        if not match:
+            return []
+        data = json.loads(match.group(1)).get("data", "")
+        dates = []
+        for line in data.split(";"):
+            token = line.split(",")[0].strip() if line else ""
+            if re.fullmatch(r"\d{8}", token):
+                dates.append(f"{token[:4]}-{token[4:6]}-{token[6:8]}")
+        return sorted(set(dates))
+    except Exception:  # noqa: BLE001 取不到就取不到，交给下一档源
+        return []
+
+
+# 交易日序列在一天里只变几次（盘后定稿 / 假期切换），60 秒 TTL 足够，
+# 避免 next/prev/last/ending_at 一条链路上重复打同一批网络请求。
+_THS_TTL = 60.0
+_ths_cache: dict[str, object] = {}   # {"at": 单调时钟, "dates": [...]}
+_ths_lock = threading.Lock()
+
+
+def _ths_index_dates_cached() -> list[str]:
+    import time as _time
+
+    now = _time.monotonic()
+    at = _ths_cache.get("at")
+    if isinstance(at, float) and now - at < _THS_TTL:
+        cached = _ths_cache.get("dates")
+        return list(cached) if isinstance(cached, list) else []
+    with _ths_lock:
+        now = _time.monotonic()
+        at = _ths_cache.get("at")
+        if isinstance(at, float) and now - at < _THS_TTL:
+            cached = _ths_cache.get("dates")
+            return list(cached) if isinstance(cached, list) else []
+        dates = _ths_index_dates()
+        if dates:   # 空结果不入缓存，源抖动时立刻能重试
+            _ths_cache.clear()
+            _ths_cache.update({"at": now, "dates": list(dates)})
+        return dates
+
+
+def _tencent_ref_dates(start: str, end: str) -> list[str]:
+    """akshare 腾讯日K 参考股在 [start, end] 内的交易日（升序）。失败返回空表。"""
     try:
         import akshare as ak
 
@@ -27,6 +91,18 @@ def _ref_dates(start: str, end: str) -> list[str]:
         return sorted(str(x) for x in df["date"])
     except Exception:
         return []
+
+
+def _ref_dates(start: str, end: str) -> list[str]:
+    """参考交易日序列（升序，YYYY-MM-DD）。多源合并去重，失败返回空表。
+
+    同花顺指数日K 为主源（覆盖到当天，见 ``_ths_index_dates`` 注释），腾讯日K 兜底
+    历史区间；两源取并集后按区间过滤，任一源失效不致命。
+    """
+    dates = set(_ths_index_dates_cached()) | set(_tencent_ref_dates(start, end))
+    if not dates:
+        return []
+    return sorted(d for d in dates if start <= d <= end)
 
 
 def next_trade_date(date: str) -> Optional[str]:
