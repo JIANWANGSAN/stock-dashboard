@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, AlertCircle, RefreshCw, LineChart } from "lucide-react";
+import { Loader2, AlertCircle, RefreshCw, X } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Disclaimer } from "@/components/ui/Disclaimer";
@@ -55,14 +55,22 @@ function Tag({ text, hit, title }: { text: string; hit?: boolean; title?: string
   );
 }
 
-function TriggerTags({ trig, title }: { trig: NonNullable<NodePoolNode["trigger"]>; title?: string }) {
+/** 缩写 / 地域 / 概念 三件套，命中触发票同名属性时高亮（琥珀）。 */
+function TagGroup({ sh, pinyin, region, concepts, forceHit }: {
+  sh?: Shared; pinyin?: string; region?: string; concepts?: string[]; forceHit?: boolean;
+}) {
+  const list = concepts ?? [];
+  const hit = (k: string) => forceHit || !!sh?.concepts?.has(k);
   return (
-    <span className="inline-flex flex-wrap items-center gap-1">
-      {trig.pinyin && <Tag text={trig.pinyin} hit title={`${title ?? "拼音缩写"}（与下方高亮票同名）`} />}
-      {trig.region && <Tag text={trig.region} hit title="所属地域" />}
-      {(trig.concepts ?? []).map((c) => (
-        <Tag key={c} text={c} hit title="所属概念" />
+    <span className="flex flex-wrap items-center gap-1">
+      {pinyin && <Tag text={pinyin} hit={forceHit || sh?.pinyin} title="拼音缩写" />}
+      {region && <Tag text={region} hit={forceHit || sh?.region} title="所属地域" />}
+      {list.map((c) => (
+        <Tag key={c} text={c} hit={hit(c)} title="所属概念" />
       ))}
+      {!pinyin && !region && !list.length && (
+        <span className="text-xs text-muted-foreground/50">无标签</span>
+      )}
     </span>
   );
 }
@@ -147,12 +155,22 @@ function KlineDialog({ code, name, onClose }: { code: string; name: string; onCl
                   {chg >= 0 ? "+" : ""}{chg.toFixed(2)}%
                 </span>
               )}
-              <span className="ml-auto text-xs text-muted-foreground">
-                {data?.days ?? rows.length} 个交易日 · 腾讯日K源
-              </span>
             </>
           )}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="关闭日K"
+            className="ml-auto inline-flex h-7 w-7 items-center justify-center rounded-lg border border-border/70 text-muted-foreground transition hover:border-primary/60 hover:text-primary"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
+        {last && (
+          <p className="-mt-2 mb-2 text-xs text-muted-foreground">
+            {data?.days ?? rows.length} 个交易日 · 腾讯日K源
+          </p>
+        )}
 
         {!data && !err && (
           <div className="flex items-center gap-2 py-10 text-sm text-muted-foreground">
@@ -210,19 +228,22 @@ function StockRow({ s, sh, onPick }: { s: NodePoolStock; sh: Shared; onPick: () 
   const st = STATUS_STYLE[s.status] || STATUS_STYLE["首板"];
   return (
     <tr className="border-b border-border/30">
-      <td className="whitespace-nowrap px-2 py-1.5">
-        <button
-          type="button"
-          onClick={onPick}
-          title={`查看 ${s.name} 日K`}
-          className="font-medium underline-offset-2 hover:text-primary hover:underline"
-        >
-          {s.name}
-        </button>{" "}
-        <span className="text-xs text-muted-foreground/50">{s.code}</span>
-        {s.is_yizi && (
-          <span className="ml-1 rounded bg-rose-500/15 px-1 text-[10px] text-rose-500">一字</span>
-        )}
+      <td className="px-2 py-1.5">
+        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+          <button
+            type="button"
+            onClick={onPick}
+            title={`查看 ${s.name} 日K`}
+            className="whitespace-nowrap font-medium underline-offset-2 hover:text-primary hover:underline"
+          >
+            {s.name}
+          </button>
+          <span className="whitespace-nowrap text-xs text-muted-foreground/50">{s.code}</span>
+          {s.is_yizi && (
+            <span className="whitespace-nowrap rounded bg-rose-500/15 px-1 text-[10px] text-rose-500">一字</span>
+          )}
+          <TagGroup sh={sh} pinyin={s.pinyin} region={s.region} concepts={s.concepts} />
+        </div>
       </td>
       <td className="px-2 py-1.5 font-mono">{s.boards}板</td>
       <td className="px-2 py-1.5">
@@ -230,16 +251,6 @@ function StockRow({ s, sh, onPick }: { s: NodePoolStock; sh: Shared; onPick: () 
       </td>
       <td className="whitespace-nowrap px-2 py-1.5 font-mono text-muted-foreground">{yi(s.total_cap_yi)}</td>
       <td className="whitespace-nowrap px-2 py-1.5 font-mono text-muted-foreground">{s.first_seal || "—"}</td>
-      <td className="px-2 py-1.5">
-        <span className="flex flex-wrap items-center gap-1">
-          {s.pinyin && <Tag text={s.pinyin} hit={sh.pinyin} title="拼音缩写（点击股票名看日K）" />}
-          {s.region && <Tag text={s.region} hit={sh.region} title="所属地域" />}
-          {(s.concepts ?? []).map((c) => (
-            <Tag key={c} text={c} hit={sh.concepts!.has(c)} title="所属概念" />
-          ))}
-          {!s.pinyin && !s.region && !(s.concepts ?? []).length && <span className="text-xs text-muted-foreground/50">—</span>}
-        </span>
-      </td>
     </tr>
   );
 }
@@ -262,23 +273,25 @@ function NodeCard({ n, onPick }: { n: NodePoolNode; onPick: (code: string, name:
           <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] text-amber-600">当前最高标血统</span>
         )}
         {trig && (
-          <span className="ml-auto flex flex-wrap items-center gap-2 text-sm">
-            <button
-              type="button"
-              onClick={() => onPick(trig.code, trig.name)}
-              title={`查看 ${trig.name} 日K`}
-              className="inline-flex items-center gap-1 font-medium underline-offset-2 hover:text-primary hover:underline"
-            >
-              <LineChart className="h-3.5 w-3.5" />{trig.name}
-            </button>
-            <span className="text-xs text-muted-foreground/60">{trig.code}</span>
-            {typeof trig.today_lbc === "number" && (
-              <span className="text-xs text-muted-foreground">今日 {trig.today_lbc}板</span>
-            )}
-            {trig.is_yizi && (
-              <span className="rounded bg-rose-500/15 px-1 text-[10px] text-rose-500">一字</span>
-            )}
-            <TriggerTags trig={trig} title="触发票拼音缩写" />
+          <span className="ml-auto flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+            <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+              <button
+                type="button"
+                onClick={() => onPick(trig.code, trig.name)}
+                title={`查看 ${trig.name} 日K`}
+                className="whitespace-nowrap font-medium underline-offset-2 hover:text-primary hover:underline"
+              >
+                {trig.name}
+              </button>
+              <span className="whitespace-nowrap text-xs text-muted-foreground/60">{trig.code}</span>
+              {typeof trig.today_lbc === "number" && (
+                <span className="whitespace-nowrap text-xs text-muted-foreground">今日 {trig.today_lbc}板</span>
+              )}
+              {trig.is_yizi && (
+                <span className="whitespace-nowrap rounded bg-rose-500/15 px-1 text-[10px] text-rose-500">一字</span>
+              )}
+              <TagGroup pinyin={trig.pinyin} region={trig.region} concepts={trig.concepts} forceHit />
+            </span>
           </span>
         )}
       </div>
@@ -298,12 +311,11 @@ function NodeCard({ n, onPick }: { n: NodePoolNode; onPick: (code: string, name:
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border/50 text-left text-xs text-muted-foreground">
-              <th className="px-2 py-1.5 font-medium">名称</th>
+              <th className="px-2 py-1.5 font-medium">名称 / 缩写 · 地域 · 概念</th>
               <th className="px-2 py-1.5 font-medium">连板</th>
               <th className="px-2 py-1.5 font-medium">状态</th>
               <th className="px-2 py-1.5 font-medium">市值</th>
               <th className="px-2 py-1.5 font-medium">首封</th>
-              <th className="px-2 py-1.5 font-medium">缩写 / 地域 / 概念</th>
             </tr>
           </thead>
           <tbody>
