@@ -27,16 +27,28 @@ const UP = "#e11d48";
 const DOWN = "#059669";
 
 /** 触发票与节点票共有的属性 → 高亮（这是「同源信号」，不是推荐）。 */
-type Shared = { pinyin?: boolean; region?: boolean; industry?: boolean; concepts?: Set<string> };
+type Shared = {
+  /** 缩写里与触发票**共有的字母集合**（逐字母高亮，不是整块）。 */
+  pinyinChars?: Set<string>;
+  region?: boolean;
+  industry?: boolean;
+  concepts?: Set<string>;
+};
 
 function sharedWith(trigger: NodePoolNode["trigger"], s: NodePoolStock): Shared {
   const out: Shared = { concepts: new Set<string>() };
   if (!trigger) return out;
-  if (s.pinyin && trigger.pinyin && s.pinyin === trigger.pinyin) out.pinyin = true;
+  // 缩写：逐字母求交集（大小写无关），交集非空才高亮对应字母
+  if (s.pinyin && trigger.pinyin) {
+    const tset = new Set(trigger.pinyin.toUpperCase());
+    const common = new Set<string>();
+    for (const ch of s.pinyin.toUpperCase()) if (tset.has(ch)) common.add(ch);
+    if (common.size) out.pinyinChars = common;
+  }
   if (s.region && trigger.region && s.region === trigger.region) out.region = true;
   if (s.industry && trigger.industry && s.industry === trigger.industry) out.industry = true;
-  const tset = new Set(trigger.concepts ?? []);
-  for (const c of s.concepts ?? []) if (tset.has(c)) out.concepts!.add(c);
+  const tc = new Set(trigger.concepts ?? []);
+  for (const c of s.concepts ?? []) if (tc.has(c)) out.concepts!.add(c);
   return out;
 }
 
@@ -56,6 +68,48 @@ function Tag({ text, hit, title }: { text: string; hit?: boolean; title?: string
   );
 }
 
+/**
+ * 拼音缩写徽标：**与触发票缩写共有的字母逐字高亮**（琥珀底+加粗），
+ * 其余字母保持灰底。整块缩写相同的情况自然全字母高亮，无需另判。
+ */
+function PinyinTag({ text, common, self }: { text: string; common?: Set<string>; self?: boolean }) {
+  // self=触发票自身：整块高亮（它就是基准）
+  if (self) {
+    return (
+      <span
+        title="拼音缩写（触发票）"
+        className="rounded border border-amber-500/60 bg-amber-500/15 px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wide text-amber-600"
+      >
+        {text}
+      </span>
+    );
+  }
+  const upper = new Set(text.toUpperCase());
+  const hasCommon = !!common && common.size > 0;
+  return (
+    <span
+      title={
+        hasCommon
+          ? `拼音缩写，与触发票共有字母：${[...common!].sort().join("")}`
+          : "拼音缩写"
+      }
+      className="rounded border border-border/60 bg-muted/30 px-1.5 py-0.5 font-mono text-[10px] tracking-wide"
+    >
+      {[...text].map((ch, i) => {
+        const on = hasCommon && upper.has(ch.toUpperCase()) && common!.has(ch.toUpperCase());
+        return (
+          <span
+            key={`${ch}-${i}`}
+            className={on ? "rounded bg-amber-500/30 font-bold text-amber-700" : "text-muted-foreground/70"}
+          >
+            {ch}
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
 /** 缩写 / 地域 / 行业 / 概念 四件套，命中触发票同名属性时高亮（琥珀）。 */
 function TagGroup({ sh, pinyin, region, industry, concepts, forceHit }: {
   sh?: Shared; pinyin?: string; region?: string; industry?: string; concepts?: string[]; forceHit?: boolean;
@@ -65,7 +119,7 @@ function TagGroup({ sh, pinyin, region, industry, concepts, forceHit }: {
   const any = !!(pinyin || region || industry || list.length);
   return (
     <span className="flex flex-wrap items-center gap-1">
-      {pinyin && <Tag text={pinyin} hit={forceHit || sh?.pinyin} title="拼音缩写" />}
+      {pinyin && <PinyinTag text={pinyin} common={sh?.pinyinChars} self={forceHit} />}
       {region && <Tag text={region} hit={forceHit || sh?.region} title="所属地域" />}
       {industry && (
         <Tag text={industry} hit={forceHit || sh?.industry} title="所属行业" />
@@ -321,7 +375,7 @@ function NodeCard({ n, onPick }: { n: NodePoolNode; onPick: (code: string, name:
         </p>
       )}
       <p className="mb-1.5 text-[11px] text-muted-foreground/70">
-        缩写/地域/概念与触发票相同者已高亮（琥珀）· 点击股票名看日K
+        缩写里与触发票<strong className="font-semibold text-amber-600">共有的字母</strong>逐字高亮（琥珀）· 地域/行业/概念相同者整块高亮 · 点击股票名看日K
         {!!n.broken_hidden && `　已隐藏已断板 ${n.broken_hidden} 只`}
       </p>
       <div className="overflow-x-auto">
@@ -374,7 +428,7 @@ export function NodePool() {
     <div>
       <PageHeader
         title="节点票池"
-        subtitle="三类节点（最高标断板 / 突破 / 穿越）检测 + 当前最高标聚焦 · 已断板不显示 · 缩写/地域/概念与触发票同源者高亮 · 点击股票名看日K"
+        subtitle="三类节点（最高标断板 / 突破 / 穿越）检测 + 当前最高标聚焦 · 已断板不显示 · 缩写共有字母/相同地域·行业·概念高亮 · 点击股票名看日K"
         actions={
           <button
             type="button"
