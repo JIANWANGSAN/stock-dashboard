@@ -209,14 +209,20 @@ export interface FirstBoardData {
 }
 
 // 节点票池：三类节点（最高标断板 / 突破 / 穿越）检测 + 当前最高标聚焦
-export interface NodePoolStock {
+export interface StockTags {
+  pinyin?: string;         // 拼音缩写（新华传媒 → XHCM）
+  region?: string;         // 所属地域
+  industry?: string;       // 所属申万行业
+  concepts?: string[];     // 所属概念（题材）
+}
+export interface NodePoolStock extends StockTags {
   code: string; name: string;
   lbc: number; boards: number; status: string;
   amount_yi: number | null; total_cap_yi: number | null;
   sector: string; is_yizi: boolean;
   first_seal: string | null; last_seal: string | null;
 }
-export interface NodeTrigger {
+export interface NodeTrigger extends StockTags {
   code: string; name: string; lbc: number;
   today_lbc?: number; amount?: number | null; amount_yi?: number | null;
   total_cap?: number | null; total_cap_yi?: number | null;
@@ -228,12 +234,21 @@ export interface NodePoolNode {
   pool_type: string; stocks: NodePoolStock[]; replaced: string[];
   desc: string; top_related?: boolean;
   trigger_yin?: boolean | null; penalty?: string;   // 触发票节点日收阴 → 减分
+  broken_hidden?: number;                           // 因已断板被隐藏的票数
 }
 export interface NodePoolData {
   schema?: number; available: boolean; reason?: string;
   end_date: string | null; window_days?: number; node_count?: number;
   cap_limit_yi?: number; keep_days?: number;
   nodes: NodePoolNode[]; meta?: Record<string, unknown>;
+}
+
+// 个股日K（点击股票名查看）
+export interface KlinePoint {
+  date: string; open: number; high: number; low: number; close: number; volume: number;
+}
+export interface KlineData {
+  available: boolean; code: string; days?: number; reason?: string; kline?: KlinePoint[];
 }
 
 // 全市场成交额榜（客观公开榜单）
@@ -399,6 +414,8 @@ export const api = {
   },
   firstBoard: () => get<FirstBoardData>("/market/first-board"),
   nodePool: (force = false) => get<NodePoolData>(`/node-pool${force ? "?force=true" : ""}`),
+  stockKline: (code: string, days = 60) =>
+    get<KlineData>(`/node-pool/kline?code=${encodeURIComponent(code)}&days=${days}`),
   turnoverTop: () => get<TurnoverTop>("/market/turnover-top"),
   globalIndices: () => get<GlobalIndex[]>("/global/indices"),
   globalStock: (symbol: string) => get<GlobalStock>(`/global/stock?symbol=${encodeURIComponent(symbol)}`),

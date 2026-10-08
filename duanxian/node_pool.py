@@ -22,7 +22,7 @@ import json
 import os
 from typing import Optional
 
-from duanxian import market_facts, trade_calendar
+from duanxian import market_facts, stock_tags, trade_calendar
 from duanxian.paths import data_path
 from duanxian.cache_policy import fresh as cache_fresh, write as write_cache
 from duanxian.util import china_today
@@ -32,7 +32,10 @@ NODE_CAP_LIMIT = 200 * 1e8        # 节点票池总市值上限（元），只�
 BREAKOUT_LOOKBACK = 20            # 突破节点：回看多少个交易日的最高板高度
 NODE_KEEP_DAYS = 10              # 节点票池只保留最近约 10 个交易日的节点
 WINDOW = 24                       # 取数窗口（>= BREAKOUT_LOOKBACK + 缓冲）
-_NODE_SCHEMA = 1
+NODE_SCHEMA = 3                  # v3：标签(pinyin/region/concepts) + 已断板过滤
+KLINE_DAYS = 60                  # 附带日K的交易日数（点击股票名查看）
+HIDE_BROKEN = True                # 已断板不再显示在节点票里
+_NODE_SCHEMA = NODE_SCHEMA        # 向后兼容旧引用
 
 # 用户核对后的总市值修正（元），按 (code, YYYYMMDD) 锁定，避免污染未来交易日。
 # 例：('605577', '20260904'): 7604000000,
@@ -303,7 +306,7 @@ def apply_focus(nodes_out):
 
 
 # ---------------------------------------------------------------- 标注辅助
-def _annotate_trigger(trig, today_pool):
+def _annotate_trigger(trig, today_pool, tags):
     if not trig:
         return trig
     trig = dict(trig)
@@ -312,14 +315,15 @@ def _annotate_trigger(trig, today_pool):
     trig["total_cap_yi"] = round(trig["total_cap"] / 1e8, 2) if trig.get("total_cap") else None
     trig["amount_yi"] = round((trig.get("amount") or 0) / 1e8, 2)
     trig["is_yizi"] = is_yizi(trig.get("first_seal"), trig.get("last_seal"))
+    trig.update(stock_tags.annotate(trig.get("code"), trig.get("name"), tags))
     return trig
 
 
-def _annotate_stock(s, today_pool, node_date, days, zt_hist):
+def _annotate_stock(s, today_pool, node_date, days, zt_hist, tags):
     cur = today_pool.get(s["code"])
     today_lbc = cur["lbc"] if cur else 0
     status, boards = track_status(s["code"], node_date, days, zt_hist, today_lbc)
-    return {
+    row = {
         "code": s["code"], "name": s["name"],
         "lbc": s["lbc"], "boards": boards, "status": status,
         "amount_yi": round((s.get("amount") or 0) / 1e8, 2),
@@ -328,6 +332,8 @@ def _annotate_stock(s, today_pool, node_date, days, zt_hist):
         "is_yizi": is_yizi(s.get("first_seal"), s.get("last_seal")),
         "first_seal": s.get("first_seal"), "last_seal": s.get("last_seal"),
     }
+    row.update(stock_tags.annotate(s["code"], s["name"], tags))
+    return row
 
 
 # ---------------------------------------------------------------- 对外入口
@@ -395,6 +401,19 @@ def build_node_pool(end_date: Optional[str] = None, force: bool = False) -> dict
     raw_nodes = detect_nodes(zt_hist, days)
     today_pool = {s["code"]: s for s in zt_hist.get(end_date, [])}
 
+    # ---- 标签（同花顺 F10：拼音缩写 / 地域 / 概念）一次性批量补，命中缓存不发请求 ----
+    all_codes = []
+    for n in raw_nodes:
+        t = n.get("trigger") or {}
+        if t.get("code"):
+            all_codes.append(str(t["code"]))
+        for s in n.get("stocks", []):
+            all_codes.append(str(s["code"]))
+    try:
+        tags = stock_tags.enrich(all_codes)
+    except Exception:  # noqa: BLE001  标签失败不拖垮节点池，只是标签为空
+        tags = {}
+
     nodes = []
     for n in raw_nodes:
         # 市值门槛：按节点诞生日快照 total_cap；缺失则保留（不误删）
@@ -402,10 +421,11 @@ def build_node_pool(end_date: Optional[str] = None, force: bool = False) -> dict
                   if s.get("total_cap") is None or s["total_cap"] <= NODE_CAP_LIMIT]
         if not stocks:
             continue  # 剔除零连板 / 空节点
-        annotated = [_annotate_stock(s, today_pool, n["date"], days, zt_hist) for s in stocks]
+        annotated = [_annotate_stock(s, today_pool, n["date"], days, zt_hist, tags)
+                     for s in stocks]
         n = dict(n)
         n["stocks"] = annotated
-        n["trigger"] = _annotate_trigger(n.get("trigger"), today_pool)
+        n["trigger"] = _annotate_trigger(n.get("trigger"), today_pool, tags)
         nodes.append(n)
 
     # 触发票在节点日收阴（收<开）→ 该节点减分。取不到日K如实标 None，不当成没收阴。
@@ -428,6 +448,15 @@ def build_node_pool(end_date: Optional[str] = None, force: bool = False) -> dict
     keep_from = days[max(0, len(days) - NODE_KEEP_DAYS)] if days else None
     if keep_from:
         nodes = [n for n in nodes if n["date"] >= keep_from]
+
+    # 已断板不再显示（数据层仍留 hidden 计数，便于核对"剔掉了多少"）
+    if HIDE_BROKEN:
+        for n in nodes:
+            hidden = [s for s in n.get("stocks", []) if s.get("status") == "已断板"]
+            n["broken_hidden"] = len(hidden)
+            n["stocks"] = [s for s in n.get("stocks", []) if s.get("status") != "已断板"]
+        # 沿用既有「空节点即删」口径：全断板的节点没有可看的票，不渲染空卡片
+        nodes = [n for n in nodes if n.get("stocks")]
 
     nodes.sort(key=lambda n: n["date"], reverse=True)
 

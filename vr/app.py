@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -267,6 +268,26 @@ def node_pool(date: str = Query(None), force: bool = Query(False)):
         return {"data": build_node_pool(date, force=force)}
     except Exception as e:  # noqa: BLE001
         raise HTTPException(502, f"节点票池异常：{e}") from e
+
+
+@app.get("/api/node-pool/kline")
+def node_pool_kline(code: str = Query(...), days: int = Query(60, ge=20, le=250)):
+    """个股日K（节点票池点股票名看K线用）。腾讯 hist 源 + 落盘永久缓存。
+
+    取数失败返回 available=False，绝不用空数组冒充"没有数据"。
+    """
+    code = (code or "").strip()
+    if not re.fullmatch(r"\d{6}", code):
+        raise HTTPException(400, "代码须为 6 位数字")
+    try:
+        from duanxian import kline as kline_src
+        rows = kline_src.daily(code, days)
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(502, f"日K取数异常：{e}") from e
+    if not rows:
+        return {"data": {"available": False, "code": code,
+                          "reason": "日K源未返回数据（新股/停牌/网络不可达）"}}
+    return {"data": {"available": True, "code": code, "days": len(rows), "kline": rows}}
 
 
 @app.get("/api/market/overview")

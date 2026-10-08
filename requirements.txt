@@ -14,6 +14,9 @@ uvicorn>=0.29
 requests
 beautifulsoup4>=4.12
 akshare>=1.18
+# 个股拼音缩写（节点票池「缩写/地域/概念」标签用）。缺失会在import 时直接报错，
+# 不做静默降级 —— 静默降级会让全站缩写变成空串而无任何提示。
+pypinyin>=0.51
 
 # 行业资金流那个接口要 JS 引擎解同花顺的混淆脚本。
 # 必须是改名后的 mini-racer，**不能装旧的 py_mini_racer**：
