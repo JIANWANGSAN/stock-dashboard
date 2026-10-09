@@ -497,6 +497,22 @@ const REQUIRED_CODEBUDDY_FLAGS = [
 // Give each read-only probe a bounded startup window; timeout is not logout.
 const CODEBUDDY_PROBE_TIMEOUT_MS = 15_000;
 
+/**
+ * inspectCodeBuddy costs 9-13s of wall clock (measured on this machine) because
+ * it spawns three CLI child processes: --version, --help, and the account read.
+ * A single review run calls runLocalAgent 6-12 times in series, so re-probing
+ * every turn burned 1-2 minutes of the 20-minute budget on facts that cannot
+ * change mid-run (same binary, same login).
+ *
+ * Cache per binary path for a short TTL. Short enough that a fresh login or a
+ * CLI upgrade is picked up within a couple of minutes, long enough that one
+ * report does not pay the cost per role. Failures are never cached, so a
+ * transient probe error still surfaces and still blocks a paid run.
+ */
+const CODEBUDDY_INSPECT_TTL_MS = 120_000;
+type CodeBuddyInspection = { version: string | null; runtime: CodeBuddyRuntime };
+const codeBuddyInspectCache = new Map<string, { at: number; value: CodeBuddyInspection }>();
+
 interface CodeBuddyAccount {
   userId: string;
   token: string;
@@ -671,7 +687,11 @@ async function codeBuddyAccount(bin: string, env: NodeJS.ProcessEnv, legacyEphem
   });
 }
 
-async function inspectCodeBuddy(bin: string, env: NodeJS.ProcessEnv): Promise<{ version: string | null; runtime: CodeBuddyRuntime }> {
+async function inspectCodeBuddy(bin: string, env: NodeJS.ProcessEnv): Promise<CodeBuddyInspection> {
+  // Reuse a recent inspection: the version, supported flags and login state
+  // cannot change between the turns of one report, and each miss costs 9-13s.
+  const cached = codeBuddyInspectCache.get(bin);
+  if (cached && Date.now() - cached.at < CODEBUDDY_INSPECT_TTL_MS) return cached.value;
   const runEnv = codeBuddySubscriptionEnv(env);
   const versionCall = executableInvocation(bin, ["--version"], runEnv);
   // These read-only CLI probes have no graceful shutdown work. WorkBuddy's embedded
@@ -687,7 +707,11 @@ async function inspectCodeBuddy(bin: string, env: NodeJS.ProcessEnv): Promise<{ 
   const legacyEphemeralHome = !help.includes("--no-session-persistence");
   if (legacyEphemeralHome) throw new LocalAgentError("agent_cli_too_old", "请升级 CodeBuddy CLI；本产品不复制旧版登录凭据到临时目录");
   const account = await codeBuddyAccount(bin, runEnv, false);
-  return { version, runtime: { account, legacyEphemeralHome } };
+  // Only successful inspections are cached; errors must keep surfacing so a
+  // real logout is never masked by a stale entry.
+  const value: CodeBuddyInspection = { version, runtime: { account, legacyEphemeralHome } };
+  codeBuddyInspectCache.set(bin, { at: Date.now(), value });
+  return value;
 }
 
 /** 只公开 CodeBuddy 版本与登录布尔；控制响应中的账号和 token 不离开本进程。 */

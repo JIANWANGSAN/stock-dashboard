@@ -6,7 +6,7 @@ import threading
 import time
 from pathlib import Path
 
-from .daily import Daily, DailyLLM, atomic_write
+from .daily import REPORT_BUDGET_SECONDS, Daily, DailyLLM, atomic_write
 from .evidence import EvidenceError, digest
 
 
@@ -78,7 +78,7 @@ class DeepDive(Daily):
         from duanxian.deepdive.store import serialize
         from duanxian.llm_errors import LlmConfigError
         from duanxian.util import china_today, is_degraded_report
-        deadline = time.monotonic() + 1200
+        deadline = time.monotonic() + REPORT_BUDGET_SECONDS
         def check():
             if self.cancel_event.is_set():
                 raise LlmConfigError("深挖已取消；原报告已保留")

@@ -468,7 +468,11 @@ def consume_events(proc, cancel: threading.Event, progress, timeout: float, *, t
 
 
 class Runtime:
-    def __init__(self, root: Path, *, timeout: float = 360):
+    # Per-turn ceiling. Measured: ~48s for a one-line answer, and analyst roles
+    # carry a full evidence catalogue, so 360s was cutting legitimate turns off
+    # mid-answer and reporting it as a transport timeout. 600s still bounds a
+    # genuinely hung CLI, and REPORT_BUDGET_SECONDS caps the whole report.
+    def __init__(self, root: Path, *, timeout: float = 600):
         self.root, self.timeout = root, timeout
         self.home = root / "codex-home"
         self.home.mkdir(mode=0o700, parents=True, exist_ok=True)

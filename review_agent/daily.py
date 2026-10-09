@@ -14,6 +14,20 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from .evidence import EvidenceError, canonical, digest
+
+# Wall-clock budget for one whole report.
+#
+# Measured on this machine: a single CLI turn costs ~48s even for a one-line
+# answer, and a daily review runs 5 analyst roles plus the summary serially, so
+# six turns minimum and up to twelve with bounded format corrections. The old
+# 1200s ceiling therefore expired before the work could finish: the run needed
+# ~36min and was killed at 20min with "订阅连接超时", which looked like a
+# network fault but was purely a budget that could not cover its own workload.
+#
+# 40 minutes leaves headroom for corrections on a slow day while still bounding
+# a genuinely stuck run. The per-turn ceiling stays separate (see Runtime.timeout)
+# so one hung turn cannot consume the whole report budget.
+REPORT_BUDGET_SECONDS = 2400
 from .product_policy import has_trade_recommendation
 
 
@@ -333,7 +347,7 @@ class Daily:
         from duanxian import preflight, review_store
         from duanxian.llm_errors import LlmConfigError
         from .grounding import generate_grounded, SOURCES
-        deadline = time.monotonic() + 1200
+        deadline = time.monotonic() + REPORT_BUDGET_SECONDS
         def check():
             if self.cancel_event.is_set():
                 raise EvidenceError("复盘已取消；原报告已保留")
