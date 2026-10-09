@@ -42,8 +42,7 @@ class ChatJobs(Daily):
                 raise EvidenceError("请求标识与这次问题不一致，请重新发起")
             row.pop("fingerprint", None)
             return row
-        if self.busy() or self.manager.active or self.manager.access.busy() or self.manager.daily.busy() or self.manager.deepdive.busy():
-            raise EvidenceError("正在分析或接入 AI，请完成或取消后再试")
+        self._reject_if_busy("页面提问")
         self.cancel_event = threading.Event()
         self.current = {"job_id": body.request_id, "fingerprint": fingerprint, "source": source,
                         "running": True, "status": "running", "stage": "阅读本次提供的材料",
@@ -84,7 +83,8 @@ class ChatJobs(Daily):
         try:
             directory = self.directory / self.current["job_id"]
             directory.mkdir(mode=0o700)
-            llm = DailyLLM(self.manager.runtime, source, key, directory, china_today(), self.cancel_event, check, purpose="page")
+            llm = DailyLLM(self.manager.runtime, source, key, directory, china_today(), self.cancel_event, check,
+                           purpose="page", progress=lambda stage: self._update(stage=stage))
             if payload.get("task_kind") == "backtest":
                 from .backtesting import work
                 work(self, payload, source, key, directory, check)

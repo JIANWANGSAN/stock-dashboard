@@ -124,7 +124,8 @@ def work(job, payload, source, key, directory, check):
     spec = payload.get('backtest_args')
     if spec is None:
         today = china_today()
-        llm = DailyLLM(job.manager.runtime, source, key, directory, today, job.cancel_event, check, purpose='page')
+        llm = DailyLLM(job.manager.runtime, source, key, directory, today, job.cancel_event, check, purpose='page',
+                       progress=lambda stage: job._update(stage=stage))
         prompt = (f'北京时间今天是 {today}。相对区间必须按这个日期换算；结束日期须早于今天。'
                   '仅整理用户要验证的历史回测规则，不给交易建议、不运行或声称计算过结果。'
                   '缺少标的、起止日期、策略时追问，不擅自选择。无法支持的策略说明限制，不偷偷替换成内置策略。'

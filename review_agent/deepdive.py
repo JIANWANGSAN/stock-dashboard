@@ -60,8 +60,7 @@ class DeepDive(Daily):
             if not old or old.get("fingerprint") != fingerprint:
                 raise EvidenceError("请求标识已使用或记录损坏；请重新发起")
             return {k: v for k, v in old.items() if k != "fingerprint"}
-        if self.busy() or self.manager.active or self.manager.access.busy() or self.manager.page_chats.busy() or self.manager.daily.busy():
-            raise EvidenceError("正在分析或接入 AI，请完成或取消后再试")
+        self._reject_if_busy("多空辩论")
         if not body.stock.strip():
             raise EvidenceError("请输入代码或准确简称")
         self.cancel_event = threading.Event()
@@ -92,7 +91,8 @@ class DeepDive(Daily):
             directory.mkdir(mode=0o700)
             inputs = FrozenStockInputs(directory, check)
             date = china_today()
-            llm = DailyLLM(self.manager.runtime, source, key, directory, date, self.cancel_event, check, purpose="stock")
+            llm = DailyLLM(self.manager.runtime, source, key, directory, date, self.cancel_event, check, purpose="stock",
+                           progress=lambda stage: self._update(stage=stage))
             final = run(stock, date, llm=llm, data_source=inputs, check=check, pack=RESEARCH_PACK,
                         progress=lambda stage: self._update(stage=stage))
             check()

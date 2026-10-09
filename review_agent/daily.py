@@ -81,10 +81,51 @@ def has_unsupported_flow_total(text):
 
 
 class DailyLLM:
-    def __init__(self, runtime, source, key, directory, date, cancel, check, purpose="daily"):
+    def __init__(self, runtime, source, key, directory, date, cancel, check, purpose="daily", progress=None):
         self.runtime, self.source, self.key = runtime, source, key
         self.directory, self.date, self.cancel, self.check = directory, date, cancel, check
         self.purpose = purpose
+        # Optional job-status heartbeat. The CLI streams progress while a turn is
+        # in flight; without forwarding it the UI shows a frozen stage for the
+        # whole (multi-minute) call and reads as a hang.
+        self.progress = progress or (lambda message: None)
+
+    def _heartbeat(self, message):
+        """Publish CLI stream progress as job stage, best-effort and non-fatal."""
+        text = (message or "").strip().replace("\n", " ")
+        if not text:
+            return
+        # Keep the stage short: it is a status line, not a log.
+        self._emit(("AI 处理中：" + text)[:60])
+
+    def _emit(self, stage):
+        """Stage writer that must never break the AI call it is reporting on."""
+        try:
+            self.progress(stage)
+        except Exception:  # noqa: BLE001 - status reporting is not worth failing a run
+            pass
+
+    def _start_wait_heartbeat(self, label="AI 正在分析"):
+        """Periodically republish a waiting stage while one CLI turn is in flight.
+
+        The subscription bridge only emits a single `started` event and a final
+        `result`, so without this the UI stage freezes for the whole (often
+        multi-minute) turn and the run reads as hung. The bridge has no token
+        stream to forward, so the only honest liveness signal is elapsed time.
+        """
+        started = time.monotonic()
+        stop = threading.Event()
+
+        def beat():
+            while not stop.wait(10):
+                try:
+                    self._emit(f"{label}，已等待 {int(time.monotonic() - started)} 秒")
+                except Exception:  # noqa: BLE001
+                    return
+
+        thread = threading.Thread(target=beat, daemon=True)
+        thread.start()
+        return stop
 
     def invoke(self, prompt, _correction=False):
         from duanxian.llm_errors import LlmConfigError
@@ -100,8 +141,12 @@ class DailyLLM:
                            "龙虎榜单日榜与三日榜区间可能重叠，禁止跨记录累计净买卖额；上榜记录不代表全市场净流入，也不能推断主力意图。"
                            "直接报告事实、依据与缺口，不复述被禁止的交易措辞，也不添加参与倾向。\n")
             options = {} if self.purpose == "daily" else {"task_kind": self.purpose}
-            text = self.runtime._invoke(run, self.source, self.key, prefix + prompt,
-                self.cancel, lambda message: None, min(remaining, self.runtime.timeout), text_only=True, **options)
+            heartbeat_stop = self._start_wait_heartbeat()
+            try:
+                text = self.runtime._invoke(run, self.source, self.key, prefix + prompt,
+                    self.cancel, self._heartbeat, min(remaining, self.runtime.timeout), text_only=True, **options)
+            finally:
+                heartbeat_stop.set()
             self.check()
             # Daily JSON is checked field-by-field by request_checked, including
             # the action gate, so content errors can use its bounded correction.
@@ -196,6 +241,41 @@ class Daily:
     def busy(self):
         return self.worker is not None and self.worker.is_alive()
 
+    def _busy_conflict(self, self_label="复盘报告"):
+        """Return a human-readable name of whatever currently holds the single
+        AI slot, or None when the slot is free.
+
+        A bare "请完成或取消后再试" is unactionable: the user cannot tell which
+        page is holding the slot, so the request just looks like it silently
+        did nothing. Name the holder and how to release it.
+        """
+        if self.busy():
+            return self_label
+        # Peers, including the daily job when called from deepdive/chat/backtest.
+        for attr, label in (("deepdive", "多空辩论"), ("daily", "复盘报告"),
+                            ("page_chats", "页面提问"), ("access", "AI 接入检测")):
+            job = getattr(self.manager, attr, None)
+            if job is None or job is self or not job.busy():
+                continue
+            if attr == "deepdive":
+                row = getattr(job, "current", None) or {}
+                stock = (row.get("stock") or "").strip()
+                stage = (row.get("stage") or "").strip()
+                detail = f"（{stock} · {stage}）" if stock and stage else (f"（{stock}）" if stock else "")
+                return f"{label}{detail}"
+            return label
+        if getattr(self.manager, "active", None):
+            return "其他 AI 任务"
+        return None
+
+    def _reject_if_busy(self, self_label="复盘报告"):
+        holder = self._busy_conflict(self_label)
+        if holder:
+            raise EvidenceError(
+                f"「{holder}」正在运行，AI 同一时间只处理一个任务。"
+                f"请等它完成，或到对应页面点「停止」后再试。本次请求未发起，不会重复计费。"
+            )
+
     def snapshot(self):
         with self.state_lock:
             row = dict(self.current or {"running": False, "status": "idle", "elapsed": 0})
@@ -218,8 +298,7 @@ class Daily:
             if not old or old.get("fingerprint") != fingerprint:
                 raise EvidenceError("请求标识已使用或记录损坏；请重新发起")
             return {k: v for k, v in old.items() if k != "fingerprint"}
-        if self.busy() or self.manager.active or self.manager.access.busy() or self.manager.page_chats.busy() or self.manager.deepdive.busy():
-            raise EvidenceError("正在复盘、提问或接入 AI，请完成或取消后再试")
+        self._reject_if_busy()
         from duanxian import review_store, trade_calendar
         from duanxian.util import validate_trade_date, is_weekend
         try:
@@ -270,7 +349,8 @@ class Daily:
             check()
             if not pre["ok"]:
                 raise EvidenceError(preflight.refuse_reason(pre, date))
-            llm = DailyLLM(self.manager.runtime, source, key, directory, date, self.cancel_event, check)
+            llm = DailyLLM(self.manager.runtime, source, key, directory, date, self.cancel_event, check,
+                           progress=lambda stage: self._update(stage=stage))
             state = generate_grounded(llm, inputs, date, check, lambda stage: self._update(stage=stage))
             check()
             warnings = list(pre["warnings"])
