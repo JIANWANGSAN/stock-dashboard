@@ -9,7 +9,9 @@ import html
 import json
 import math
 import re
+import threading
 import unicodedata
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from decimal import Decimal
 from types import SimpleNamespace
 
@@ -28,6 +30,15 @@ ROLE_SOURCES = {
     "leader": ("get_leader_data", "get_market_facts", "get_emotion_metrics"),
 }
 NOTE = "输入片段与引用已核对；数据源正确性及 AI 推断是否成立，未据此得到证明。"
+
+# How many analyst roles may run at once.
+#
+# Each in-flight role holds one CLI turn, and the CLI itself already caps
+# concurrent local agents, so raising this past a handful buys little and makes
+# every role slower (they share the same machine and the same login).
+# 3 keeps the wall clock near the slowest role while leaving headroom for the
+# bounded format-correction retry of a straggler.
+ROLE_WORKERS = 3
 CONTRACT = """只输出约定的 JSON。每段解释的 citations 必须引用本次目录的 id。
 数量约定：分项 findings 为 1~5 段；每段 citations 为 1~6 个不重复 id。
 每段 text 最多 900 字、direction 板块名最多 50 字。若原任务列出更多解读角度，请合并为上述段落数。
@@ -423,18 +434,59 @@ def generate_grounded(llm, inputs, date, check, progress):
     catalog = build_catalog(inputs.values, date)
     from duanxian.reflection import get_past_context
     state = {"trade_date": date}
+
+    # Analyst roles are independent: each reads only state["trade_date"] and
+    # fetches its own SOURCES (all pre-warmed above), and returns a private dict
+    # merged into the shared state afterwards. Verified in analysts.py: no role
+    # reads another role's output. So they can run concurrently, which turns a
+    # ~25 minute serial report into roughly the slowest single role.
+    #
+    # Concurrency is capped and every shared piece is either immutable or owned:
+    # - `sections` is appended from several threads -> guarded by section_lock
+    # - `state.update()` happens on the main thread only, after each future
+    # - the LLM wrapper is not re-entrant (per-turn run dir + heartbeat thread),
+    #   so each role gets its own instance over the same transport via `scoped`
+    # - stage lines are role-tagged so a concurrent line is still attributable
     sections = []
-    for role in ROLES:
-        check()
-        progress("生成" + role.title + "并核对引用")
+    section_lock = threading.Lock()
+
+    def run_role(role):
         records = [e for e in catalog if e["input"] in ROLE_SOURCES[role.key]]
+        # Announce per role: with several roles in flight the stage line is the
+        # only liveness signal, and an unattributable line would read as a hang.
+        progress("开始生成" + role.title + "并核对引用")
+        scoped = getattr(llm, "scoped", None)
+        role_llm = scoped(lambda stage, title=role.title: progress(title + "：" + stage)) if scoped else llm
+
         class AnalystLLM:
             def invoke(self, prompt):
-                result = request_checked(llm, prompt + '\n输出结构：{"findings":[{"text":"定性解释","citations":["id"]}]}',
+                result = request_checked(role_llm, prompt + '\n输出结构：{"findings":[{"text":"定性解释","citations":["id"]}]}',
                                          {"stage": role.key, "records": records}, lambda obj: validate_section(obj, records))
-                sections.append({"key": role.key, "title": role.title, **result})
+                with section_lock:
+                    sections.append({"key": role.key, "title": role.title, **result})
                 return SimpleNamespace(content="\n\n".join(f["text"] for f in result["findings"]))
-        state.update(role.factory(AnalystLLM(), pack=RESEARCH_PACK, strict=True, data_source=inputs)(state))
+
+        return role.factory(AnalystLLM(), pack=RESEARCH_PACK, strict=True, data_source=inputs)({"trade_date": date})
+
+    check()
+    if ROLE_WORKERS > 1 and len(ROLES) > 1:
+        progress(f"并行生成 {len(ROLES)} 个分项（最多 {ROLE_WORKERS} 个同时进行）")
+        outcome = {}
+        with ThreadPoolExecutor(max_workers=min(ROLE_WORKERS, len(ROLES))) as pool:
+            futures = {pool.submit(run_role, role): role for role in ROLES}
+            for future in as_completed(futures):
+                role = futures[future]
+                # Surface the first failure; the pool drains before we re-raise.
+                outcome[role.key] = future.result()
+        for role in ROLES:
+            state.update(outcome[role.key])
+    else:
+        for role in ROLES:
+            check()
+            progress("生成" + role.title + "并核对引用")
+            state.update(run_role(role))
+    # The judge reads prior analyses only as inferences, never as evidence.
+    sections.sort(key=lambda s: [r.key for r in ROLES].index(s["key"]))
     check()
     progress("核对复盘结论与证据")
     skeleton = {"emotion_phase": "退潮", "market_oneliner": {"text": "定性盘面概括", "citations": ["id"]},

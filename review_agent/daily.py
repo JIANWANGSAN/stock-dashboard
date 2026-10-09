@@ -141,6 +141,18 @@ class DailyLLM:
         thread.start()
         return stop
 
+    def scoped(self, progress):
+        """A sibling instance that shares transport but owns its own turn state.
+
+        A DailyLLM is not re-entrant: `invoke` writes `last_run` and runs a
+        heartbeat thread on the caller's behalf. Sharing one object across
+        concurrent roles would race that state and mix their diagnostics, so
+        every concurrent role gets its own instance over the same runtime,
+        credentials and run directory.
+        """
+        return DailyLLM(self.runtime, self.source, self.key, self.directory, self.date,
+                        self.cancel, self.check, self.purpose, progress=progress)
+
     def invoke(self, prompt, _correction=False):
         from duanxian.llm_errors import LlmConfigError
         remaining = self.check()
