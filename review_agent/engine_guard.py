@@ -1,10 +1,16 @@
 """Independent deadline survives a backend crash (POSIX process groups / Windows Job Objects)."""
+from __future__ import annotations
 import os
 import json
 import signal
 import subprocess
 import sys
 import time
+
+# Exit code used when a kill was requested but the child stayed unreaped.
+# Distinct from any real child status so callers can tell "gave up waiting"
+# apart from "child finished with this code".
+GUARD_GIVE_UP = 97
 
 
 def guard_python() -> str:
@@ -42,9 +48,23 @@ def main() -> int:
     reap_group = sys.argv[3] == "--bridge-reap-group"
     child = subprocess.Popen(sys.argv[4:] if reap_group else sys.argv[3:])
     deadline = time.monotonic() + timeout if timeout > 0 else float("inf")
+    killed_at = None
     while child.poll() is None:
         if time.monotonic() > deadline or not parent_alive():
-            kill_tree()
+            # A kill request is not a kill. Windows Job Object termination can
+            # fail, and the child can stay unreaped forever -- this loop only
+            # tests poll(), so without an escalation it would spin at 5Hz
+            # forever and the caller would wait with it. Measured: a report sat
+            # in poll() for 34 minutes with every worker already dead.
+            #
+            # Escalate, then leave. The caller already bounds its own wait and
+            # reaps this process; holding the handle open longer only makes
+            # that harder.
+            if killed_at is None:
+                killed_at = time.monotonic()
+                kill_tree()
+            elif time.monotonic() - killed_at > 5:
+                return GUARD_GIVE_UP
         time.sleep(.2)
     if reap_group:
         # A private bridge result is followed by the child's actual exit status.

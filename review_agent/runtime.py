@@ -271,8 +271,15 @@ def stop_process(proc) -> None:
                 except subprocess.TimeoutExpired:
                     raise PermissionError("无法停止仍在运行的引擎进程组") from None
     elif proc.poll() is None:
+        # Bounded: a Windows kill can leave a handle that never reports exit
+        # (measured: a data worker stayed in poll() for 34 minutes after every
+        # real process was gone). An unbounded wait here would hang the caller
+        # with nothing left to kill, so give up loudly instead.
         proc.kill()
-    proc.wait(timeout=10)
+        try:
+            proc.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            raise EvidenceError("引擎进程未能停止，已放弃等待") from None
 
 
 def subscription_models(home: Path, timeout: float = 8) -> dict:

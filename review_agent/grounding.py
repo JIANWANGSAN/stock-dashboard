@@ -33,12 +33,26 @@ NOTE = "输入片段与引用已核对；数据源正确性及 AI 推断是否�
 
 # How many analyst roles may run at once.
 #
-# Each in-flight role holds one CLI turn, and the CLI itself already caps
-# concurrent local agents, so raising this past a handful buys little and makes
-# every role slower (they share the same machine and the same login).
-# 3 keeps the wall clock near the slowest role while leaving headroom for the
-# bounded format-correction retry of a straggler.
-ROLE_WORKERS = 3
+# MEASURED, twice, and both times concurrency lost. Keep this at 1.
+#
+# Attempt 1 — ROLE_WORKERS=3. Roles did overlap (two role names alternated in
+# the job stage), but they contend for one machine and one CLI login, so each
+# role ran ~2x its serial time. A role that takes ~300s alone passed 600s and
+# was killed by Runtime.timeout, failing the whole report at 754s.
+#
+# Attempt 2 — ROLE_WORKERS=2. Failed differently and sooner (155s): concurrent
+# bridge processes each run their own CLI probe, and those probes collided --
+# "所选订阅状态检测未完成". Halving the concurrency did not halve the
+# contention, it changed the symptom.
+#
+# Both failures are worse than slow: a transport/timeout error that reads like
+# a network fault but is actually self-inflicted load. Serial is the only
+# setting measured to complete (a real deepdive finished in 1611s, clean).
+#
+# The concurrent path below is kept, tested and correct -- if the per-turn
+# ceiling or the CLI's probe ever stops being the binding constraint, raising
+# this is a one-line change. Raise it only after a real report finishes.
+ROLE_WORKERS = 1
 CONTRACT = """只输出约定的 JSON。每段解释的 citations 必须引用本次目录的 id。
 数量约定：分项 findings 为 1~5 段；每段 citations 为 1~6 个不重复 id。
 每段 text 最多 900 字、direction 板块名最多 50 字。若原任务列出更多解读角度，请合并为上述段落数。
@@ -438,10 +452,14 @@ def generate_grounded(llm, inputs, date, check, progress):
     # Analyst roles are independent: each reads only state["trade_date"] and
     # fetches its own SOURCES (all pre-warmed above), and returns a private dict
     # merged into the shared state afterwards. Verified in analysts.py: no role
-    # reads another role's output. So they can run concurrently, which turns a
-    # ~25 minute serial report into roughly the slowest single role.
+    # reads another role's output, so they *can* run concurrently.
     #
-    # Concurrency is capped and every shared piece is either immutable or owned:
+    # They are run serially anyway (see ROLE_WORKERS): concurrency was measured
+    # twice on real reports and failed both times, because the roles share one
+    # machine and one CLI login. The concurrent path stays correct and tested
+    # for the day that contention is not the binding constraint.
+    #
+    # When it does run, every shared piece is either immutable or owned:
     # - `sections` is appended from several threads -> guarded by section_lock
     # - `state.update()` happens on the main thread only, after each future
     # - the LLM wrapper is not re-entrant (per-turn run dir + heartbeat thread),
@@ -449,27 +467,32 @@ def generate_grounded(llm, inputs, date, check, progress):
     # - stage lines are role-tagged so a concurrent line is still attributable
     sections = []
     section_lock = threading.Lock()
+    parallel = ROLE_WORKERS > 1 and len(ROLES) > 1
 
     def run_role(role):
         records = [e for e in catalog if e["input"] in ROLE_SOURCES[role.key]]
-        # Announce per role: with several roles in flight the stage line is the
-        # only liveness signal, and an unattributable line would read as a hang.
-        progress("开始生成" + role.title + "并核对引用")
+        # Only the concurrent path needs isolation: the LLM wrapper keeps
+        # per-turn state, so parallel roles must not share one. The serial path
+        # has nothing to race and keeps the original single instance.
         scoped = getattr(llm, "scoped", None)
-        role_llm = scoped(lambda stage, title=role.title: progress(title + "：" + stage)) if scoped else llm
+        role_llm = (scoped(lambda stage, title=role.title: progress(title + "：" + stage))
+                    if parallel and scoped else llm)
 
         class AnalystLLM:
             def invoke(self, prompt):
                 result = request_checked(role_llm, prompt + '\n输出结构：{"findings":[{"text":"定性解释","citations":["id"]}]}',
                                          {"stage": role.key, "records": records}, lambda obj: validate_section(obj, records))
-                with section_lock:
+                if parallel:
+                    with section_lock:
+                        sections.append({"key": role.key, "title": role.title, **result})
+                else:
                     sections.append({"key": role.key, "title": role.title, **result})
                 return SimpleNamespace(content="\n\n".join(f["text"] for f in result["findings"]))
 
         return role.factory(AnalystLLM(), pack=RESEARCH_PACK, strict=True, data_source=inputs)({"trade_date": date})
 
     check()
-    if ROLE_WORKERS > 1 and len(ROLES) > 1:
+    if parallel:
         progress(f"并行生成 {len(ROLES)} 个分项（最多 {ROLE_WORKERS} 个同时进行）")
         outcome = {}
         with ThreadPoolExecutor(max_workers=min(ROLE_WORKERS, len(ROLES))) as pool:
