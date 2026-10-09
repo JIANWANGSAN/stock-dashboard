@@ -98,8 +98,17 @@ def _ref_dates(start: str, end: str) -> list[str]:
 
     同花顺指数日K 为主源（覆盖到当天，见 ``_ths_index_dates`` 注释），腾讯日K 兜底
     历史区间；两源取并集后按区间过滤，任一源失效不致命。
+
+    ⚠️ 第三路证据：实时行情时间戳（``quote_trade_day``）。两路日K 都可能**当日滞后**
+    —— 实测 2026-10-09 收盘后（16:45）同花顺 last.js 与腾讯 hist 均仍止于 10-08，
+    而行情时间戳已是 20261009161400（当日成交 8885 亿），日历据此漏掉当天，节点池
+    的 end_date 停在旧数据。行情时间戳是「今天是否开盘」的唯一直接证据，并入并集；
+    未收盘的当天仍由调用方（last_trade_dates / trade_dates_ending_at）按口径剔除。
     """
     dates = set(_ths_index_dates_cached()) | set(_tencent_ref_dates(start, end))
+    qd = quote_trade_day()
+    if qd:
+        dates.add(qd)
     if not dates:
         return []
     return sorted(d for d in dates if start <= d <= end)
