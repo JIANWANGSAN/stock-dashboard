@@ -1,4 +1,4 @@
-import { Home, Radio, Swords, Eye, LineChart, Briefcase, FlaskConical, Network } from 'lucide-react';
+import { Home, Radio, Swords, Eye, LineChart, Briefcase, FlaskConical } from 'lucide-react';
 // Primary navigation follows daily workflows; existing deep links remain valid.
 export const MODULES = [
   { title: '首页', to: '/', icon: Home, pages: [{ to: '/', title: '首页' }] },
@@ -7,11 +7,11 @@ export const MODULES = [
     { to: '/yesterday-ladder', title: '昨日梯队' }, { to: '/agent/intraday', title: '盘中核验' },
   ] },
   { title: '复盘', to: '/agent/review', icon: Swords, pages: [
-    { to: '/agent/review', title: '复盘报告' }, { to: '/first-board', title: '首板分析' },
-    { to: '/heat', title: '近5天热度' }, { to: '/backtest', title: '历史统计' },
+    { to: '/agent/review', title: '复盘报告' }, { to: '/node-pool', title: '节点票池' },
+    { to: '/first-board', title: '首板分析' }, { to: '/heat', title: '近5天热度' },
+    { to: '/backtest', title: '历史统计' },
   ] },
   { title: '资讯雷达', to: '/intel', icon: Radio, pages: [{ to: '/intel', title: '资讯雷达' }] },
-  { title: '节点追踪', to: '/node-pool', icon: Network, pages: [{ to: '/node-pool', title: '节点票池' }] },
   { title: '个股研究', to: '/stock-data', icon: LineChart, pages: [
     { to: '/stock-data', title: '个股研究' }, { to: '/agent/deepdive', title: '多空辩论' },
   ] },
