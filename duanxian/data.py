@@ -248,7 +248,15 @@ def get_capital_data(date: str) -> str:
             return _degrade_msg("实时资金与板块", date, "取数期间行情日期已变化，本批未使用：" + reason)
         return "\n".join(lines) + _asof_note(date)
     except Exception as exc:  # noqa: BLE001
-        return _degrade("资金面", date, exc)
+        # 实时路径挂了（典型：东财 push2delay 被本机网络 RST）不直接降级，
+        # 先回退同花顺历史补源——它和情绪/题材同域，独立于东财连通性。
+        try:
+            from .historical_sources import historical_activity
+            fallback = historical_activity(date)
+            return (fallback + "\n（实时资金流取数失败已回退同花顺历史补源，"
+                    f"以下无主力净流入口径：{type(exc).__name__}：{str(exc)[:80]}）")
+        except Exception:  # noqa: BLE001
+            return _degrade("资金面", date, exc)
 
 
 # ============ 大板块本周 ============
@@ -280,7 +288,14 @@ def get_macro_sector_data(date: str) -> str:
             return _degrade_msg("实时资金与板块", date, "取数期间行情日期已变化，本批未使用：" + reason)
         return "\n".join(lines) + _asof_note(date)
     except Exception as exc:  # noqa: BLE001
-        return _degrade("大板块本周", date, exc)
+        # 同 get_capital_data：实时概念板块挂了先回退同花顺历史补源，别急着降级。
+        try:
+            from .historical_sources import historical_activity
+            fallback = historical_activity(date, _MACRO_GROUPS)
+            return (fallback + "\n（实时概念板块取数失败已回退同花顺历史补源，"
+                    f"以下无主力净流入口径：{type(exc).__name__}：{str(exc)[:80]}）")
+        except Exception:  # noqa: BLE001
+            return _degrade("大板块本周", date, exc)
 
 
 # ============ ③ 题材热点（涨停原因题材串）============

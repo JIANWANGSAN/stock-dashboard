@@ -307,6 +307,14 @@ class Daily:
             row = dict(self.current or {"running": False, "status": "idle", "elapsed": 0})
             if row.get("running"):
                 row["elapsed"] = int(time.time() - row["started"])
+                # 展示层心跳：串行全程 20-40 分钟，单个 stage 可能挂几分钟不动，
+                # 只看 stage 文本会读成卡死。把真实耗时缀在 stage 上（不落盘，
+                # 仅本次响应），用户随时能看到"还在走、走了多远"。
+                stage = (row.get("stage") or "").strip()
+                if stage and "已运行" not in stage:
+                    minutes = row["elapsed"] // 60
+                    row["stage"] = (f"{stage}（已运行 {minutes} 分钟，"
+                                    "常规全程约 20-40 分钟）")
             row.pop("fingerprint", None)
             return row
 
