@@ -60,11 +60,30 @@ def _sentiment() -> dict:
     else:
         breadth = "普涨"
     speculation = "亢奋" if zt_real >= 100 else "活跃" if zt_real >= 60 else "普通" if zt_real >= 30 else "冰点"
+    # 炸板率：乐咕不给炸板数（涨停-真实涨停=ST 拆分，不是炸板），改走东财
+    # 涨停池/炸板池口径（与复盘端 zb/(zt+zb) 一致，push2ex 域当前可用）。
+    # 日期必须对齐乐咕统计日（周末/盘前乐咕停在上一交易日，用 now() 会查到空池）；
+    # 非交易日/接口失败 → None，仓位规则只按跌停家数判断，不臆造。
+    zb_rate = None
+    try:
+        stat_day = str(d.get("统计日期") or "")[:10]
+        day = stat_day.replace("-", "") if len(stat_day) == 10 \
+            else datetime.now(BEIJING).strftime("%Y%m%d")
+        ak = astock._akshare()
+        n_zt_pool = len(ak.stock_zt_pool_em(date=day))
+        n_zb_pool = len(ak.stock_zb_pool_em(date=day))
+        if n_zt_pool + n_zb_pool:
+            zb_rate = n_zb_pool / (n_zt_pool + n_zb_pool)
+    except Exception:  # noqa: BLE001 - 缺这一项只影响仓位建议，不挡情绪区
+        pass
+    # 仓位建议：纯机械规则，非投资建议。跌停取乐咕口径（含 ST）。
+    position_suggest = "空仓" if (zb_rate is not None and zb_rate > 0.75) or dt > 10 else ""
     return {
         "up": up, "down": down, "flat": flat,
         "zt": zt, "zt_real": zt_real, "dt": dt, "dt_real": dt_real,
         "active": str(d.get("活跃度", "")),
         "breadth": breadth, "speculation": speculation,
+        "zb_rate": zb_rate, "position_suggest": position_suggest,
         "date": str(d.get("统计日期", "")),
     }
 

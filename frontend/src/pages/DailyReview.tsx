@@ -407,10 +407,17 @@ export function DailyReview() {
       {/* 4. 市场情绪 */}
       <div className="mb-3 flex items-center gap-2">
         <h3 className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground"><Gauge className="h-4 w-4" /> 市场情绪 · 乐咕乐股口径</h3>
+        {sentiment?.position_suggest && (
+          <span className="rounded-md bg-danger/15 px-2 py-0.5 text-xs font-bold text-danger">
+            仓位建议：{sentiment.position_suggest}
+          </span>
+        )}
         <Caliber text={
           "涨停 / 真实涨停 / 跌停 / 真实跌停 / 活跃度这几个数取自乐咕乐股，不是我们算的。\n" +
           "「真实」与普通涨跌停的差额由它自己的口径决定，具体算法未公开。\n" +
           "活跃度同样是数据源自有算法，**不能按上涨家数占比来理解**；请分别查看资料期和统计口径。\n" +
+          "仓位建议为机械规则，非投资建议：炸板率（东财炸板池÷(涨停池+炸板池)，乐咕不给炸板数）> 75%，" +
+          "或跌停家数（乐咕口径，含 ST）> 10 家，即提示「空仓」；炸板率取不到时只按跌停判断。\n" +
           "大盘宽度按涨跌家数机械分档：上涨不足 600 家为冰点，其余看 上涨÷下跌 的比值\n" +
           "（<0.7 偏弱 / 0.7-1.2 中性 / 1.2-2.5 偏强 / ≥2.5 普涨）。\n" +
           "题材投机只按真实涨停家数分档：<30 冰点 / 30-59 普通 / 60-99 活跃 / ≥100 亢奋。"

@@ -143,6 +143,7 @@ export interface IndexQuote {
 export interface MarketSentiment {
   up: number; down: number; flat: number; zt: number; zt_real: number; dt: number; dt_real: number;
   active: string; breadth: string; speculation: string; date: string;
+  zb_rate?: number | null; position_suggest?: string;
 }
 export interface SectorFlow {
   name: string; pct: number; net: number; inflow: number; outflow: number; firms: number;
